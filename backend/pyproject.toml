@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omicsomics-backend"
+version = "0.1.0"
+description = "Backend services for the Omicsomics unified omics platform"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "sqlalchemy",
+  "psycopg2-binary",
+  "alembic",
+  "pydantic",
+  "python-dotenv",
+  "httpx",
+  "boto3",
+  "pandas",
+  "numpy",
+  "scikit-learn",
+  "scanpy",
+  "xgboost",
+  "networkx",
+  "pyyaml"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "httpx",
+  "pytest-cov",
+  "mypy",
+  "ruff",
+  "pre-commit"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.ruff]
+select = ["E", "F", "I", "UP", "B", "Q"]
+ignore = ["E203", "E501"]
+line-length = 100
