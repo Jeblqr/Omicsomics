@@ -1,0 +1,1 @@
+Assets (icons, logos, static images) will be stored in this directory.

@@ -1,0 +1,90 @@
+# General
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+.env
+.venv/
+venv/
+.env.local
+.pytest_cache/
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+dist/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+
+# Build / packaging
+build/
+dist/
+*.whl
+pip-wheel-metadata/
+
+# Data, results and large files (do NOT commit raw data)
+/data/
+data/
+/results/
+/results-*
+/tmp/
+*.tmp
+*.temp
+
+# Sequencing & bioinformatics large files
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.bam
+*.cram
+*.bai
+*.vcf
+*.vcf.gz
+*.gvcf
+*.bed
+*.bigWig
+*.bw
+*.h5ad
+*.loom
+*.mzML
+*.mzXML
+*.raw
+*.mgf
+*.sqlite
+
+# Other
+.envrc
+*.log
+*.swp
+
+# Docker / Terraform
+.terraform/
+**/.terraform/
+
+# Secrets
+secrets.yml
+credentials.json
+
+# Local config overrides
+config/local.yml
+
+# OS generated
+ehthumbs.db
+
+# Optional: lock files (if you prefer not to track)
+# package-lock.json
+# yarn.lock
