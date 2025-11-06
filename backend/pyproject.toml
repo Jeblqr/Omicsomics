@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omicsomics-backend"
+version = "0.1.0"
+description = "Backend services for the Omicsomics unified omics platform"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "sqlalchemy[asyncio]>=2.0.30",
+  "asyncpg>=0.29.0",
+  "alembic>=1.13.0",
+  "pydantic>=2.6.0",
+  "pydantic-settings>=2.2.1",
+  "python-dotenv",
+  "httpx",
+  "boto3",
+  "pandas",
+  "numpy",
+  "scikit-learn",
+  "scanpy",
+  "xgboost",
+  "networkx",
+  "pyyaml"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "httpx",
+  "pytest-cov",
+  "asgi-lifespan",
+  "mypy",
+  "ruff",
+  "pre-commit"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.ruff]
+select = ["E", "F", "I", "UP", "B", "Q"]
+ignore = ["E203", "E501"]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+plugins = []
+disallow_untyped_defs = true
+ignore_missing_imports = true
+namespace_packages = true
+warn_unused_ignores = true
