@@ -22,7 +22,9 @@ npm run dev -- --host
 # Run lint checks
 npm run lint
 ```
+
 # Build production bundle
+
 npm run build
 
 The frontend talks to the FastAPI backend (see `../backend`). Adjust API base URLs and authentication settings in `src/lib` (to be added).
