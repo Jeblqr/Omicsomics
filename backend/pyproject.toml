@@ -13,7 +13,7 @@ dependencies = [
   "sqlalchemy[asyncio]>=2.0.30",
   "asyncpg>=0.29.0",
   "alembic>=1.13.0",
-  "pydantic>=2.6.0",
+  "pydantic[email]>=2.6.0",
   "pydantic-settings>=2.2.1",
   "python-dotenv",
   "httpx",
@@ -24,7 +24,10 @@ dependencies = [
   "scanpy",
   "xgboost",
   "networkx",
-  "pyyaml"
+  "pyyaml",
+  "passlib[bcrypt]>=1.7.4",
+  "python-jose[cryptography]>=3.3.0",
+  "python-multipart>=0.0.9"
 ]
 
 [project.optional-dependencies]
@@ -54,3 +57,8 @@ disallow_untyped_defs = true
 ignore_missing_imports = true
 namespace_packages = true
 warn_unused_ignores = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["tests*"]

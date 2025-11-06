@@ -1,25 +1,28 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
 
-class ProjectBase(BaseModel):
+class SampleBase(BaseModel):
     name: str
     description: str | None = None
+    metadata_: dict[str, Any] | None = None
 
 
-class ProjectCreate(ProjectBase):
-    pass
+class SampleCreate(SampleBase):
+    project_id: int
 
 
-class ProjectUpdate(BaseModel):
+class SampleUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
+    metadata_: dict[str, Any] | None = None
 
 
-class Project(ProjectBase):
+class Sample(SampleBase):
     id: int
-    owner_id: int
+    project_id: int
     created_at: datetime
     updated_at: datetime
 

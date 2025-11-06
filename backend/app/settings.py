@@ -19,6 +19,12 @@ class Settings(BaseSettings):
   object_storage_secret_key: str = Field("minio123", env="OBJECT_STORAGE_SECRET_KEY")
   object_storage_bucket: str = Field("omicsomics", env="OBJECT_STORAGE_BUCKET")
 
+  # Security
+  SECRET_KEY: str = Field(
+      "5b1b472e91ed11fb37ac3452877cc5aa6beda975a6d0f61fe1d80e715ed1a83f", env="SECRET_KEY"
+  )
+  ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(60 * 24 * 8, env="ACCESS_TOKEN_EXPIRE_MINUTES")  # 8 days
+
 
 @lru_cache()
 def get_settings() -> "Settings":

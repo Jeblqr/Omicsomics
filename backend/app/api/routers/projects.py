@@ -1,25 +1,86 @@
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter, Depends, status
-
-from app.api.dependencies.database import get_db
-from app.schemas.projects import ProjectCreate, ProjectRead
-from app.services.projects import create_project as create_project_service
-from app.services.projects import list_projects as list_projects_service
+from app.api.dependencies.auth import get_current_user
+from app.api.dependencies.database import get_async_db
+from app.models.user import User
+from app.schemas import projects as project_schema
+from app.services import projects as project_service
 
 router = APIRouter()
 
 
-@router.get("/", response_model=list[ProjectRead], summary="List projects")
-async def list_projects(session: AsyncSession = Depends(get_db)) -> list[ProjectRead]:
-  """List registered projects."""
-  return await list_projects_service(session)
+@router.get("/", response_model=list[project_schema.Project], summary="List projects")
+async def list_projects(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+) -> list[project_schema.Project]:
+    """List projects owned by the current user."""
+    projects = await project_service.get_projects(
+        db, skip=skip, limit=limit, owner_id=current_user.id
+    )
+    return projects
 
 
-@router.post("/", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=project_schema.Project, status_code=status.HTTP_201_CREATED
+)
 async def create_project(
-  payload: ProjectCreate,
-  session: AsyncSession = Depends(get_db),
-) -> ProjectRead:
-  """Create a new project for tracking samples and workflows."""
-  return await create_project_service(session, payload)
+    project: project_schema.ProjectCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+) -> project_schema.Project:
+    """Create a new project for tracking samples and workflows."""
+    return await project_service.create_project(db, project, current_user.id)
+
+
+@router.get("/{project_id}", response_model=project_schema.Project)
+async def get_project(
+    project_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+) -> project_schema.Project:
+    """Get a specific project by ID."""
+    project = await project_service.get_project(db, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this project")
+    return project
+
+
+@router.put("/{project_id}", response_model=project_schema.Project)
+async def update_project(
+    project_id: int,
+    project_update: project_schema.ProjectUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+) -> project_schema.Project:
+    """Update a project."""
+    project = await project_service.get_project(db, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this project")
+    
+    updated_project = await project_service.update_project(db, project_id, project_update)
+    return updated_project
+
+
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_project(
+    project_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """Delete a project."""
+    project = await project_service.get_project(db, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this project")
+    
+    await project_service.delete_project(db, project_id)
+    return None
