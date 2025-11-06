@@ -30,10 +30,13 @@
 
 ## 仓库结构（当前）
 
-- `outline.md` — 平台大纲与实施建议（已生成）
-- `.gitignore` — 忽略规则（已生成）
-
-> 本仓库当前只是项目规划与文档；后续会逐步添加工程骨架（后端、前端、工作流示例、CI 配置等）。
+- `backend/` — FastAPI 服务、SQLAlchemy 模型、Alembic 迁移、测试与 Dockerfile
+- `frontend/` — React + Vite 前端（React Query、路由、可视化骨架）
+- `workflows/` — Nextflow 与 CWL 原型流水线（FastQC → MultiQC）
+- `infrastructure/` — `docker-compose.yml` 与本地依赖服务（Postgres、MinIO、API、前端）
+- `docs/` — 架构与 API 文档占位
+- `.github/workflows/ci.yml` — GitHub Actions：Python lint/test、Node lint/build
+- `outline.md` — 详细平台蓝图（组学覆盖面、模块、下一步路线）
 
 ## 快速开始（开发者）
 
@@ -42,16 +45,36 @@
    git clone <仓库-url>
    cd Omicsomics
 
-2. 建议创建虚拟环境（Python 示例）：
+2. 启动开发环境（Postgres + MinIO + API + 前端）：
 
-   python3 -m venv .venv
+   docker compose -f infrastructure/docker-compose.yml up --build
+
+   - 后端默认监听 `http://localhost:8001`（可在 `.env` 或 compose 中覆盖 `API_PORT`）
+   - 前端开发服务器位于 `http://localhost:5173`
+
+3. 单独运行后端（可选）：
+
+   ```bash
+   cd backend
+   python -m venv .venv
    source .venv/bin/activate
+   pip install -e .[dev]
+   uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+   ```
 
-   # 然后安装依赖（当 requirements.txt 可用时）
+4. 运行测试与静态检查：
 
-   pip install -r requirements.txt
+   ```bash
+   cd backend
+   pytest
 
-3. 打开 `outline.md` 阅读整体设计，或提出变更建议。
+   cd ../frontend
+   npm install
+   npm run lint
+   npm run build
+   ```
+
+5. 阅读 `outline.md` 掌握整体设计、模块优先级与下一阶段任务。
 
 ## 如何使用 `outline.md`
 
@@ -70,14 +93,10 @@
 
 ## 下一步建议（可选）
 
-- 生成 JSON Schema（元数据）与示例样本表
-- 设计数据库 schema（Postgres）与索引策略
-- 生成 MVP 工程骨架（API 模块、简单前端、上传/QC 管道）
-
-如果你希望，我可以自动为你生成：
-
-- JSON Schema（样本/项目/文件）
-- 一个最小可运行的工程骨架（包含 `backend/`, `frontend/`, `workflows/` 模块）
+- 扩展元数据/样本 JSON Schema，并与 Postgres/Alembic 模型保持同步
+- 增加项目 CRUD 的更多端点（更新、删除）、权限模型与审计日志
+- 对接工作流编排（Nextflow Tower / Argo Workflows）并在前端显示运行状态
+- 丰富前端数据可视化（UMAP、火山图、网络图）与表格筛选能力
 
 ## 许可与联系方式
 

@@ -43,6 +43,28 @@
   font-weight: 500;
 }
 
+.sidebar__link--active {
+  color: #38bdf8;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background-color: rgba(15, 23, 42, 0.6);
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(56, 189, 248, 0.1);
+}
+
 .sidebar__link:hover {
   color: #38bdf8;
 }

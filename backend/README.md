@@ -50,18 +50,24 @@ backend/
    pip install -e .[dev]
    ```
 
-3. Run development server.
+3. Apply database migrations (requires Postgres running, see `infrastructure/docker-compose.yml`).
 
    ```bash
-   uvicorn app.main:app --reload --port 8000
+   alembic upgrade head
+   ```
+
+4. Run development server (defaults to port 8001, configurable via `API_PORT`).
+
+   ```bash
+   uvicorn app.main:app --reload --port 8001
    ```
 
 ## Next Steps
 
-- Implement `app/main.py` to bootstrap FastAPI with routers and configuration.
-- Define Pydantic schemas in `app/schemas` and SQLAlchemy models in `app/models`.
-- Set up database migrations using Alembic under `backend/alembic` (to be added).
-- Implement service modules: ingestion, QC, metadata, pipeline orchestration, analytics.
-- Add integration tests under `backend/tests`.
+- Extend CRUD endpoints (update/delete) and add authentication/authorization dependencies.
+- Flesh out metadata, sample, and dataset models plus migrations.
+- Integrate workflow orchestration clients (Nextflow Tower, Argo, Cromwell) under `app/workflows`.
+- Build background task workers for ingestion/QC (Celery, Dramatiq, or FastAPI background tasks).
+- Expand tests with fixtures covering multi-tenant scenarios and validation edge cases.
 
 Refer to `outline.md` in the project root for the detailed architecture plan.
