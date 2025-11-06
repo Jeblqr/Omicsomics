@@ -76,7 +76,7 @@ data/
 **/.terraform/
 docker-compose.yml
 docker-compose.yaml
-infrastructure/docker-compose.yml
+
 
 # Secrets
 secrets.yml
