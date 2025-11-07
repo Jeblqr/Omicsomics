@@ -81,7 +81,9 @@ class EpigenomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running Bowtie2: {cmd}")
@@ -106,10 +108,17 @@ class EpigenomicsAnalyzer:
                         workflow_schema.WorkflowUpdate(
                             status=WorkflowStatus.COMPLETED,
                             logs=logs,
-                            output_files={"bam": output_bam, "bai": f"{output_bam}.bai"},
+                            output_files={
+                                "bam": output_bam,
+                                "bai": f"{output_bam}.bai",
+                            },
                         ),
                     )
-                return {"status": "success", "bam": output_bam, "bai": f"{output_bam}.bai"}
+                return {
+                    "status": "success",
+                    "bam": output_bam,
+                    "bai": f"{output_bam}.bai",
+                }
             else:
                 if db:
                     await workflow_service.update_workflow(
@@ -177,7 +186,13 @@ class EpigenomicsAnalyzer:
         """
         if peak_caller in ["macs2", "macs3"]:
             return await self._run_macs(
-                workflow_id, treatment_bam, control_bam, output_dir, genome_size, params or {}, db
+                workflow_id,
+                treatment_bam,
+                control_bam,
+                output_dir,
+                genome_size,
+                params or {},
+                db,
             )
         else:
             return {"status": "error", "error": f"Unknown peak caller: {peak_caller}"}
@@ -197,12 +212,18 @@ class EpigenomicsAnalyzer:
 
         # Build MACS2 command
         cmd = [
-            "macs2", "callpeak",
-            "-t", treatment_bam,
-            "-f", "BAM",
-            "-g", genome_size,
-            "-n", "peaks",
-            "--outdir", output_dir,
+            "macs2",
+            "callpeak",
+            "-t",
+            treatment_bam,
+            "-f",
+            "BAM",
+            "-g",
+            genome_size,
+            "-n",
+            "peaks",
+            "--outdir",
+            output_dir,
         ]
 
         # Add control if provided
@@ -226,7 +247,9 @@ class EpigenomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running MACS2: {' '.join(cmd)}")
@@ -270,7 +293,11 @@ class EpigenomicsAnalyzer:
                             error_message=f"MACS2 failed: exit code {process.returncode}",
                         ),
                     )
-                return {"status": "failed", "error": f"Exit code {process.returncode}", "logs": logs}
+                return {
+                    "status": "failed",
+                    "error": f"Exit code {process.returncode}",
+                    "logs": logs,
+                }
 
         except Exception as e:
             logger.error(f"MACS2 failed: {e}")
@@ -311,7 +338,12 @@ class EpigenomicsAnalyzer:
         """
         if tool == "homer":
             return await self._run_homer(
-                workflow_id, peak_file, genome_fasta, output_dir, motif_length or [8, 10, 12], db
+                workflow_id,
+                peak_file,
+                genome_fasta,
+                output_dir,
+                motif_length or [8, 10, 12],
+                db,
             )
         elif tool == "meme":
             return await self._run_meme(
@@ -339,14 +371,18 @@ class EpigenomicsAnalyzer:
             peak_file,
             genome_fasta,
             output_dir,
-            "-size", "200",
-            "-len", motif_len_str,
+            "-size",
+            "200",
+            "-len",
+            motif_len_str,
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running HOMER: {' '.join(cmd)}")
@@ -386,7 +422,11 @@ class EpigenomicsAnalyzer:
                             error_message=f"HOMER failed: exit code {process.returncode}",
                         ),
                     )
-                return {"status": "failed", "error": f"Exit code {process.returncode}", "logs": logs}
+                return {
+                    "status": "failed",
+                    "error": f"Exit code {process.returncode}",
+                    "logs": logs,
+                }
 
         except Exception as e:
             logger.error(f"HOMER failed: {e}")
@@ -438,15 +478,20 @@ class EpigenomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             # bamCoverage from deepTools
             cmd = [
                 "bamCoverage",
-                "-b", input_bam,
-                "-o", output_bigwig,
-                "--binSize", "10",
+                "-b",
+                input_bam,
+                "-o",
+                output_bigwig,
+                "--binSize",
+                "10",
             ]
 
             if normalize:
