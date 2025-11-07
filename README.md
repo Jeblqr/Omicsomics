@@ -232,7 +232,7 @@ cd backend && pytest
 
 ## 许可
 
-MIT License
+Apache v2.0 License
 
 ---
 
