@@ -6,6 +6,7 @@ from . import (
     files,
     genomics,
     metabolomics,
+    multiomics,
     projects,
     proteomics,
     qc,
@@ -37,6 +38,9 @@ api_router.include_router(
 )
 api_router.include_router(
     metabolomics.router, prefix="/metabolomics", tags=["metabolomics"]
+)
+api_router.include_router(
+    multiomics.router, prefix="/multiomics", tags=["multiomics"]
 )
 api_router.include_router(
     visualizations.router, prefix="/visualizations", tags=["visualizations"]
