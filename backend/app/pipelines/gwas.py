@@ -52,24 +52,32 @@ class GWASAnalyzer:
         # QC parameters
         geno = params.get("geno", 0.02)  # SNP missing rate
         mind = params.get("mind", 0.02)  # Individual missing rate
-        maf = params.get("maf", 0.01)    # Minor allele frequency
-        hwe = params.get("hwe", 1e-6)    # Hardy-Weinberg equilibrium
+        maf = params.get("maf", 0.01)  # Minor allele frequency
+        hwe = params.get("hwe", 1e-6)  # Hardy-Weinberg equilibrium
 
         cmd = [
             "plink",
-            "--bfile", bed_file.replace(".bed", ""),
-            "--geno", str(geno),
-            "--mind", str(mind),
-            "--maf", str(maf),
-            "--hwe", str(hwe),
+            "--bfile",
+            bed_file.replace(".bed", ""),
+            "--geno",
+            str(geno),
+            "--mind",
+            str(mind),
+            "--maf",
+            str(maf),
+            "--hwe",
+            str(hwe),
             "--make-bed",
-            "--out", output_prefix,
+            "--out",
+            output_prefix,
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running PLINK QC: {' '.join(cmd)}")
@@ -156,11 +164,14 @@ class GWASAnalyzer:
 
         cmd = [
             "plink",
-            "--bfile", bed_file.replace(".bed", ""),
-            "--pheno", phenotype_file,
+            "--bfile",
+            bed_file.replace(".bed", ""),
+            "--pheno",
+            phenotype_file,
             "--assoc",
             "--adjust",
-            "--out", output_prefix,
+            "--out",
+            output_prefix,
         ]
 
         # Add covariates if provided
@@ -176,7 +187,9 @@ class GWASAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running GWAS: {' '.join(cmd)}")
@@ -191,7 +204,8 @@ class GWASAnalyzer:
 
             if process.returncode == 0:
                 output_files = {
-                    "assoc": f"{output_prefix}.assoc" + (".logistic" if params.get("binary_trait") else ".linear"),
+                    "assoc": f"{output_prefix}.assoc"
+                    + (".logistic" if params.get("binary_trait") else ".linear"),
                     "adjusted": f"{output_prefix}.assoc.adjusted",
                     "log": f"{output_prefix}.log",
                 }
@@ -257,22 +271,28 @@ class GWASAnalyzer:
         Path(output_prefix).parent.mkdir(parents=True, exist_ok=True)
 
         # LD parameters
-        ld_window = params.get("ld_window", 1000)      # Window size in kb
-        ld_window_r2 = params.get("ld_window_r2", 0.2) # r2 threshold
+        ld_window = params.get("ld_window", 1000)  # Window size in kb
+        ld_window_r2 = params.get("ld_window_r2", 0.2)  # r2 threshold
 
         cmd = [
             "plink",
-            "--bfile", bed_file.replace(".bed", ""),
+            "--bfile",
+            bed_file.replace(".bed", ""),
             "--r2",
-            "--ld-window", str(ld_window),
-            "--ld-window-r2", str(ld_window_r2),
-            "--out", output_prefix,
+            "--ld-window",
+            str(ld_window),
+            "--ld-window-r2",
+            str(ld_window_r2),
+            "--out",
+            output_prefix,
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Calculating LD: {' '.join(cmd)}")
@@ -352,15 +372,20 @@ class GWASAnalyzer:
 
         cmd = [
             "plink",
-            "--bfile", bed_file.replace(".bed", ""),
-            "--score", weights_file,
-            "--out", output_prefix,
+            "--bfile",
+            bed_file.replace(".bed", ""),
+            "--score",
+            weights_file,
+            "--out",
+            output_prefix,
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Calculating PRS: {' '.join(cmd)}")
@@ -530,7 +555,9 @@ print(f"Significant SNPs (p < 5e-8): {{summary['n_significant']}}")
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             cmd = ["python", str(script_path)]

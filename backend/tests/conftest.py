@@ -71,7 +71,8 @@ async def async_client(
   db_session: AsyncSession,
 ) -> AsyncIterator[AsyncClient]:
   """Provide an async HTTP client for testing."""
-  async with AsyncClient(app=app, base_url="http://testserver") as client:
+  from httpx import ASGITransport
+  async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
     yield client
 
 

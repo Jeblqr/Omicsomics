@@ -29,7 +29,9 @@ class PlinkQCRequest(BaseModel):
     geno: float = Field(default=0.02, description="SNP missing rate threshold")
     mind: float = Field(default=0.02, description="Individual missing rate threshold")
     maf: float = Field(default=0.01, description="Minor allele frequency threshold")
-    hwe: float = Field(default=1e-6, description="Hardy-Weinberg equilibrium p-value threshold")
+    hwe: float = Field(
+        default=1e-6, description="Hardy-Weinberg equilibrium p-value threshold"
+    )
 
 
 class AssociationTestRequest(BaseModel):
@@ -39,8 +41,12 @@ class AssociationTestRequest(BaseModel):
     bed_file: str = Field(..., description="PLINK BED file (QC-filtered)")
     phenotype_file: str = Field(..., description="Phenotype file path")
     output_prefix: str = Field(..., description="Output file prefix")
-    covariates_file: str | None = Field(default=None, description="Optional covariates file")
-    binary_trait: bool = Field(default=False, description="Is phenotype binary (case/control)?")
+    covariates_file: str | None = Field(
+        default=None, description="Optional covariates file"
+    )
+    binary_trait: bool = Field(
+        default=False, description="Is phenotype binary (case/control)?"
+    )
 
 
 class LDCalculationRequest(BaseModel):
