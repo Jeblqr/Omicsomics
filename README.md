@@ -1,111 +1,195 @@
-# Omicsomics — 统一组学分析平台（草案）
+# Omicsomics - 统一组学分析平台
 
-这是一个面向研究与临床的组学数据统一管理与分析平台草案，目标是以统一的数据模型支持常见组学（基因组、转录组、单细胞、表观、蛋白组、代谢组、宏基因组/微生物组及影像/空间组学），并提供可重复的分析流水线、交互式可视化、API/SDK 与合规控制。
+一个面向研究与临床的Web平台，支持常见组学数据（基因组学、转录组学、单细胞、表观、蛋白质组、代谢组、宏基因组等）的统一接收、处理和分析。
 
-## 目录
+## 特性
 
-- 项目概述
-- 主要功能
-- 仓库结构（当前）
-- 快速开始
-- 如何使用 `outline.md`
-- 开发与贡献指南
-- 下一步建议
-- 许可与联系方式
+### 已实现的核心功能 ✅
 
-## 项目概述
+1. **用户认证与授权**
+   - JWT token 认证
+   - 用户注册和登录
+   - 基于角色的访问控制
 
-详见 `outline.md`，该文件包含平台能力、支持的文件格式、数据模型、工作流建议、推荐工具清单、可视化组件、部署与实施路线。
+2. **项目管理**
+   - 创建、查看、更新、删除项目
+   - 项目级别的权限控制
+   - 项目元数据管理
 
-## 主要功能（摘要）
+3. **样本管理**
+   - 样本的CRUD操作
+   - 灵活的JSON元数据支持
+   - 样本与项目的关联
 
-- 文件上传与自动校验（支持分片上传、S3 直传）
-- 元数据管理（项目/实验/样本/aliquot 模型）
-- 标准化 QC（FastQC / MultiQC 等）
-- 可重复的工作流执行（Nextflow/WDL/CWL 等）
-- 支持多类组学分析模块（基因组、转录组、单细胞、蛋白组、代谢组等）
-- 交互式可视化（UMAP、火山图、IGV 嵌入、网络视图等）
-- API/SDK（Python / R / JS）和 CLI 支持
-- 权限管理、审计与合规（GDPR/HIPAA 等）
+4. **文件存储**
+   - 基于MinIO的对象存储
+   - S3兼容API
+   - 文件上传和下载
+   - 预签名URL支持
 
-## 仓库结构（当前）
+5. **工作流执行**
+   - Nextflow流水线集成
+   - FastQC质量控制
+   - 异步任务执行
+   - 工作流状态跟踪
+   - 日志记录
 
-- `backend/` — FastAPI 服务、SQLAlchemy 模型、Alembic 迁移、测试与 Dockerfile
-- `frontend/` — React + Vite 前端（React Query、路由、可视化骨架）
-- `workflows/` — Nextflow 与 CWL 原型流水线（FastQC → MultiQC）
-- `infrastructure/` — `docker-compose.yml` 与本地依赖服务（Postgres、MinIO、API、前端）
-- `docs/` — 架构与 API 文档占位
-- `.github/workflows/ci.yml` — GitHub Actions：Python lint/test、Node lint/build
-- `outline.md` — 详细平台蓝图（组学覆盖面、模块、下一步路线）
+6. **质量控制（QC）**
+   - FastQC支持
+   - 批量QC分析
+   - QC结果存储和查询
 
-## 快速开始（开发者）
+## 技术栈
 
-1. 克隆仓库：
+- **后端**: FastAPI 0.121.0 + Python 3.11
+- **数据库**: PostgreSQL 18.0 (AsyncIO支持)
+- **对象存储**: MinIO
+- **ORM**: SQLAlchemy 2.0 (async)
+- **迁移**: Alembic
+- **认证**: JWT (python-jose)
+- **密码哈希**: bcrypt
 
-   git clone <仓库-url>
-   cd Omicsomics
+## 快速开始
 
-2. 启动开发环境（Postgres + MinIO + API + 前端）：
+详细部署指南请参见 [DEPLOYMENT.md](DEPLOYMENT.md)
 
-   docker compose -f infrastructure/docker-compose.yml up --build
+### 1. 环境准备
 
-   - 后端默认监听 `http://localhost:8001`（可在 `.env` 或 compose 中覆盖 `API_PORT`）
-   - 前端开发服务器位于 `http://localhost:5173`
+```bash
+micromamba create -n omicsomics-dev python=3.11
+micromamba activate omicsomics-dev
+micromamba install -n omicsomics-dev postgresql
+cd backend && pip install -e .
+```
 
-3. 单独运行后端（可选）：
+### 2. 初始化
 
-   ```bash
-   cd backend
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -e .[dev]
-   uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
-   ```
+```bash
+# 数据库
+initdb -D local_db_data
+pg_ctl -D local_db_data -l postgresql.log start
+createdb omicsomics
+cd backend && alembic upgrade head
+```
 
-4. 运行测试与静态检查：
+### 3. 启动服务（3个终端）
 
-   ```bash
-   cd backend
-   pytest
+```bash
+# 终端1: PostgreSQL
+pg_ctl -D local_db_data start
 
-   cd ../frontend
-   npm install
-   npm run lint
-   npm run build
-   ```
+# 终端2: MinIO
+./scripts/start_minio.sh
 
-5. 阅读 `outline.md` 掌握整体设计、模块优先级与下一阶段任务。
+# 终端3: FastAPI
+cd backend
+export SECRET_KEY="your-key" DATABASE_URL="postgresql+asyncpg://jeblqr@localhost/omicsomics"
+uvicorn app.main:app --host 127.0.0.1 --port 8001 --reload
+```
 
-## 如何使用 `outline.md`
+### 4. 访问
 
-`outline.md` 包含：支持的组学、文件格式、数据模型、推荐工具、流水线设计、可视化组件、分阶段实施路线与工程注意点。建议阅读顺序：
+- **API 文档**: http://127.0.0.1:8001/docs
+- **MinIO 控制台**: http://127.0.0.1:9003 (minioadmin/minioadmin123)
 
-1. 总体能力与契约 — 明确输入/输出与成功标准
-2. 数据模型与元数据规范 — 确定核心对象与字段
-3. 工作流与执行层 — 选择工作流语言与容器策略
-4. 各组学分析模块 — 选择优先实现的分析流水线
+## API 示例
 
-## 开发与贡献指南
+```bash
+# 注册
+curl -X POST "http://localhost:8001/api/v1/register" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "pass123", "full_name": "User"}'
 
-- 提交前请先在本地创建分支并确保变更关联到 issue 或讨论。
-- 文档或设计变更通过 PR，代码变更需要包含测试。
-- 大体实现建议使用容器化（Docker）与工作流（Nextflow/CWL/WDL）。
+# 登录
+TOKEN=$(curl -s -X POST "http://localhost:8001/api/v1/login/access-token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=user@example.com&password=pass123" | jq -r '.access_token')
 
-## 下一步建议（可选）
+# 创建项目
+curl -X POST "http://localhost:8001/api/v1/projects/" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "RNA-Seq", "description": "Transcriptomics"}'
 
-- 扩展元数据/样本 JSON Schema，并与 Postgres/Alembic 模型保持同步
-- 增加项目 CRUD 的更多端点（更新、删除）、权限模型与审计日志
-- 对接工作流编排（Nextflow Tower / Argo Workflows）并在前端显示运行状态
-- 丰富前端数据可视化（UMAP、火山图、网络图）与表格筛选能力
+# 创建样本
+curl -X POST "http://localhost:8001/api/v1/samples/" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Sample1", "project_id": 1, "metadata_": {"tissue": "liver"}}'
 
-## 许可与联系方式
+# 上传文件
+curl -X POST "http://localhost:8001/api/v1/files/upload" \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@data.fastq" -F "sample_id=1" -F "file_type=fastq"
 
-当前为私人/项目草案；请在仓库中添加 LICENSE 文件以明确许可。
+# 运行QC
+curl -X POST "http://localhost:8001/api/v1/qc/fastqc" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"sample_id": 1, "file_ids": [1]}'
+```
+
+## 项目结构
+
+```
+Omicsomics/
+├── backend/              # FastAPI 后端
+│   ├── app/
+│   │   ├── api/         # API 路由
+│   │   ├── models/      # 数据库模型
+│   │   ├── schemas/     # Pydantic schemas
+│   │   ├── services/    # 业务逻辑
+│   │   ├── storage/     # S3 客户端
+│   │   └── workflows/   # 工作流执行器
+│   └── alembic/         # 数据库迁移
+├── scripts/             # 启动脚本
+├── bin/                 # 二进制文件(MinIO)
+├── local_db_data/       # PostgreSQL 数据
+└── local_minio_data/    # MinIO 存储
+```
+
+## 数据模型
+
+```
+User → Projects → Samples → Files
+                         └→ Workflows
+```
+
+## 开发
+
+```bash
+# 数据库迁移
+alembic revision --autogenerate -m "description"
+alembic upgrade head
+
+# 运行测试
+cd backend && pytest
+```
+
+## 安全
+
+**生产环境务必**:
+1. 更改 `SECRET_KEY`
+2. 更改 MinIO 凭据
+3. 启用 HTTPS
+4. 使用强密码
+5. 定期备份
+
+## 路线图
+
+### MVP ✅
+- ✅ 认证、项目、样本、文件、工作流、QC
+
+### v1.0 (计划)
+- 单细胞、蛋白质组、可视化、MultiQC
+
+### v2.0 (未来)
+- 多组学整合、ML、实时协作、插件系统
+
+## 许可
+
+MIT License
 
 ---
 
-要我接下来为你：
-
-- 生成 JSON Schema？
-- 还是先生成 MVP 工程骨架（包含简单后端 API 与上传示例）？
-  请选择其中一个或告诉我你更具体的需求。
+**详细文档**: [DEPLOYMENT.md](DEPLOYMENT.md) | **API**: http://127.0.0.1:8001/docs
