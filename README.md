@@ -39,6 +39,38 @@
    - 批量QC分析
    - QC结果存储和查询
 
+### 🧬 组学分析模块 ✅
+
+7. **基因组学分析 (WGS/WES)**
+   - 预处理: FastQC, fastp/Trimmomatic
+   - 对齐: BWA-MEM, Bowtie2, Minimap2
+   - 变异检测: GATK4 HaplotypeCaller, FreeBayes, DeepVariant
+   - 变异注释: VEP, SnpEff, ANNOVAR
+   - API 端点: `/api/v1/genomics/qc`, `/trim`, `/align`, `/variant-calling`, `/annotate-variants`
+
+8. **转录组学分析 (bulk RNA-seq)**
+   - 对齐/定量: STAR, HISAT2, Salmon, Kallisto
+   - count矩阵生成: featureCounts
+   - 差异表达: DESeq2, edgeR, limma-voom
+   - 富集分析: GSEA (规划中)
+   - API 端点: `/api/v1/transcriptomics/quantify`, `/count-matrix`, `/differential-expression`
+
+9. **单细胞分析 (scRNA-seq)**
+   - 预处理: Cell Ranger count
+   - 质控与标准化: Scanpy pipeline (EmptyDrops, SCTransform)
+   - 降维与聚类: PCA, UMAP, Leiden clustering
+   - 批次校正: Seurat integration, Harmony
+   - 细胞注释: Marker-based annotation
+   - API 端点: `/api/v1/singlecell/cellranger`, `/preprocess`, `/integrate`, `/annotate`
+
+10. **可视化与交互**
+    - 火山图 (Volcano plot) - 差异表达可视化
+    - UMAP/PCA - 降维可视化
+    - 热图 (Heatmap) - 基因表达矩阵
+    - IGV.js - 基因组浏览器集成
+    - QC指标分布图
+    - API 端点: `/api/v1/visualizations/*` (支持 Plotly 格式数据导出)
+
 ## 技术栈
 
 - **后端**: FastAPI 0.121.0 + Python 3.11
