@@ -60,11 +60,12 @@ const ProjectsPage = () => {
           padding: '1.5rem',
           borderRadius: '8px',
           marginBottom: '1.5rem',
+          border: '1px solid #dee2e6',
         }}>
-          <h3 style={{ marginTop: 0 }}>Create New Project</h3>
+          <h3 style={{ marginTop: 0, color: '#212529' }}>Create New Project</h3>
           <form onSubmit={handleCreateProject}>
             <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="project-name" style={{ display: 'block', marginBottom: '0.5rem' }}>
+              <label htmlFor="project-name" style={{ display: 'block', marginBottom: '0.5rem', color: '#212529', fontWeight: 500 }}>
                 Project Name *
               </label>
               <input
@@ -78,12 +79,15 @@ const ProjectsPage = () => {
                   padding: '0.5rem',
                   borderRadius: '4px',
                   border: '1px solid #ced4da',
+                  color: '#212529',
+                  backgroundColor: '#ffffff',
+                  fontSize: '1rem',
                 }}
               />
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="project-desc" style={{ display: 'block', marginBottom: '0.5rem' }}>
+              <label htmlFor="project-desc" style={{ display: 'block', marginBottom: '0.5rem', color: '#212529', fontWeight: 500 }}>
                 Description
               </label>
               <textarea
@@ -96,12 +100,16 @@ const ProjectsPage = () => {
                   padding: '0.5rem',
                   borderRadius: '4px',
                   border: '1px solid #ced4da',
+                  color: '#212529',
+                  backgroundColor: '#ffffff',
+                  fontSize: '1rem',
+                  fontFamily: 'inherit',
                 }}
               />
             </div>
 
             {submitError && (
-              <div style={{ color: '#dc3545', marginBottom: '1rem' }} role="alert">
+              <div style={{ color: '#dc3545', marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#f8d7da', borderRadius: '4px', border: '1px solid #f5c6cb' }} role="alert">
                 {submitError}
               </div>
             )}
@@ -111,11 +119,13 @@ const ProjectsPage = () => {
               disabled={isSubmitting}
               style={{
                 padding: '0.5rem 1.5rem',
-                background: '#28a745',
+                background: isSubmitting ? '#6c757d' : '#28a745',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                fontSize: '1rem',
+                fontWeight: 500,
               }}
             >
               {isSubmitting ? 'Creating...' : 'Create Project'}
