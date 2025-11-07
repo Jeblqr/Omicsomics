@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Outlet, Route, Routes } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import DashboardPage from './dashboard/DashboardPage';
 import ProjectsPage from './projects/ProjectsPage';
 import RunsPage from './runs/RunsPage';
@@ -8,18 +8,27 @@ import SettingsPage from './settings/SettingsPage';
 import AuthPage from './auth/AuthPage';
 import Layout from '../components/Layout';
 import LoadingView from '../components/LoadingView';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { useAuth } from '../contexts/AuthContext';
 
 const App = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Routes>
-      <Route element={<AuthPage />} path="/auth" />
+      <Route 
+        element={isAuthenticated ? <Navigate to="/" replace /> : <AuthPage />} 
+        path="/auth" 
+      />
       <Route
         element={
-          <Layout>
-            <Suspense fallback={<LoadingView />}>
-              <Outlet />
-            </Suspense>
-          </Layout>
+          <ProtectedRoute>
+            <Layout>
+              <Suspense fallback={<LoadingView />}>
+                <Outlet />
+              </Suspense>
+            </Layout>
+          </ProtectedRoute>
         }
       >
         <Route element={<DashboardPage />} index />

@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './pages/App';
 import './styles/index.css';
 import { queryClient } from './lib/queryClient';
+import { AuthProvider } from './contexts/AuthContext';
 
 const root = document.getElementById('root');
 
@@ -16,10 +17,12 @@ if (!root) {
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+      <AuthProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>,
 );

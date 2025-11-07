@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const ROOT_API_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8001').replace(
+// Use empty string for relative path in production/Codespaces, or explicit URL for local dev
+const ROOT_API_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(
   /\/$/,
   '',
 );
