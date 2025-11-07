@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from . import (
     auth,
+    epigenomics,
     files,
     genomics,
     projects,
@@ -26,6 +27,9 @@ api_router.include_router(
     transcriptomics.router, prefix="/transcriptomics", tags=["transcriptomics"]
 )
 api_router.include_router(singlecell.router, prefix="/singlecell", tags=["singlecell"])
+api_router.include_router(
+    epigenomics.router, prefix="/epigenomics", tags=["epigenomics"]
+)
 api_router.include_router(
     visualizations.router, prefix="/visualizations", tags=["visualizations"]
 )
