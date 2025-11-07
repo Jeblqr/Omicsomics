@@ -52,7 +52,7 @@
    - 对齐: BWA-MEM, Bowtie2, Minimap2
    - 变异检测: GATK4 HaplotypeCaller, FreeBayes, DeepVariant
    - 变异注释: VEP, SnpEff, ANNOVAR
-   - API 端点: `/api/v1/genomics/qc`, `/trim`, `/align`, `/variant-calling`, `/annotate-variants`
+   - API 端点: 6 个 (`/qc`, `/trim`, `/align`, `/variant-calling`, `/annotate-variants`, `/complete-pipeline`)
 
 8. **转录组学分析 (bulk RNA-seq)**
 
@@ -60,7 +60,7 @@
    - count 矩阵生成: featureCounts
    - 差异表达: DESeq2, edgeR, limma-voom
    - 富集分析: GSEA (规划中)
-   - API 端点: `/api/v1/transcriptomics/quantify`, `/count-matrix`, `/differential-expression`
+   - API 端点: 3 个 (`/quantify`, `/count-matrix`, `/differential-expression`)
 
 9. **单细胞分析 (scRNA-seq)**
 
@@ -69,15 +69,48 @@
    - 降维与聚类: PCA, UMAP, Leiden clustering
    - 批次校正: Seurat integration, Harmony
    - 细胞注释: Marker-based annotation
-   - API 端点: `/api/v1/singlecell/cellranger`, `/preprocess`, `/integrate`, `/annotate`
+   - API 端点: 4 个 (`/cellranger`, `/preprocess`, `/integrate`, `/annotate`)
 
-10. **可视化与交互**
+10. **表观组学分析 (ChIP-seq/ATAC-seq)** ✨ NEW
+
+    - 对齐: Bowtie2, BWA
+    - Peak calling: MACS2/MACS3 (narrow/broad peaks)
+    - 基序分析: HOMER
+    - 信号可视化: BigWig 生成
+    - API 端点: 5 个 (`/align`, `/peak-calling`, `/motif-analysis`, `/bigwig`, `/complete-pipeline`)
+
+11. **蛋白质组学分析 (LC-MS/MS)** ✨ NEW
+
+    - 原始文件转换: ThermoRawFileParser
+    - 蛋白鉴定/定量: MaxQuant
+    - 快速肽段搜索: MSFragger
+    - Label-free 定量: LFQ
+    - API 端点: 5 个 (`/convert-raw`, `/maxquant`, `/msfragger`, `/lfq-quantification`, `/complete-pipeline`)
+
+12. **代谢组学分析 (LC-MS/GC-MS)** ✨ NEW
+
+    - 特征检测: XCMS, MZmine
+    - 谱图注释: GNPS, MS-DIAL
+    - 定量归一化: median, quantile, PQN
+    - API 端点: 4 个 (`/feature-detection`, `/spectral-annotation`, `/quantification`, `/complete-pipeline`)
+
+13. **多组学整合 (Multi-omics Integration)** ✨ NEW
+
+    - 无监督整合: MOFA2 (Multi-Omics Factor Analysis)
+    - 有监督整合: DIABLO (生物标志物发现)
+    - 样本匹配: 跨组学数据集匹配
+    - 通路富集: 多层次功能分析
+    - API 端点: 5 个 (`/mofa2`, `/diablo`, `/pathway-enrichment`, `/match-samples`, `/complete-pipeline`)
+
+14. **可视化与交互**
     - 火山图 (Volcano plot) - 差异表达可视化
     - UMAP/PCA - 降维可视化
     - 热图 (Heatmap) - 基因表达矩阵
     - IGV.js - 基因组浏览器集成
     - QC 指标分布图
-    - API 端点: `/api/v1/visualizations/*` (支持 Plotly 格式数据导出)
+    - API 端点: 7 个 (Plotly 格式数据导出)
+
+**总计**: 8 大组学模块，39 个 API 端点组 🎉
 
 ## 技术栈
 
