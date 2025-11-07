@@ -158,7 +158,9 @@ async def test_complete_integration_pipeline_diablo(
 
 
 @pytest.mark.asyncio
-async def test_mofa2_with_custom_parameters(async_client: AsyncClient, auth_headers: dict):
+async def test_mofa2_with_custom_parameters(
+    async_client: AsyncClient, auth_headers: dict
+):
     """Test MOFA2 with custom parameters."""
     request_data = {
         "sample_id": 1,

@@ -19,7 +19,9 @@ async def test_plink_qc(async_client: AsyncClient, auth_headers: dict):
         "hwe": 1e-6,
     }
 
-    response = await async_client.post("/api/gwas/qc", json=request_data, headers=auth_headers)
+    response = await async_client.post(
+        "/api/gwas/qc", json=request_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -28,7 +30,9 @@ async def test_plink_qc(async_client: AsyncClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_association_test_quantitative(async_client: AsyncClient, auth_headers: dict):
+async def test_association_test_quantitative(
+    async_client: AsyncClient, auth_headers: dict
+):
     """Test GWAS association test for quantitative trait."""
     request_data = {
         "sample_id": 1,
@@ -81,7 +85,9 @@ async def test_ld_calculation(async_client: AsyncClient, auth_headers: dict):
         "ld_window_r2": 0.2,
     }
 
-    response = await async_client.post("/api/gwas/ld", json=request_data, headers=auth_headers)
+    response = await async_client.post(
+        "/api/gwas/ld", json=request_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -98,7 +104,9 @@ async def test_prs_calculation(async_client: AsyncClient, auth_headers: dict):
         "output_prefix": "/output/prs_scores",
     }
 
-    response = await async_client.post("/api/gwas/prs", json=request_data, headers=auth_headers)
+    response = await async_client.post(
+        "/api/gwas/prs", json=request_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -119,7 +127,9 @@ async def test_mtag_analysis(async_client: AsyncClient, auth_headers: dict):
         "output_dir": "/output/mtag",
     }
 
-    response = await async_client.post("/api/gwas/mtag", json=request_data, headers=auth_headers)
+    response = await async_client.post(
+        "/api/gwas/mtag", json=request_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -139,7 +149,9 @@ async def test_mtag_two_traits(async_client: AsyncClient, auth_headers: dict):
         "output_dir": "/output/mtag_two",
     }
 
-    response = await async_client.post("/api/gwas/mtag", json=request_data, headers=auth_headers)
+    response = await async_client.post(
+        "/api/gwas/mtag", json=request_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
@@ -162,7 +174,9 @@ async def test_qc_with_custom_thresholds(async_client: AsyncClient, auth_headers
         "hwe": 1e-10,
     }
 
-    response = await async_client.post("/api/gwas/qc", json=request_data, headers=auth_headers)
+    response = await async_client.post(
+        "/api/gwas/qc", json=request_data, headers=auth_headers
+    )
 
     assert response.status_code == 200
     data = response.json()
