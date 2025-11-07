@@ -60,16 +60,20 @@ async def update_workflow(
         return None
 
     update_data = workflow.model_dump(exclude_unset=True)
-    
+
     # Handle status transitions
     if "status" in update_data:
         new_status = update_data["status"]
         if new_status == WorkflowStatus.RUNNING and db_workflow.started_at is None:
             db_workflow.started_at = datetime.utcnow()
-        elif new_status in (WorkflowStatus.COMPLETED, WorkflowStatus.FAILED, WorkflowStatus.CANCELLED):
+        elif new_status in (
+            WorkflowStatus.COMPLETED,
+            WorkflowStatus.FAILED,
+            WorkflowStatus.CANCELLED,
+        ):
             if db_workflow.completed_at is None:
                 db_workflow.completed_at = datetime.utcnow()
-    
+
     for field, value in update_data.items():
         if field != "status" or value is not None:
             setattr(db_workflow, field, value)

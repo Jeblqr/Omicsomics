@@ -122,9 +122,13 @@ class GenomicsAnalyzer:
         params = params or {}
 
         if tool == "fastp":
-            return await self._run_fastp(workflow_id, input_files, output_dir, params, db)
+            return await self._run_fastp(
+                workflow_id, input_files, output_dir, params, db
+            )
         elif tool == "trimmomatic":
-            return await self._run_trimmomatic(workflow_id, input_files, output_dir, params, db)
+            return await self._run_trimmomatic(
+                workflow_id, input_files, output_dir, params, db
+            )
         else:
             return {"status": "error", "error": f"Unknown trimming tool: {tool}"}
 
@@ -138,26 +142,36 @@ class GenomicsAnalyzer:
     ) -> dict[str, Any]:
         """Run fastp for adapter trimming and QC."""
         output_prefix = Path(output_dir) / "trimmed"
-        
+
         if len(input_files) == 1:
             # Single-end
             cmd = [
                 "fastp",
-                "-i", input_files[0],
-                "-o", f"{output_prefix}_R1.fastq.gz",
-                "-j", f"{output_prefix}_fastp.json",
-                "-h", f"{output_prefix}_fastp.html",
+                "-i",
+                input_files[0],
+                "-o",
+                f"{output_prefix}_R1.fastq.gz",
+                "-j",
+                f"{output_prefix}_fastp.json",
+                "-h",
+                f"{output_prefix}_fastp.html",
             ]
         elif len(input_files) == 2:
             # Paired-end
             cmd = [
                 "fastp",
-                "-i", input_files[0],
-                "-I", input_files[1],
-                "-o", f"{output_prefix}_R1.fastq.gz",
-                "-O", f"{output_prefix}_R2.fastq.gz",
-                "-j", f"{output_prefix}_fastp.json",
-                "-h", f"{output_prefix}_fastp.html",
+                "-i",
+                input_files[0],
+                "-I",
+                input_files[1],
+                "-o",
+                f"{output_prefix}_R1.fastq.gz",
+                "-O",
+                f"{output_prefix}_R2.fastq.gz",
+                "-j",
+                f"{output_prefix}_fastp.json",
+                "-h",
+                f"{output_prefix}_fastp.html",
             ]
         else:
             return {"status": "error", "error": "Invalid number of input files"}
@@ -169,7 +183,9 @@ class GenomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running fastp: {' '.join(cmd)}")
@@ -290,7 +306,7 @@ class GenomicsAnalyzer:
     ) -> dict[str, Any]:
         """Run BWA-MEM alignment."""
         Path(output_bam).parent.mkdir(parents=True, exist_ok=True)
-        
+
         # BWA MEM alignment with piping to samtools for BAM conversion
         if len(input_files) == 1:
             cmd = f"bwa mem -t {threads} {reference_genome} {input_files[0]} | samtools sort -@ {threads} -o {output_bam}"
@@ -302,7 +318,9 @@ class GenomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running BWA-MEM: {cmd}")
@@ -327,10 +345,17 @@ class GenomicsAnalyzer:
                         workflow_schema.WorkflowUpdate(
                             status=WorkflowStatus.COMPLETED,
                             logs=logs,
-                            output_files={"bam": output_bam, "bai": f"{output_bam}.bai"},
+                            output_files={
+                                "bam": output_bam,
+                                "bai": f"{output_bam}.bai",
+                            },
                         ),
                     )
-                return {"status": "success", "bam": output_bam, "bai": f"{output_bam}.bai"}
+                return {
+                    "status": "success",
+                    "bam": output_bam,
+                    "bai": f"{output_bam}.bai",
+                }
             else:
                 if db:
                     await workflow_service.update_workflow(
@@ -432,16 +457,22 @@ class GenomicsAnalyzer:
         Path(output_vcf).parent.mkdir(parents=True, exist_ok=True)
 
         cmd = [
-            "gatk", "HaplotypeCaller",
-            "-R", reference_genome,
-            "-I", input_bam,
-            "-O", output_vcf,
+            "gatk",
+            "HaplotypeCaller",
+            "-R",
+            reference_genome,
+            "-I",
+            input_bam,
+            "-O",
+            output_vcf,
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running GATK HaplotypeCaller: {' '.join(cmd)}")
@@ -557,18 +588,23 @@ class GenomicsAnalyzer:
         """Run Ensembl VEP annotation."""
         cmd = [
             "vep",
-            "-i", input_vcf,
-            "-o", output_vcf,
+            "-i",
+            input_vcf,
+            "-o",
+            output_vcf,
             "--vcf",
             "--cache",
             "--everything",
-            "--fork", "4",
+            "--fork",
+            "4",
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running VEP: {' '.join(cmd)}")

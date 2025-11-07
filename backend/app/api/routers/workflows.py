@@ -31,7 +31,9 @@ async def list_workflows(
     return workflows
 
 
-@router.post("/", response_model=workflow_schema.Workflow, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=workflow_schema.Workflow, status_code=status.HTTP_201_CREATED
+)
 async def create_workflow(
     workflow: workflow_schema.WorkflowCreate,
     background_tasks: BackgroundTasks,
@@ -61,7 +63,9 @@ async def create_workflow(
                 )
         elif workflow.workflow_type == "fastqc":
             input_files = workflow.parameters.get("input_files", [])
-            output_dir = workflow.parameters.get("output_dir", f"/tmp/qc_{db_workflow.id}")
+            output_dir = workflow.parameters.get(
+                "output_dir", f"/tmp/qc_{db_workflow.id}"
+            )
             if input_files:
                 background_tasks.add_task(
                     workflow_executor.execute_fastqc,
@@ -99,7 +103,9 @@ async def update_workflow(
     if workflow is None:
         raise HTTPException(status_code=404, detail="Workflow not found")
 
-    updated_workflow = await workflow_service.update_workflow(db, workflow_id, workflow_update)
+    updated_workflow = await workflow_service.update_workflow(
+        db, workflow_id, workflow_update
+    )
     return updated_workflow
 
 

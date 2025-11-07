@@ -34,7 +34,9 @@ class TrimmingRequest(BaseModel):
     sample_id: int = Field(..., description="Sample ID")
     fastq_files: list[str] = Field(..., description="FASTQ file paths")
     output_dir: str = Field(..., description="Output directory")
-    tool: str = Field(default="fastp", description="Trimming tool: fastp or trimmomatic")
+    tool: str = Field(
+        default="fastp", description="Trimming tool: fastp or trimmomatic"
+    )
     params: dict = Field(default_factory=dict, description="Tool-specific parameters")
 
 
@@ -45,7 +47,9 @@ class AlignmentRequest(BaseModel):
     fastq_files: list[str] = Field(..., description="FASTQ file paths (trimmed)")
     reference_genome: str = Field(..., description="Path to reference genome FASTA")
     output_bam: str = Field(..., description="Output BAM file path")
-    aligner: str = Field(default="bwa-mem", description="Aligner: bwa-mem, bowtie2, minimap2")
+    aligner: str = Field(
+        default="bwa-mem", description="Aligner: bwa-mem, bowtie2, minimap2"
+    )
     threads: int = Field(default=8, description="Number of threads")
 
 
@@ -56,7 +60,9 @@ class VariantCallingRequest(BaseModel):
     input_bam: str = Field(..., description="Input BAM file")
     reference_genome: str = Field(..., description="Reference genome FASTA")
     output_vcf: str = Field(..., description="Output VCF file path")
-    caller: str = Field(default="gatk4", description="Variant caller: gatk4, freebayes, deepvariant")
+    caller: str = Field(
+        default="gatk4", description="Variant caller: gatk4, freebayes, deepvariant"
+    )
 
 
 class VariantAnnotationRequest(BaseModel):
@@ -289,7 +295,7 @@ async def run_complete_genomics_pipeline(
 ):
     """
     Run complete genomics pipeline: QC → Trimming → Alignment → Variant Calling → Annotation.
-    
+
     This endpoint orchestrates the entire genomics analysis workflow.
     """
     workflow = await workflow_service.create_workflow(

@@ -1,47 +1,53 @@
 # Omicsomics - 统一组学分析平台
 
-一个面向研究与临床的Web平台，支持常见组学数据（基因组学、转录组学、单细胞、表观、蛋白质组、代谢组、宏基因组等）的统一接收、处理和分析。
+一个面向研究与临床的 Web 平台，支持常见组学数据（基因组学、转录组学、单细胞、表观、蛋白质组、代谢组、宏基因组等）的统一接收、处理和分析。
 
 ## 特性
 
 ### 已实现的核心功能 ✅
 
 1. **用户认证与授权**
+
    - JWT token 认证
    - 用户注册和登录
    - 基于角色的访问控制
 
 2. **项目管理**
+
    - 创建、查看、更新、删除项目
    - 项目级别的权限控制
    - 项目元数据管理
 
 3. **样本管理**
-   - 样本的CRUD操作
-   - 灵活的JSON元数据支持
+
+   - 样本的 CRUD 操作
+   - 灵活的 JSON 元数据支持
    - 样本与项目的关联
 
 4. **文件存储**
-   - 基于MinIO的对象存储
-   - S3兼容API
+
+   - 基于 MinIO 的对象存储
+   - S3 兼容 API
    - 文件上传和下载
-   - 预签名URL支持
+   - 预签名 URL 支持
 
 5. **工作流执行**
-   - Nextflow流水线集成
-   - FastQC质量控制
+
+   - Nextflow 流水线集成
+   - FastQC 质量控制
    - 异步任务执行
    - 工作流状态跟踪
    - 日志记录
 
 6. **质量控制（QC）**
-   - FastQC支持
-   - 批量QC分析
-   - QC结果存储和查询
+   - FastQC 支持
+   - 批量 QC 分析
+   - QC 结果存储和查询
 
 ### 🧬 组学分析模块 ✅
 
 7. **基因组学分析 (WGS/WES)**
+
    - 预处理: FastQC, fastp/Trimmomatic
    - 对齐: BWA-MEM, Bowtie2, Minimap2
    - 变异检测: GATK4 HaplotypeCaller, FreeBayes, DeepVariant
@@ -49,13 +55,15 @@
    - API 端点: `/api/v1/genomics/qc`, `/trim`, `/align`, `/variant-calling`, `/annotate-variants`
 
 8. **转录组学分析 (bulk RNA-seq)**
+
    - 对齐/定量: STAR, HISAT2, Salmon, Kallisto
-   - count矩阵生成: featureCounts
+   - count 矩阵生成: featureCounts
    - 差异表达: DESeq2, edgeR, limma-voom
    - 富集分析: GSEA (规划中)
    - API 端点: `/api/v1/transcriptomics/quantify`, `/count-matrix`, `/differential-expression`
 
 9. **单细胞分析 (scRNA-seq)**
+
    - 预处理: Cell Ranger count
    - 质控与标准化: Scanpy pipeline (EmptyDrops, SCTransform)
    - 降维与聚类: PCA, UMAP, Leiden clustering
@@ -68,13 +76,13 @@
     - UMAP/PCA - 降维可视化
     - 热图 (Heatmap) - 基因表达矩阵
     - IGV.js - 基因组浏览器集成
-    - QC指标分布图
+    - QC 指标分布图
     - API 端点: `/api/v1/visualizations/*` (支持 Plotly 格式数据导出)
 
 ## 技术栈
 
 - **后端**: FastAPI 0.121.0 + Python 3.11
-- **数据库**: PostgreSQL 18.0 (AsyncIO支持)
+- **数据库**: PostgreSQL 18.0 (AsyncIO 支持)
 - **对象存储**: MinIO
 - **ORM**: SQLAlchemy 2.0 (async)
 - **迁移**: Alembic
@@ -104,7 +112,7 @@ createdb omicsomics
 cd backend && alembic upgrade head
 ```
 
-### 3. 启动服务（3个终端）
+### 3. 启动服务（3 个终端）
 
 ```bash
 # 终端1: PostgreSQL
@@ -201,6 +209,7 @@ cd backend && pytest
 ## 安全
 
 **生产环境务必**:
+
 1. 更改 `SECRET_KEY`
 2. 更改 MinIO 凭据
 3. 启用 HTTPS
@@ -210,12 +219,15 @@ cd backend && pytest
 ## 路线图
 
 ### MVP ✅
+
 - ✅ 认证、项目、样本、文件、工作流、QC
 
 ### v1.0 (计划)
+
 - 单细胞、蛋白质组、可视化、MultiQC
 
 ### v2.0 (未来)
+
 - 多组学整合、ML、实时协作、插件系统
 
 ## 许可

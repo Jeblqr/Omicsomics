@@ -50,19 +50,28 @@ class SingleCellAnalyzer:
             Result with Cell Ranger outputs
         """
         cmd = [
-            "cellranger", "count",
-            "--id", sample_id,
-            "--fastqs", fastq_dir,
-            "--sample", sample_id,
-            "--transcriptome", transcriptome,
-            "--chemistry", chemistry,
-            "--localcores", str(threads),
+            "cellranger",
+            "count",
+            "--id",
+            sample_id,
+            "--fastqs",
+            fastq_dir,
+            "--sample",
+            sample_id,
+            "--transcriptome",
+            transcriptome,
+            "--chemistry",
+            chemistry,
+            "--localcores",
+            str(threads),
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running Cell Ranger: {' '.join(cmd)}")
@@ -86,7 +95,9 @@ class SingleCellAnalyzer:
                             status=WorkflowStatus.COMPLETED,
                             logs=logs,
                             output_files={
-                                "filtered_h5": str(output_path / "filtered_feature_bc_matrix.h5"),
+                                "filtered_h5": str(
+                                    output_path / "filtered_feature_bc_matrix.h5"
+                                ),
                                 "raw_h5": str(output_path / "raw_feature_bc_matrix.h5"),
                                 "web_summary": str(output_path / "web_summary.html"),
                                 "metrics": str(output_path / "metrics_summary.csv"),
@@ -206,7 +217,9 @@ print(f"Clusters: {{len(adata.obs['leiden'].unique())}}")
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running Scanpy preprocessing: {' '.join(cmd)}")
@@ -242,7 +255,11 @@ print(f"Clusters: {{len(adata.obs['leiden'].unique())}}")
                             error_message=f"Scanpy failed: exit code {process.returncode}",
                         ),
                     )
-                return {"status": "failed", "error": f"Exit code {process.returncode}", "logs": logs}
+                return {
+                    "status": "failed",
+                    "error": f"Exit code {process.returncode}",
+                    "logs": logs,
+                }
 
         except Exception as e:
             logger.error(f"Scanpy preprocessing failed: {e}")
@@ -323,7 +340,9 @@ cat(paste0("Clusters: ", length(unique(integrated$seurat_clusters)), "\\n"))
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running Seurat integration: {' '.join(cmd)}")
@@ -359,7 +378,11 @@ cat(paste0("Clusters: ", length(unique(integrated$seurat_clusters)), "\\n"))
                             error_message=f"Seurat integration failed: exit code {process.returncode}",
                         ),
                     )
-                return {"status": "failed", "error": f"Exit code {process.returncode}", "logs": logs}
+                return {
+                    "status": "failed",
+                    "error": f"Exit code {process.returncode}",
+                    "logs": logs,
+                }
 
         except Exception as e:
             logger.error(f"Seurat integration failed: {e}")
@@ -446,7 +469,9 @@ for ct, count in adata.obs['cell_type'].value_counts().items():
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running cell annotation: {' '.join(cmd)}")
@@ -482,7 +507,11 @@ for ct, count in adata.obs['cell_type'].value_counts().items():
                             error_message=f"Cell annotation failed: exit code {process.returncode}",
                         ),
                     )
-                return {"status": "failed", "error": f"Exit code {process.returncode}", "logs": logs}
+                return {
+                    "status": "failed",
+                    "error": f"Exit code {process.returncode}",
+                    "logs": logs,
+                }
 
         except Exception as e:
             logger.error(f"Cell annotation failed: {e}")

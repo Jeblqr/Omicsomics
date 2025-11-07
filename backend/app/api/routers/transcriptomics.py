@@ -27,7 +27,9 @@ class QuantificationRequest(BaseModel):
     fastq_files: list[str] = Field(..., description="FASTQ file paths")
     reference_index: str = Field(..., description="Path to reference index")
     output_dir: str = Field(..., description="Output directory")
-    tool: str = Field(default="salmon", description="Tool: salmon, kallisto, star, hisat2")
+    tool: str = Field(
+        default="salmon", description="Tool: salmon, kallisto, star, hisat2"
+    )
     threads: int = Field(default=8, description="Number of threads")
 
 
@@ -70,7 +72,7 @@ async def run_quantification(
 ):
     """
     Run RNA-seq quantification.
-    
+
     Supports multiple tools:
     - salmon: Fast, alignment-free quantification
     - kallisto: Fast pseudo-alignment
@@ -119,7 +121,7 @@ async def generate_count_matrix(
 ):
     """
     Generate count matrix from aligned BAM file using featureCounts.
-    
+
     This endpoint takes an aligned BAM file and a GTF annotation file
     to generate a gene-level count matrix suitable for differential expression analysis.
     """
@@ -160,14 +162,14 @@ async def run_differential_expression(
 ):
     """
     Run differential expression analysis.
-    
+
     This endpoint performs statistical analysis to identify differentially expressed genes
     between conditions. It uses DESeq2 by default and generates:
     - Results table with log2 fold changes and adjusted p-values
     - MA plot
     - PCA plot
     - Volcano plot
-    
+
     The sample_metadata CSV should have a 'condition' column (or match your design formula).
     """
     workflow = await workflow_service.create_workflow(
@@ -211,7 +213,7 @@ async def run_gsea_enrichment(
 ):
     """
     Run Gene Set Enrichment Analysis (GSEA).
-    
+
     This endpoint is a placeholder for GSEA integration.
     Full implementation would use GSEApy or call Enrichr API.
     """

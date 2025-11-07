@@ -24,7 +24,9 @@ class CellRangerRequest(BaseModel):
     sample_id: int = Field(..., description="Sample ID")
     fastq_dir: str = Field(..., description="Directory containing FASTQ files")
     sample_name: str = Field(..., description="Sample identifier")
-    transcriptome: str = Field(..., description="Path to Cell Ranger transcriptome reference")
+    transcriptome: str = Field(
+        ..., description="Path to Cell Ranger transcriptome reference"
+    )
     output_dir: str = Field(..., description="Output directory")
     chemistry: str = Field(default="auto", description="Chemistry version")
     threads: int = Field(default=16, description="Number of threads")
@@ -38,17 +40,25 @@ class ScanpyPreprocessingRequest(BaseModel):
     output_h5ad: str = Field(..., description="Output processed H5AD file")
     min_genes: int = Field(default=200, description="Minimum genes per cell")
     min_cells: int = Field(default=3, description="Minimum cells per gene")
-    max_pct_mt: float = Field(default=20.0, description="Maximum mitochondrial percentage")
-    n_top_genes: int = Field(default=2000, description="Number of highly variable genes")
+    max_pct_mt: float = Field(
+        default=20.0, description="Maximum mitochondrial percentage"
+    )
+    n_top_genes: int = Field(
+        default=2000, description="Number of highly variable genes"
+    )
     n_neighbors: int = Field(default=10, description="Number of neighbors for UMAP")
-    leiden_resolution: float = Field(default=0.5, description="Leiden clustering resolution")
+    leiden_resolution: float = Field(
+        default=0.5, description="Leiden clustering resolution"
+    )
 
 
 class SeuratIntegrationRequest(BaseModel):
     """Request for Seurat batch correction."""
 
     sample_id: int = Field(..., description="Sample ID")
-    input_h5_files: list[str] = Field(..., description="List of H5 files (one per batch)")
+    input_h5_files: list[str] = Field(
+        ..., description="List of H5 files (one per batch)"
+    )
     output_rds: str = Field(..., description="Output Seurat RDS file")
     batch_key: str = Field(default="batch", description="Batch identifier column")
 
@@ -88,7 +98,7 @@ async def run_cellranger(
 ):
     """
     Run Cell Ranger count for 10x Genomics scRNA-seq data.
-    
+
     Cell Ranger performs:
     - FASTQ quality control
     - Alignment to reference transcriptome
@@ -138,7 +148,7 @@ async def preprocess_scanpy(
 ):
     """
     Run Scanpy preprocessing pipeline.
-    
+
     This pipeline performs:
     - Quality control (filter cells/genes)
     - Normalization and log transformation
@@ -196,7 +206,7 @@ async def integrate_seurat(
 ):
     """
     Run Seurat integration for batch correction.
-    
+
     Seurat integration:
     - Identifies integration anchors across batches
     - Corrects batch effects while preserving biological variation
@@ -238,7 +248,7 @@ async def annotate_cells(
 ):
     """
     Annotate cell types based on marker genes.
-    
+
     This endpoint assigns cell type labels to clusters based on
     the expression of known marker genes.
     """

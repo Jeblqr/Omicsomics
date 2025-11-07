@@ -81,23 +81,36 @@ class TranscriptomicsAnalyzer:
         if len(input_files) == 1:
             # Single-end
             cmd = [
-                "salmon", "quant",
-                "-i", reference_index,
-                "-l", "A",  # Auto-detect library type
-                "-r", input_files[0],
-                "-o", output_dir,
-                "-p", str(threads),
+                "salmon",
+                "quant",
+                "-i",
+                reference_index,
+                "-l",
+                "A",  # Auto-detect library type
+                "-r",
+                input_files[0],
+                "-o",
+                output_dir,
+                "-p",
+                str(threads),
             ]
         elif len(input_files) == 2:
             # Paired-end
             cmd = [
-                "salmon", "quant",
-                "-i", reference_index,
-                "-l", "A",
-                "-1", input_files[0],
-                "-2", input_files[1],
-                "-o", output_dir,
-                "-p", str(threads),
+                "salmon",
+                "quant",
+                "-i",
+                reference_index,
+                "-l",
+                "A",
+                "-1",
+                input_files[0],
+                "-2",
+                input_files[1],
+                "-o",
+                output_dir,
+                "-p",
+                str(threads),
             ]
         else:
             return {"status": "error", "error": "Invalid number of input files"}
@@ -105,7 +118,9 @@ class TranscriptomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running Salmon: {' '.join(cmd)}")
@@ -127,10 +142,17 @@ class TranscriptomicsAnalyzer:
                         workflow_schema.WorkflowUpdate(
                             status=WorkflowStatus.COMPLETED,
                             logs=logs,
-                            output_files={"quant_file": quant_file, "output_dir": output_dir},
+                            output_files={
+                                "quant_file": quant_file,
+                                "output_dir": output_dir,
+                            },
                         ),
                     )
-                return {"status": "success", "quant_file": quant_file, "output_dir": output_dir}
+                return {
+                    "status": "success",
+                    "quant_file": quant_file,
+                    "output_dir": output_dir,
+                }
             else:
                 if db:
                     await workflow_service.update_workflow(
@@ -171,22 +193,32 @@ class TranscriptomicsAnalyzer:
         if len(input_files) == 1:
             # Single-end requires fragment length and SD
             cmd = [
-                "kallisto", "quant",
-                "-i", reference_index,
-                "-o", output_dir,
-                "-t", str(threads),
+                "kallisto",
+                "quant",
+                "-i",
+                reference_index,
+                "-o",
+                output_dir,
+                "-t",
+                str(threads),
                 "--single",
-                "-l", "200",  # Average fragment length
-                "-s", "20",   # Fragment length SD
+                "-l",
+                "200",  # Average fragment length
+                "-s",
+                "20",  # Fragment length SD
                 input_files[0],
             ]
         elif len(input_files) == 2:
             # Paired-end
             cmd = [
-                "kallisto", "quant",
-                "-i", reference_index,
-                "-o", output_dir,
-                "-t", str(threads),
+                "kallisto",
+                "quant",
+                "-i",
+                reference_index,
+                "-o",
+                output_dir,
+                "-t",
+                str(threads),
                 input_files[0],
                 input_files[1],
             ]
@@ -196,7 +228,9 @@ class TranscriptomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running Kallisto: {' '.join(cmd)}")
@@ -218,7 +252,10 @@ class TranscriptomicsAnalyzer:
                         workflow_schema.WorkflowUpdate(
                             status=WorkflowStatus.COMPLETED,
                             logs=logs,
-                            output_files={"abundance_file": abundance_file, "output_dir": output_dir},
+                            output_files={
+                                "abundance_file": abundance_file,
+                                "output_dir": output_dir,
+                            },
                         ),
                     )
                 return {"status": "success", "abundance_file": abundance_file}
@@ -261,12 +298,19 @@ class TranscriptomicsAnalyzer:
 
         cmd = [
             "STAR",
-            "--runThreadN", str(threads),
-            "--genomeDir", reference_index,
-            "--readFilesIn", *input_files,
-            "--outFileNamePrefix", f"{output_dir}/",
-            "--outSAMtype", "BAM", "SortedByCoordinate",
-            "--quantMode", "GeneCounts",
+            "--runThreadN",
+            str(threads),
+            "--genomeDir",
+            reference_index,
+            "--readFilesIn",
+            *input_files,
+            "--outFileNamePrefix",
+            f"{output_dir}/",
+            "--outSAMtype",
+            "BAM",
+            "SortedByCoordinate",
+            "--quantMode",
+            "GeneCounts",
         ]
 
         # Handle gzipped files
@@ -276,7 +320,9 @@ class TranscriptomicsAnalyzer:
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running STAR: {' '.join(cmd)}")
@@ -370,16 +416,21 @@ class TranscriptomicsAnalyzer:
         """
         cmd = [
             "featureCounts",
-            "-T", str(threads),
-            "-a", gtf_file,
-            "-o", output_file,
+            "-T",
+            str(threads),
+            "-a",
+            gtf_file,
+            "-o",
+            output_file,
             input_bam,
         ]
 
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running featureCounts: {' '.join(cmd)}")
@@ -503,7 +554,9 @@ dev.off()
         try:
             if db:
                 await workflow_service.update_workflow(
-                    db, workflow_id, workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING)
+                    db,
+                    workflow_id,
+                    workflow_schema.WorkflowUpdate(status=WorkflowStatus.RUNNING),
                 )
 
             logger.info(f"Running DESeq2: {' '.join(cmd)}")
@@ -552,7 +605,11 @@ dev.off()
                             error_message=f"DESeq2 failed: exit code {process.returncode}",
                         ),
                     )
-                return {"status": "failed", "error": f"Exit code {process.returncode}", "logs": logs}
+                return {
+                    "status": "failed",
+                    "error": f"Exit code {process.returncode}",
+                    "logs": logs,
+                }
 
         except Exception as e:
             logger.error(f"DESeq2 failed: {e}")

@@ -25,7 +25,9 @@ class VolcanoPlotRequest(BaseModel):
     padj_col: str = Field(default="padj", description="Adjusted p-value column name")
     gene_col: str = Field(default="gene", description="Gene identifier column")
     fc_threshold: float = Field(default=1.0, description="Log2FC threshold")
-    pval_threshold: float = Field(default=0.05, description="Adjusted p-value threshold")
+    pval_threshold: float = Field(
+        default=0.05, description="Adjusted p-value threshold"
+    )
 
 
 class UMAPPlotRequest(BaseModel):
@@ -52,7 +54,7 @@ async def get_volcano_plot(
 ):
     """
     Generate volcano plot data from differential expression results.
-    
+
     Returns JSON data formatted for Plotly visualization including:
     - X coordinates (log2 fold change)
     - Y coordinates (-log10 p-value)
@@ -85,7 +87,7 @@ async def get_pca_plot(
 ):
     """
     Generate PCA plot data from single-cell AnnData object.
-    
+
     Returns PCA coordinates and metadata for interactive plotting.
     Supports both 2D and 3D visualization.
     """
@@ -108,7 +110,7 @@ async def get_umap_plot(
 ):
     """
     Generate UMAP plot data from single-cell AnnData object.
-    
+
     Returns UMAP coordinates, cell metadata, and cluster counts
     for interactive visualization with hover tooltips and selection.
     """
@@ -130,7 +132,7 @@ async def get_heatmap(
 ):
     """
     Generate heatmap data for gene expression.
-    
+
     Returns expression matrix (groups x genes) suitable for
     heatmap visualization with Plotly or similar libraries.
     """
@@ -156,7 +158,7 @@ async def get_igv_config(
 ):
     """
     Get IGV.js configuration for genome browser visualization.
-    
+
     Returns configuration object that can be directly used to
     initialize IGV.js browser in the frontend.
     """
@@ -183,7 +185,7 @@ async def get_quality_metrics(
 ):
     """
     Get quality control metrics for single-cell data.
-    
+
     Returns distribution statistics for QC metrics including
     mean, median, standard deviation for visualization.
     """
@@ -202,7 +204,7 @@ async def get_quality_metrics(
 async def get_supported_formats():
     """
     Get list of supported file formats for visualization.
-    
+
     Returns information about file types that can be visualized
     and the corresponding visualization types available.
     """
@@ -226,7 +228,10 @@ async def get_supported_formats():
             },
         },
         "plot_types": [
-            {"type": "volcano", "description": "Volcano plot for differential expression"},
+            {
+                "type": "volcano",
+                "description": "Volcano plot for differential expression",
+            },
             {"type": "umap", "description": "UMAP dimensionality reduction plot"},
             {"type": "pca", "description": "PCA plot"},
             {"type": "heatmap", "description": "Gene expression heatmap"},

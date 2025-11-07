@@ -5,12 +5,14 @@
 ## 前置要求
 
 1. **Micromamba 环境**
+
    ```bash
    micromamba create -n omicsomics-dev python=3.11
    micromamba activate omicsomics-dev
    ```
 
-2. **安装Python依赖**
+2. **安装 Python 依赖**
+
    ```bash
    cd backend
    pip install -e .
@@ -26,9 +28,10 @@
 
 ### 方式一：使用启动脚本（推荐）
 
-在**3个独立终端**中分别运行：
+在**3 个独立终端**中分别运行：
 
-#### 终端1: PostgreSQL
+#### 终端 1: PostgreSQL
+
 ```bash
 cd /home/jeblqr/data1/projects/Omicsomics
 pg_ctl -D local_db_data -l postgresql.log start
@@ -36,14 +39,16 @@ pg_ctl -D local_db_data -l postgresql.log start
 pg_isready
 ```
 
-#### 终端2: MinIO
+#### 终端 2: MinIO
+
 ```bash
 cd /home/jeblqr/data1/projects/Omicsomics
 ./scripts/start_minio.sh
 # 应该看到 "API: http://127.0.0.1:9002"
 ```
 
-#### 终端3: FastAPI Backend
+#### 终端 3: FastAPI Backend
+
 ```bash
 cd /home/jeblqr/data1/projects/Omicsomics/backend
 micromamba activate omicsomics-dev
@@ -64,18 +69,20 @@ cd /home/jeblqr/data1/projects/Omicsomics
 ## 首次初始化
 
 1. **创建数据库**（仅首次）
+
    ```bash
    cd /home/jeblqr/data1/projects/Omicsomics
    micromamba run -n omicsomics-dev createdb omicsomics
    ```
 
 2. **运行数据库迁移**
+
    ```bash
    cd backend
    micromamba run -n omicsomics-dev alembic upgrade head
    ```
 
-3. **初始化MinIO Bucket**  
+3. **初始化 MinIO Bucket**  
    这会在首次上传文件时自动完成，也可以手动运行：
    ```bash
    micromamba run -n omicsomics-dev python scripts/init_minio.py
@@ -96,8 +103,8 @@ curl http://127.0.0.1:9002/minio/health/live
 
 ## 访问接口
 
-- **API文档**: http://127.0.0.1:8001/docs  
-- **MinIO控制台**: http://127.0.0.1:9003  
+- **API 文档**: http://127.0.0.1:8001/docs
+- **MinIO 控制台**: http://127.0.0.1:9003
   - 用户名: `minioadmin`
   - 密码: `minioadmin123`
 
@@ -134,6 +141,7 @@ Omicsomics/
 ## 常见问题
 
 ### 端口被占用
+
 ```bash
 # 检查占用
 lsof -i :8001  # FastAPI
@@ -145,6 +153,7 @@ lsof -ti:PORT | xargs kill -9
 ```
 
 ### 数据库连接失败
+
 ```bash
 # 确保PostgreSQL正在运行
 pg_isready
@@ -153,8 +162,10 @@ pg_isready
 pg_ctl -D local_db_data restart
 ```
 
-### MinIO连接失败
-确保MinIO在独立终端运行并保持前台输出，或者查看日志：
+### MinIO 连接失败
+
+确保 MinIO 在独立终端运行并保持前台输出，或者查看日志：
+
 ```bash
 tail -f minio.log
 ```

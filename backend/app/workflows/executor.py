@@ -109,7 +109,11 @@ class WorkflowExecutor:
             return {"status": "error", "error": str(e)}
 
     async def execute_fastqc(
-        self, workflow_id: int, input_files: list[str], output_dir: str, db: AsyncSession
+        self,
+        workflow_id: int,
+        input_files: list[str],
+        output_dir: str,
+        db: AsyncSession,
     ) -> dict[str, Any]:
         """
         Execute FastQC quality control.

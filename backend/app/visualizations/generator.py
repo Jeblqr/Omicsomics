@@ -53,22 +53,28 @@ class VisualizationGenerator:
             df["neg_log10_pval"] = -np.log10(df[pvalue_col])
 
             # Determine significance
-            df["significant"] = (
-                (np.abs(df[log2fc_col]) > fc_threshold) & (df[padj_col] < pval_threshold)
+            df["significant"] = (np.abs(df[log2fc_col]) > fc_threshold) & (
+                df[padj_col] < pval_threshold
             )
             df["direction"] = "not_sig"
             df.loc[
-                (df[log2fc_col] > fc_threshold) & (df[padj_col] < pval_threshold), "direction"
+                (df[log2fc_col] > fc_threshold) & (df[padj_col] < pval_threshold),
+                "direction",
             ] = "up"
             df.loc[
-                (df[log2fc_col] < -fc_threshold) & (df[padj_col] < pval_threshold), "direction"
+                (df[log2fc_col] < -fc_threshold) & (df[padj_col] < pval_threshold),
+                "direction",
             ] = "down"
 
             # Prepare data for Plotly
             plot_data = {
                 "x": df[log2fc_col].tolist(),
                 "y": df["neg_log10_pval"].tolist(),
-                "genes": df[gene_col].tolist() if gene_col in df.columns else df.index.tolist(),
+                "genes": (
+                    df[gene_col].tolist()
+                    if gene_col in df.columns
+                    else df.index.tolist()
+                ),
                 "colors": df["direction"].tolist(),
                 "layout": {
                     "title": "Volcano Plot",
@@ -113,7 +119,10 @@ class VisualizationGenerator:
             adata = sc.read_h5ad(h5ad_file)
 
             if "X_pca" not in adata.obsm:
-                return {"status": "error", "error": "PCA not computed. Run preprocessing first."}
+                return {
+                    "status": "error",
+                    "error": "PCA not computed. Run preprocessing first.",
+                }
 
             # Extract PCA coordinates
             pca_coords = adata.obsm["X_pca"][:, :n_components]
@@ -121,7 +130,11 @@ class VisualizationGenerator:
             # Prepare data
             plot_data = {
                 "pca": pca_coords.tolist(),
-                "metadata": adata.obs[[color_by]].to_dict(orient="list") if color_by in adata.obs else {},
+                "metadata": (
+                    adata.obs[[color_by]].to_dict(orient="list")
+                    if color_by in adata.obs
+                    else {}
+                ),
                 "cell_ids": adata.obs_names.tolist(),
                 "layout": {
                     "title": "PCA Plot",
@@ -161,7 +174,10 @@ class VisualizationGenerator:
             adata = sc.read_h5ad(h5ad_file)
 
             if "X_umap" not in adata.obsm:
-                return {"status": "error", "error": "UMAP not computed. Run preprocessing first."}
+                return {
+                    "status": "error",
+                    "error": "UMAP not computed. Run preprocessing first.",
+                }
 
             # Extract UMAP coordinates
             umap_coords = adata.obsm["X_umap"]
@@ -169,7 +185,11 @@ class VisualizationGenerator:
             # Prepare data
             plot_data = {
                 "umap": umap_coords.tolist(),
-                "metadata": adata.obs[[color_by]].to_dict(orient="list") if color_by in adata.obs else {},
+                "metadata": (
+                    adata.obs[[color_by]].to_dict(orient="list")
+                    if color_by in adata.obs
+                    else {}
+                ),
                 "cell_ids": adata.obs_names.tolist(),
                 "layout": {
                     "title": "UMAP Plot",
@@ -177,7 +197,9 @@ class VisualizationGenerator:
                     "yaxis": {"title": "UMAP 2"},
                 },
                 "cluster_counts": (
-                    adata.obs[color_by].value_counts().to_dict() if color_by in adata.obs else {}
+                    adata.obs[color_by].value_counts().to_dict()
+                    if color_by in adata.obs
+                    else {}
                 ),
             }
 
@@ -220,7 +242,7 @@ class VisualizationGenerator:
 
             # Extract expression matrix
             adata_subset = adata[:, available_genes]
-            
+
             # Get mean expression per group
             if groupby in adata.obs:
                 groups = adata.obs[groupby].unique()
@@ -231,7 +253,7 @@ class VisualizationGenerator:
                     if hasattr(group_expr, "A1"):  # Sparse matrix
                         group_expr = group_expr.A1
                     expr_matrix.append(group_expr.tolist())
-                
+
                 plot_data = {
                     "matrix": expr_matrix,
                     "genes": available_genes,
@@ -243,7 +265,10 @@ class VisualizationGenerator:
                     },
                 }
             else:
-                return {"status": "error", "error": f"Column '{groupby}' not found in data"}
+                return {
+                    "status": "error",
+                    "error": f"Column '{groupby}' not found in data",
+                }
 
             return {"status": "success", "data": plot_data}
 

@@ -63,7 +63,8 @@ async def run_fastqc(
             raise HTTPException(status_code=404, detail=f"File {file_id} not found")
         if file.sample_id != qc_request.sample_id:
             raise HTTPException(
-                status_code=400, detail=f"File {file_id} does not belong to sample {qc_request.sample_id}"
+                status_code=400,
+                detail=f"File {file_id} does not belong to sample {qc_request.sample_id}",
             )
         # For now, use placeholder paths - in production, download from S3
         input_files.append(f"/tmp/file_{file_id}.fastq")
@@ -76,7 +77,10 @@ async def run_fastqc(
             workflow_type="fastqc",
             sample_id=qc_request.sample_id,
             input_files={"file_ids": qc_request.file_ids},
-            parameters={"input_files": input_files, "output_dir": f"/tmp/qc_{qc_request.sample_id}"},
+            parameters={
+                "input_files": input_files,
+                "output_dir": f"/tmp/qc_{qc_request.sample_id}",
+            },
         ),
     )
 
