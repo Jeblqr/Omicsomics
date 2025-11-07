@@ -551,9 +551,10 @@ sample4,treated,1
 **参数说明**:
 
 - `genome_size`: 基因组大小
-  - `"hs"`: Human (2.7e9)
-  - `"mm"`: Mouse (1.87e9)
-  - 或直接提供整数
+  - `"hs"`: Human - effective genome size 2.7e9 (MACS2 default)
+  - `"mm"`: Mouse - effective genome size 1.87e9 (MACS2 default)
+  - Note: These are effective genome sizes used by MACS2, not actual genome sizes
+  - 或直接提供整数值
 - `broad`: 是否检测 broad peaks (用于组蛋白标记如 H3K27me3)
 - `q_value`: Q-value (FDR) 阈值
 - `p_value`: P-value 阈值

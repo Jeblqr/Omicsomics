@@ -166,7 +166,7 @@ async def run_peak_calling(
         ),
     )
 
-    # Prepare parameters
+    # Prepare MACS2 parameters from request
     params = {}
     if request.broad:
         params["broad"] = True
@@ -314,9 +314,14 @@ async def run_complete_epigenomics_pipeline(
         ),
     )
 
-    # Note: A complete orchestration would require sequential execution
+    # TODO: Implement sequential execution using workflow engine (Nextflow/CWL)
+    # The complete orchestration requires:
+    # 1. Alignment of treatment and control FASTQ files
+    # 2. Peak calling on aligned BAM files
+    # 3. Optional motif analysis on called peaks
+    # 4. Optional BigWig generation from aligned BAM files
+    # For now, this endpoint creates the workflow record for tracking
     # Full implementation would use workflow engine (Nextflow/CWL) to coordinate steps
-    # For now, we create the workflow record that can be executed by the workflow engine
 
     return EpigenomicsResponse(
         workflow_id=workflow.id,
