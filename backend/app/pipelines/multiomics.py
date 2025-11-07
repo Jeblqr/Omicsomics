@@ -132,7 +132,7 @@ class MultiOmicsIntegrator:
             )
 
         view_names = list(data_matrices.keys())
-        data_list = ", ".join([f'{v}_data = {v}_data' for v in view_names])
+        data_list = ", ".join([f"{v}_data = {v}_data" for v in view_names])
 
         r_script = f"""
 library(MOFA2)

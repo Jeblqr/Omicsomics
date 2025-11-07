@@ -46,7 +46,9 @@ class DIABLORequest(BaseModel):
         ...,
         description="Dictionary mapping omics type to data matrix CSV file path",
     )
-    phenotype_file: str = Field(..., description="CSV file with sample phenotype/class labels")
+    phenotype_file: str = Field(
+        ..., description="CSV file with sample phenotype/class labels"
+    )
     output_dir: str = Field(..., description="Output directory")
     n_components: int = Field(default=2, description="Number of latent components")
     design_correlation: float = Field(
@@ -97,7 +99,9 @@ class MultiOmicsWorkflowRequest(BaseModel):
     run_pathway_enrichment: bool = Field(
         default=True, description="Run pathway enrichment analysis"
     )
-    organism: str = Field(default="hsapiens", description="Organism for pathway analysis")
+    organism: str = Field(
+        default="hsapiens", description="Organism for pathway analysis"
+    )
 
 
 class MultiOmicsResponse(BaseModel):

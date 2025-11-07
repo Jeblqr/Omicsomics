@@ -109,6 +109,73 @@ Scaling → PCA → Neighbors → UMAP → Leiden clustering
 
 ---
 
+### 4. 表观组学分析模块 (`pipelines/epigenomics.py`)
+
+**核心类**: `EpigenomicsAnalyzer`
+
+**功能**:
+
+- ✅ Bowtie2 对齐 (ChIP-seq/ATAC-seq)
+- ✅ MACS2/MACS3 peak calling (支持 narrow/broad peaks)
+- ✅ HOMER 基序分析
+- ✅ BigWig 生成 (RPKM 归一化)
+- ⏳ BWA 对齐 (接口已实现)
+- ⏳ MEME 基序分析 (规划中)
+
+**API 端点** (5 个):
+
+- `POST /epigenomics/align` - 序列比对
+- `POST /epigenomics/peak-calling` - Peak 检测
+- `POST /epigenomics/motif-analysis` - 基序分析
+- `POST /epigenomics/bigwig` - BigWig 生成
+- `POST /epigenomics/complete-pipeline` - 完整流水线
+
+**MACS2 参数支持**:
+
+- 支持 narrow/broad peak 模式
+- q-value/p-value 阈值
+- --nomodel 模式
+- shift/extsize 参数自定义
+
+**支持的输入格式**:
+
+- FASTQ (单端/双端)
+- BAM (已比对)
+- BED/narrowPeak (peak 文件)
+
+---
+
+### 5. 可视化模块 (`visualizations/generator.py`)
+
+**核心类**: `VisualizationGenerator`
+
+**功能**:
+
+- ✅ 火山图数据生成 (差异表达)
+- ✅ PCA 图数据 (2D/3D)
+- ✅ UMAP 图数据
+- ✅ 基因表达热图
+- ✅ IGV.js 配置生成
+- ✅ QC 指标统计
+
+**API 端点** (7 个):
+
+- `POST /visualizations/volcano` - 火山图
+- `POST /visualizations/pca` - PCA 图
+- `POST /visualizations/umap` - UMAP 图
+- `POST /visualizations/heatmap` - 热图
+- `GET /visualizations/igv` - IGV 浏览器
+- `GET /visualizations/quality-metrics` - QC 指标
+- `GET /visualizations/formats` - 支持格式列表
+
+**数据格式**:
+
+- 所有可视化数据采用 Plotly 兼容的 JSON 格式
+- 直接可用于前端 React + Plotly.js 渲染
+- 包含完整的布局配置和元数据
+
+---
+
 ### 6. 蛋白质组学分析模块 (`pipelines/proteomics.py`)
 
 **核心类**: `ProteomicsAnalyzer`
@@ -208,73 +275,6 @@ Peak detection → RT alignment → Peak grouping → Gap filling → Feature ma
 
 ---
 
-## 表观组学分析模块 (`pipelines/epigenomics.py`)
-
-**核心类**: `EpigenomicsAnalyzer`
-
-**功能**:
-
-- ✅ Bowtie2 对齐 (ChIP-seq/ATAC-seq)
-- ✅ MACS2/MACS3 peak calling (支持 narrow/broad peaks)
-- ✅ HOMER 基序分析
-- ✅ BigWig 生成 (RPKM 归一化)
-- ⏳ BWA 对齐 (接口已实现)
-- ⏳ MEME 基序分析 (规划中)
-
-**API 端点** (5 个):
-
-- `POST /epigenomics/align` - 序列比对
-- `POST /epigenomics/peak-calling` - Peak 检测
-- `POST /epigenomics/motif-analysis` - 基序分析
-- `POST /epigenomics/bigwig` - BigWig 生成
-- `POST /epigenomics/complete-pipeline` - 完整流水线
-
-**MACS2 参数支持**:
-
-- 支持 narrow/broad peak 模式
-- q-value/p-value 阈值
-- --nomodel 模式
-- shift/extsize 参数自定义
-
-**支持的输入格式**:
-
-- FASTQ (单端/双端)
-- BAM (已比对)
-- BED/narrowPeak (peak 文件)
-
----
-
-### 5. 可视化模块 (`visualizations/generator.py`)
-
-**核心类**: `VisualizationGenerator`
-
-**功能**:
-
-- ✅ 火山图数据生成 (差异表达)
-- ✅ PCA 图数据 (2D/3D)
-- ✅ UMAP 图数据
-- ✅ 基因表达热图
-- ✅ IGV.js 配置生成
-- ✅ QC 指标统计
-
-**API 端点** (7 个):
-
-- `POST /visualizations/volcano` - 火山图
-- `POST /visualizations/pca` - PCA 图
-- `POST /visualizations/umap` - UMAP 图
-- `POST /visualizations/heatmap` - 热图
-- `GET /visualizations/igv` - IGV 浏览器
-- `GET /visualizations/quality-metrics` - QC 指标
-- `GET /visualizations/formats` - 支持格式列表
-
-**数据格式**:
-
-- 所有可视化数据采用 Plotly 兼容的 JSON 格式
-- 直接可用于前端 React + Plotly.js 渲染
-- 包含完整的布局配置和元数据
-
----
-
 ## 技术架构
 
 ### 异步执行模式
@@ -369,17 +369,17 @@ backend/app/
 
 ## API 统计
 
-| 模块     | 端点数量 | 主要功能                                          |
-| -------- | -------- | ------------------------------------------------- |
-| 基因组学 | 6        | QC, Trim, Align, Call, Annotate, Pipeline         |
-| 转录组学 | 3        | Quantify, Counts, DE                              |
-| 单细胞   | 4        | CellRanger, Preprocess, Integrate, Annotate       |
-| 表观组学 | 5        | Align, PeakCall, Motif, BigWig, Pipeline          |
-| 蛋白质组 | 5        | Convert, MaxQuant, MSFragger, LFQ, Pipeline       |
-| 代谢组学 | 4        | FeatureDetection, Annotation, Quant, Pipeline     |
-| 多组学   | 5        | MOFA2, DIABLO, Pathways, Match, Pipeline          |
-| 可视化   | 7        | Volcano, PCA, UMAP, Heatmap, IGV, QC, Formats     |
-| **总计** | **39**   |                                                   |
+| 模块     | 端点数量 | 主要功能                                      |
+| -------- | -------- | --------------------------------------------- |
+| 基因组学 | 6        | QC, Trim, Align, Call, Annotate, Pipeline     |
+| 转录组学 | 3        | Quantify, Counts, DE                          |
+| 单细胞   | 4        | CellRanger, Preprocess, Integrate, Annotate   |
+| 表观组学 | 5        | Align, PeakCall, Motif, BigWig, Pipeline      |
+| 蛋白质组 | 5        | Convert, MaxQuant, MSFragger, LFQ, Pipeline   |
+| 代谢组学 | 4        | FeatureDetection, Annotation, Quant, Pipeline |
+| 多组学   | 5        | MOFA2, DIABLO, Pathways, Match, Pipeline      |
+| 可视化   | 7        | Volcano, PCA, UMAP, Heatmap, IGV, QC, Formats |
+| **总计** | **39**   |                                               |
 
 加上原有的 6 个模块 (Auth, Projects, Samples, Files, Workflows, QC),
 **平台目前共有 45 个 API 端点组**。

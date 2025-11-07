@@ -102,7 +102,9 @@ async def test_sample_matching(client: TestClient, auth_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_complete_integration_pipeline_mofa2(client: TestClient, auth_headers: dict):
+async def test_complete_integration_pipeline_mofa2(
+    client: TestClient, auth_headers: dict
+):
     """Test complete multi-omics pipeline with MOFA2."""
     request_data = {
         "sample_id": 1,
@@ -128,7 +130,9 @@ async def test_complete_integration_pipeline_mofa2(client: TestClient, auth_head
 
 
 @pytest.mark.asyncio
-async def test_complete_integration_pipeline_diablo(client: TestClient, auth_headers: dict):
+async def test_complete_integration_pipeline_diablo(
+    client: TestClient, auth_headers: dict
+):
     """Test complete multi-omics pipeline with DIABLO."""
     request_data = {
         "sample_id": 1,
