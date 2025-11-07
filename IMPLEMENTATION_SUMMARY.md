@@ -109,7 +109,43 @@ Scaling → PCA → Neighbors → UMAP → Leiden clustering
 
 ---
 
-### 4. 可视化模块 (`visualizations/generator.py`)
+### 4. 表观组学分析模块 (`pipelines/epigenomics.py`)
+
+**核心类**: `EpigenomicsAnalyzer`
+
+**功能**:
+
+- ✅ Bowtie2 对齐 (ChIP-seq/ATAC-seq)
+- ✅ MACS2/MACS3 peak calling (支持 narrow/broad peaks)
+- ✅ HOMER 基序分析
+- ✅ BigWig 生成 (RPKM 归一化)
+- ⏳ BWA 对齐 (接口已实现)
+- ⏳ MEME 基序分析 (规划中)
+
+**API 端点** (5 个):
+
+- `POST /epigenomics/align` - 序列比对
+- `POST /epigenomics/peak-calling` - Peak 检测
+- `POST /epigenomics/motif-analysis` - 基序分析
+- `POST /epigenomics/bigwig` - BigWig 生成
+- `POST /epigenomics/complete-pipeline` - 完整流水线
+
+**MACS2 参数支持**:
+
+- 支持 narrow/broad peak 模式
+- q-value/p-value 阈值
+- --nomodel 模式
+- shift/extsize 参数自定义
+
+**支持的输入格式**:
+
+- FASTQ (单端/双端)
+- BAM (已比对)
+- BED/narrowPeak (peak 文件)
+
+---
+
+### 5. 可视化模块 (`visualizations/generator.py`)
 
 **核心类**: `VisualizationGenerator`
 
@@ -239,11 +275,12 @@ backend/app/
 | 基因组学 | 6        | QC, Trim, Align, Call, Annotate, Pipeline     |
 | 转录组学 | 3        | Quantify, Counts, DE                          |
 | 单细胞   | 4        | CellRanger, Preprocess, Integrate, Annotate   |
+| 表观组学 | 5        | Align, PeakCall, Motif, BigWig, Pipeline      |
 | 可视化   | 7        | Volcano, PCA, UMAP, Heatmap, IGV, QC, Formats |
-| **总计** | **20**   |                                               |
+| **总计** | **25**   |                                               |
 
 加上原有的 6 个模块 (Auth, Projects, Samples, Files, Workflows, QC),
-**平台目前共有 26 个 API 端点组**。
+**平台目前共有 31 个 API 端点组**。
 
 ---
 
@@ -274,6 +311,14 @@ backend/app/
 - ✅ Scanpy (Python) - 预处理
 - ✅ Seurat (R) - 整合
 - 🔄 Harmony, scrublet, doubletFinder (规划中)
+
+### 表观组学
+
+- ✅ Bowtie2 - 比对
+- ✅ MACS2/MACS3 - Peak calling
+- ✅ HOMER - 基序分析
+- ✅ bamCoverage/deepTools - BigWig 生成
+- ⏳ BWA, MEME
 
 ### 可视化
 
@@ -357,7 +402,7 @@ curl -X GET "/api/v1/workflows/123"
 ### 短期 (1-2 周)
 
 1. ✅ 完成基础三大组学模块
-2. ⏳ 添加表观组学模块 (ChIP/ATAC)
+2. ✅ 添加表观组学模块 (ChIP/ATAC)
 3. ⏳ 添加蛋白质组模块
 4. ⏳ 编写单元测试
 5. ⏳ 性能优化和错误处理增强
@@ -422,24 +467,25 @@ curl -X GET "/api/v1/workflows/123"
 | 基因组学   | ✅   | 70% (核心完成,工具扩展中) |
 | 转录组学   | ✅   | 80% (缺 GSEA)             |
 | 单细胞     | ✅   | 85% (核心完成)            |
+| 表观组学   | ✅   | 90% (核心完成)            |
 | 可视化     | ✅   | 90% (基础完备)            |
-| 表观组学   | ⏳   | 0% (规划中)               |
 | 蛋白质组   | ⏳   | 0% (规划中)               |
 | 多组学整合 | ⏳   | 0% (规划中)               |
 
 ### 代码统计
 
-- **新增代码**: ~3,500 行 Python
-- **新增模块**: 7 个
-- **API 端点**: 20 个
-- **文档**: 3,000+ 字
+- **新增代码**: ~4,000 行 Python
+- **新增模块**: 8 个 (含表观组学)
+- **API 端点**: 25 个 (不含基础模块)
+- **文档**: 3,500+ 字
 
 ### 关键成就
 
 1. ✅ 建立了统一的异步执行框架
 2. ✅ 实现了工作流状态管理系统
-3. ✅ 集成了主流生信工具 (Salmon, GATK, Scanpy, Seurat)
+3. ✅ 集成了主流生信工具 (Salmon, GATK, Scanpy, Seurat, MACS2)
 4. ✅ 提供了完整的 API 文档
 5. ✅ 支持了端到端的分析流程
+6. ✅ 完成了表观组学模块 (ChIP-seq/ATAC-seq)
 
-这些模块为 Omicsomics 平台奠定了坚实的组学分析基础,可以支持从原始数据到最终可视化的完整分析流程。
+这些模块为 Omicsomics 平台奠定了坚实的组学分析基础,可以支持从原始数据到最终可视化的完整分析流程。平台现已支持基因组学、转录组学、单细胞分析和表观组学四大核心组学类型。

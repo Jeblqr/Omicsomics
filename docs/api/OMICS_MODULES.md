@@ -7,6 +7,7 @@
 - [基因组学分析](#基因组学分析-wgswes)
 - [转录组学分析](#转录组学分析-bulk-rna-seq)
 - [单细胞分析](#单细胞分析-scrna-seq)
+- [表观组学分析](#表观组学分析-chip-seqatac-seq)
 - [可视化模块](#可视化模块)
 
 ---
@@ -470,6 +471,232 @@ sample4,treated,1
 
 ---
 
+## 表观组学分析 (ChIP-seq/ATAC-seq)
+
+**基础路径**: `/api/v1/epigenomics`
+
+### 1. 序列比对
+
+**端点**: `POST /epigenomics/align`
+
+**描述**: 将 ChIP-seq 或 ATAC-seq 的 FASTQ 文件比对到参考基因组。
+
+**请求体**:
+
+```json
+{
+  "sample_id": 1,
+  "input_files": [
+    "/path/to/chip_R1.fastq.gz",
+    "/path/to/chip_R2.fastq.gz"
+  ],
+  "reference_genome": "/path/to/bowtie2_index/hg38",
+  "output_bam": "/path/to/output/aligned.bam",
+  "aligner": "bowtie2",
+  "threads": 8
+}
+```
+
+**支持的比对工具**:
+
+- `bowtie2`: 推荐用于 ChIP-seq/ATAC-seq (默认)
+- `bwa`: 可选的比对工具
+
+**响应**:
+
+```json
+{
+  "workflow_id": 123,
+  "status": "queued",
+  "message": "bowtie2 alignment queued for execution"
+}
+```
+
+### 2. Peak Calling
+
+**端点**: `POST /epigenomics/peak-calling`
+
+**描述**: 使用 MACS2/MACS3 从比对的 BAM 文件中检测 peaks。
+
+**请求体 (带 control)**:
+
+```json
+{
+  "sample_id": 1,
+  "treatment_bam": "/path/to/chip_treatment.bam",
+  "control_bam": "/path/to/chip_control.bam",
+  "output_dir": "/path/to/peaks",
+  "peak_caller": "macs2",
+  "genome_size": "hs",
+  "broad": false,
+  "q_value": 0.05
+}
+```
+
+**请求体 (不带 control, 用于 ATAC-seq)**:
+
+```json
+{
+  "sample_id": 1,
+  "treatment_bam": "/path/to/atac.bam",
+  "output_dir": "/path/to/peaks",
+  "peak_caller": "macs2",
+  "genome_size": "hs",
+  "nomodel": true,
+  "shift": -100,
+  "extsize": 200
+}
+```
+
+**参数说明**:
+
+- `genome_size`: 基因组大小
+  - `"hs"`: Human (2.7e9)
+  - `"mm"`: Mouse (1.87e9)
+  - 或直接提供整数
+- `broad`: 是否检测 broad peaks (用于组蛋白标记如 H3K27me3)
+- `q_value`: Q-value (FDR) 阈值
+- `p_value`: P-value 阈值
+- `nomodel`: 绕过模型构建 (ATAC-seq 推荐)
+- `shift`: 移位大小
+- `extsize`: 扩展大小
+
+**响应**:
+
+```json
+{
+  "workflow_id": 124,
+  "status": "queued",
+  "message": "macs2 peak calling queued for execution"
+}
+```
+
+**输出文件**:
+
+- `peaks_peaks.narrowPeak`: Narrow peaks (默认)
+- `peaks_peaks.broadPeak`: Broad peaks (如果使用 --broad)
+- `peaks_summits.bed`: Peak 顶点位置
+- `peaks_peaks.xls`: 详细结果表格
+
+### 3. 基序分析 (Motif Analysis)
+
+**端点**: `POST /epigenomics/motif-analysis`
+
+**描述**: 在 peak 区域中查找富集的 DNA 基序。
+
+**请求体**:
+
+```json
+{
+  "sample_id": 1,
+  "peak_file": "/path/to/peaks_peaks.narrowPeak",
+  "genome_fasta": "/path/to/reference/hg38.fa",
+  "output_dir": "/path/to/motif_results",
+  "tool": "homer",
+  "motif_length": [8, 10, 12]
+}
+```
+
+**支持的工具**:
+
+- `homer`: HOMER findMotifsGenome.pl (推荐)
+- `meme`: MEME Suite (规划中)
+
+**响应**:
+
+```json
+{
+  "workflow_id": 125,
+  "status": "queued",
+  "message": "homer motif analysis queued for execution"
+}
+```
+
+**输出文件**:
+
+- `homerResults.html`: 新发现基序的 HTML 报告
+- `knownResults.html`: 已知基序匹配的 HTML 报告
+- `homerMotifs.all.motifs`: 所有发现的基序
+
+### 4. BigWig 生成
+
+**端点**: `POST /epigenomics/bigwig`
+
+**描述**: 生成用于基因组浏览器可视化的 BigWig 文件。
+
+**请求体**:
+
+```json
+{
+  "sample_id": 1,
+  "input_bam": "/path/to/aligned.bam",
+  "output_bigwig": "/path/to/coverage.bw",
+  "genome_sizes": "/path/to/hg38.chrom.sizes",
+  "normalize": true
+}
+```
+
+**参数说明**:
+
+- `normalize`: 是否进行 RPKM 归一化 (默认 true)
+- `genome_sizes`: 染色体大小文件 (可从 UCSC 获取)
+
+**响应**:
+
+```json
+{
+  "workflow_id": 126,
+  "status": "queued",
+  "message": "BigWig generation queued for execution"
+}
+```
+
+### 5. 完整流水线
+
+**端点**: `POST /epigenomics/complete-pipeline`
+
+**描述**: 运行完整的表观组学分析流水线，包括比对、peak calling、基序分析和 BigWig 生成。
+
+**请求体**:
+
+```json
+{
+  "sample_id": 1,
+  "treatment_fastq": [
+    "/path/to/treatment_R1.fastq.gz",
+    "/path/to/treatment_R2.fastq.gz"
+  ],
+  "control_fastq": [
+    "/path/to/control_R1.fastq.gz",
+    "/path/to/control_R2.fastq.gz"
+  ],
+  "reference_genome": "/path/to/bowtie2_index/hg38",
+  "genome_fasta": "/path/to/reference/hg38.fa",
+  "genome_sizes": "/path/to/hg38.chrom.sizes",
+  "output_dir": "/path/to/epigenomics_results",
+  "aligner": "bowtie2",
+  "peak_caller": "macs2",
+  "genome_size": "hs",
+  "run_motif_analysis": true,
+  "generate_bigwig": true,
+  "threads": 8
+}
+```
+
+**响应**:
+
+```json
+{
+  "workflow_id": 127,
+  "status": "created",
+  "message": "Complete epigenomics pipeline created. Use workflow engine for execution."
+}
+```
+
+**注意**: 完整流水线需要使用工作流引擎 (如 Nextflow) 来协调各个步骤的顺序执行。
+
+---
+
 ## 可视化模块
 
 **基础路径**: `/api/v1/visualizations`
@@ -726,6 +953,87 @@ curl -X POST "/api/v1/singlecell/annotate" -d '{...}'
 
 # 4. UMAP 可视化
 curl -X POST "/api/v1/visualizations/umap" -d '{...}'
+```
+
+### 4. ChIP-seq 分析流程
+
+```bash
+# 1. 比对
+curl -X POST "/api/v1/epigenomics/align" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sample_id": 1,
+    "input_files": ["/data/chip_R1.fastq.gz", "/data/chip_R2.fastq.gz"],
+    "reference_genome": "/ref/bowtie2/hg38",
+    "output_bam": "/results/chip_aligned.bam",
+    "aligner": "bowtie2",
+    "threads": 8
+  }'
+
+# 2. Peak calling
+curl -X POST "/api/v1/epigenomics/peak-calling" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sample_id": 1,
+    "treatment_bam": "/results/chip_aligned.bam",
+    "control_bam": "/results/input_aligned.bam",
+    "output_dir": "/results/peaks",
+    "peak_caller": "macs2",
+    "genome_size": "hs",
+    "q_value": 0.05
+  }'
+
+# 3. 基序分析
+curl -X POST "/api/v1/epigenomics/motif-analysis" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sample_id": 1,
+    "peak_file": "/results/peaks/peaks_peaks.narrowPeak",
+    "genome_fasta": "/ref/hg38.fa",
+    "output_dir": "/results/motifs",
+    "tool": "homer"
+  }'
+
+# 4. 生成可视化文件
+curl -X POST "/api/v1/epigenomics/bigwig" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sample_id": 1,
+    "input_bam": "/results/chip_aligned.bam",
+    "output_bigwig": "/results/chip_coverage.bw",
+    "genome_sizes": "/ref/hg38.chrom.sizes",
+    "normalize": true
+  }'
+```
+
+### 5. ATAC-seq 分析流程
+
+```bash
+# 1. 比对
+curl -X POST "/api/v1/epigenomics/align" -d '{...}'
+
+# 2. Peak calling (无 control, 使用 ATAC-seq 特定参数)
+curl -X POST "/api/v1/epigenomics/peak-calling" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sample_id": 1,
+    "treatment_bam": "/results/atac_aligned.bam",
+    "output_dir": "/results/atac_peaks",
+    "peak_caller": "macs2",
+    "genome_size": "hs",
+    "nomodel": true,
+    "shift": -100,
+    "extsize": 200,
+    "q_value": 0.01
+  }'
+
+# 3. 基序分析 (开放染色质区域的转录因子足迹)
+curl -X POST "/api/v1/epigenomics/motif-analysis" -d '{...}'
 ```
 
 ---
