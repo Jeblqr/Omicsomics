@@ -5,7 +5,9 @@ from . import (
     epigenomics,
     files,
     genomics,
+    metabolomics,
     projects,
+    proteomics,
     qc,
     samples,
     singlecell,
@@ -29,6 +31,12 @@ api_router.include_router(
 api_router.include_router(singlecell.router, prefix="/singlecell", tags=["singlecell"])
 api_router.include_router(
     epigenomics.router, prefix="/epigenomics", tags=["epigenomics"]
+)
+api_router.include_router(
+    proteomics.router, prefix="/proteomics", tags=["proteomics"]
+)
+api_router.include_router(
+    metabolomics.router, prefix="/metabolomics", tags=["metabolomics"]
 )
 api_router.include_router(
     visualizations.router, prefix="/visualizations", tags=["visualizations"]
