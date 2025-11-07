@@ -1,24 +1,33 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, func
-from sqlalchemy.orm import relationship
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base
+from .base import Base
 
 
 class File(Base):
     __tablename__ = "files"
 
-    id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, index=True, nullable=False)
-    filepath = Column(String, unique=True, nullable=False)  # Path in object storage
-    file_type = Column(String, nullable=False)
-    size = Column(Integer, nullable=False)
-    checksum = Column(String, nullable=False)  # e.g., MD5 or SHA256
-    sample_id = Column(Integer, ForeignKey("samples.id"), nullable=False)
-    uploaded_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
+    filename: Mapped[str] = mapped_column(String(512), index=True, nullable=False)
+    filepath: Mapped[str] = mapped_column(
+        String(1024), unique=True, nullable=False
+    )  # S3 key
+    file_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    mime_type: Mapped[str] = mapped_column(
+        String(255), default="application/octet-stream"
+    )
+    size: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    checksum: Mapped[str] = mapped_column(String(128), nullable=False)  # MD5/SHA256
+    sample_id: Mapped[int] = mapped_column(ForeignKey("samples.id"), nullable=False)
+    uploaded_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
     sample = relationship("Sample", back_populates="files")
     uploaded_by = relationship("User", back_populates="uploaded_files")

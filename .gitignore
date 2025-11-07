@@ -43,8 +43,8 @@ data/
 /tmp/
 *.tmp
 *.temp
-local_db_data/
-
+local*/
+backend/alembic/versions
 
 # Sequencing & bioinformatics large files
 *.fastq
