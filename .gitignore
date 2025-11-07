@@ -45,6 +45,7 @@ data/
 *.temp
 local*/
 backend/alembic/versions
+bin/
 
 # Sequencing & bioinformatics large files
 *.fastq
