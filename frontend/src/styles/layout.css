@@ -84,6 +84,34 @@
   font-weight: 600;
 }
 
+.topbar__section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar__user {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.logout-button {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+  background: #c82333;
+}
+
 .loading-view {
   display: flex;
   flex-direction: column;
