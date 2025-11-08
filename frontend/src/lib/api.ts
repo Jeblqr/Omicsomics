@@ -15,8 +15,14 @@ const api = axios.create({
   timeout: 15000,
 });
 
-// Add a request interceptor to log the full request URL for debugging
+// Add a request interceptor to include auth token and log requests
 api.interceptors.request.use(config => {
+  // Add auth token from localStorage if available
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  
   console.log(`Requesting URL: ${config.baseURL}${config.url}`);
   return config;
 });
