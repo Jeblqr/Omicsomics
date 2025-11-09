@@ -140,6 +140,7 @@ class ToolCategory(str, Enum):
     MOTIF_ANALYSIS = "motif_analysis"
     PROTEOMICS = "proteomics"
     METABOLOMICS = "metabolomics"
+    SINGLE_CELL = "single_cell"
     CUSTOM = "custom"
 
 
