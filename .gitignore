@@ -29,6 +29,13 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# ===== Infrastructure Secrets =====
+infrastructure/docker-compose.yml
+docker-compose.override.yml
+*.pem
+*.key
+*.crt
 .pytype/
 .pyre/
 

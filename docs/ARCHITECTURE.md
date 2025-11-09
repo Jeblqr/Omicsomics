@@ -35,40 +35,40 @@ Omicsomics 是一个现代化的多组学数据分析平台，采用**前后端�
 
 ### 后端
 
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| **Python** | 3.11+ | 主要编程语言 |
-| **FastAPI** | 0.115+ | Web 框架 |
-| **SQLAlchemy** | 2.0 | ORM (异步) |
-| **PostgreSQL** | 15 | 关系型数据库 |
-| **MinIO** | Latest | 对象存储 (S3 兼容) |
-| **Redis** | 7 | 缓存 + 消息队列 |
-| **Celery** | 5.3+ | 异步任务队列 |
-| **Alembic** | Latest | 数据库迁移 |
-| **Pydantic** | 2.0+ | 数据验证 |
+| 技术           | 版本   | 用途               |
+| -------------- | ------ | ------------------ |
+| **Python**     | 3.11+  | 主要编程语言       |
+| **FastAPI**    | 0.115+ | Web 框架           |
+| **SQLAlchemy** | 2.0    | ORM (异步)         |
+| **PostgreSQL** | 15     | 关系型数据库       |
+| **MinIO**      | Latest | 对象存储 (S3 兼容) |
+| **Redis**      | 7      | 缓存 + 消息队列    |
+| **Celery**     | 5.3+   | 异步任务队列       |
+| **Alembic**    | Latest | 数据库迁移         |
+| **Pydantic**   | 2.0+   | 数据验证           |
 
 ### 前端
 
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| **React** | 18 | UI 框架 |
-| **TypeScript** | 5 | 类型安全 |
-| **Vite** | 5 | 构建工具 |
-| **TailwindCSS** | 3 | CSS 框架 |
-| **shadcn/ui** | Latest | UI 组件库 |
-| **TanStack Query** | 5 | 数据获取与缓存 |
-| **React Router** | 6 | 路由管理 |
-| **Recharts** | 2 | 数据可视化 |
-| **D3.js** | 7 | 高级可视化 |
+| 技术               | 版本   | 用途           |
+| ------------------ | ------ | -------------- |
+| **React**          | 18     | UI 框架        |
+| **TypeScript**     | 5      | 类型安全       |
+| **Vite**           | 5      | 构建工具       |
+| **TailwindCSS**    | 3      | CSS 框架       |
+| **shadcn/ui**      | Latest | UI 组件库      |
+| **TanStack Query** | 5      | 数据获取与缓存 |
+| **React Router**   | 6      | 路由管理       |
+| **Recharts**       | 2      | 数据可视化     |
+| **D3.js**          | 7      | 高级可视化     |
 
 ### DevOps
 
-| 技术 | 用途 |
-|------|------|
-| **Docker** | 容器化 |
-| **Docker Compose** | 服务编排 |
-| **GitHub Actions** | CI/CD |
-| **Nginx** | 反向代理 (生产环境) |
+| 技术               | 用途                |
+| ------------------ | ------------------- |
+| **Docker**         | 容器化              |
+| **Docker Compose** | 服务编排            |
+| **GitHub Actions** | CI/CD               |
+| **Nginx**          | 反向代理 (生产环境) |
 
 ---
 
@@ -228,6 +228,7 @@ Frontend Render
 ### 核心表设计
 
 #### users 表
+
 ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -242,6 +243,7 @@ CREATE TABLE users (
 ```
 
 #### projects 表
+
 ```sql
 CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
@@ -255,6 +257,7 @@ CREATE TABLE projects (
 ```
 
 #### data_files 表
+
 ```sql
 CREATE TABLE data_files (
     id SERIAL PRIMARY KEY,
@@ -275,6 +278,7 @@ CREATE TABLE data_files (
 ```
 
 #### pipeline_runs 表
+
 ```sql
 CREATE TABLE pipeline_runs (
     id SERIAL PRIMARY KEY,
@@ -314,18 +318,19 @@ DELETE /api/v1/resource/{id}   # 删除
 
 ### API 模块
 
-| 模块 | 端点前缀 | 功能 |
-|------|---------|------|
-| 认证 | `/api/v1/auth` | 注册、登录、JWT |
-| 项目 | `/api/v1/projects` | CRUD 项目 |
-| 数据 | `/api/v1/data` | 文件上传、导出、QC |
-| Pipeline | `/api/v1/pipelines` | 模板管理 |
-| Runs | `/api/v1/runs` | 执行管理 |
-| 工具 | `/api/v1/tools` | 工具配置 |
+| 模块     | 端点前缀            | 功能               |
+| -------- | ------------------- | ------------------ |
+| 认证     | `/api/v1/auth`      | 注册、登录、JWT    |
+| 项目     | `/api/v1/projects`  | CRUD 项目          |
+| 数据     | `/api/v1/data`      | 文件上传、导出、QC |
+| Pipeline | `/api/v1/pipelines` | 模板管理           |
+| Runs     | `/api/v1/runs`      | 执行管理           |
+| 工具     | `/api/v1/tools`     | 工具配置           |
 
 ### 响应格式
 
 **成功响应**:
+
 ```json
 {
   "id": 1,
@@ -335,6 +340,7 @@ DELETE /api/v1/resource/{id}   # 删除
 ```
 
 **错误响应**:
+
 ```json
 {
   "detail": "Resource not found",
@@ -343,6 +349,7 @@ DELETE /api/v1/resource/{id}   # 删除
 ```
 
 **列表响应**:
+
 ```json
 {
   "items": [...],
@@ -448,7 +455,7 @@ def process_pipeline(run_id: int):
 ### 日志级别
 
 - **ERROR**: 错误信息
-- **WARNING**: 警告信息  
+- **WARNING**: 警告信息
 - **INFO**: 常规信息
 - **DEBUG**: 调试信息
 

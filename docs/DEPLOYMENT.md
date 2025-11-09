@@ -19,23 +19,26 @@
 ## 系统要求
 
 ### 最低配置
+
 - **CPU**: 4 核
 - **内存**: 8GB RAM
 - **存储**: 50GB 可用空间
 - **操作系统**: Linux (Ubuntu 20.04+), macOS, Windows (WSL2)
 
 ### 推荐配置
+
 - **CPU**: 8 核或更多
 - **内存**: 16GB RAM 或更多
 - **存储**: 100GB+ SSD
 - **操作系统**: Ubuntu 22.04 LTS
 
 ### 软件依赖
+
 - Docker 20.10+
 - Docker Compose 2.0+
 - Git 2.30+
-- (可选) Python 3.11+ for本地开发
-- (可选) Node.js 18+ for前端开发
+- (可选) Python 3.11+ for 本地开发
+- (可选) Node.js 18+ for 前端开发
 
 ---
 
@@ -166,11 +169,13 @@ python scripts/init_minio.py
 ### 准备工作
 
 1. **服务器配置**
+
    - 确保服务器满足推荐配置
    - 开放必要的端口（80, 443）
    - 配置防火墙规则
 
 2. **域名和 SSL**
+
    - 注册域名并配置 DNS
    - 获取 SSL 证书（Let's Encrypt 推荐）
 
@@ -191,41 +196,41 @@ vim infrastructure/docker-compose.prod.yml
 关键修改项：
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
     restart: always
     environment:
       - DEBUG=False
-      - SECRET_KEY=${SECRET_KEY}  # 使用强密钥
+      - SECRET_KEY=${SECRET_KEY} # 使用强密钥
       - DATABASE_URL=${DATABASE_URL}
     deploy:
       resources:
         limits:
-          cpus: '4'
+          cpus: "4"
           memory: 4G
 
   frontend:
     restart: always
     build:
       context: ../frontend
-      dockerfile: Dockerfile.prod  # 生产构建
+      dockerfile: Dockerfile.prod # 生产构建
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: "2"
           memory: 2G
 
   db:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backups:/backups  # 备份目录
+      - ./backups:/backups # 备份目录
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: "2"
           memory: 4G
 
   # 添加 Nginx 反向代理
@@ -367,12 +372,14 @@ VITE_MAX_FILE_SIZE=10737418240
 ### 安全建议
 
 **生产环境必须修改:**
+
 1. `SECRET_KEY` - 使用强随机字符串
 2. 数据库密码
 3. MinIO 凭据
 4. 关闭 DEBUG 模式
 
 **生成安全密钥:**
+
 ```bash
 # Python
 python -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -436,6 +443,7 @@ services:
 **症状**: `psycopg2.OperationalError: could not connect to server`
 
 **解决方案**:
+
 ```bash
 # 检查数据库容器状态
 docker compose ps db
@@ -455,6 +463,7 @@ echo $DATABASE_URL
 **症状**: `botocore.exceptions.ConnectionError`
 
 **解决方案**:
+
 ```bash
 # 检查 MinIO 状态
 docker compose ps minio
@@ -495,6 +504,7 @@ app.add_middleware(
 **症状**: `bind: address already in use`
 
 **解决方案**:
+
 ```bash
 # 查找占用端口的进程
 lsof -i :5173  # 前端
@@ -512,6 +522,7 @@ kill -9 <PID>
 **症状**: `no space left on device`
 
 **解决方案**:
+
 ```bash
 # 清理未使用的镜像
 docker system prune -a
@@ -600,6 +611,7 @@ curl http://localhost:8001/healthz
 ### 性能监控
 
 可以集成以下工具进行监控：
+
 - **Prometheus** - 指标收集
 - **Grafana** - 可视化仪表板
 - **Sentry** - 错误追踪
@@ -645,6 +657,7 @@ echo "Backup completed: db_$DATE.sql.gz"
 ```
 
 添加到 crontab:
+
 ```bash
 # 每天凌晨 2 点执行备份
 0 2 * * * /path/to/backup.sh
