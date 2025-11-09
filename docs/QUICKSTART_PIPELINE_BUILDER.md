@@ -3,17 +3,20 @@
 ## Starting the Application
 
 1. **Start all services:**
+
    ```bash
    cd /home/jeblqr/data1/projects/Omicsomics
    docker-compose -f infrastructure/docker-compose.yml up -d
    ```
 
 2. **Verify backend is running:**
+
    ```bash
    curl http://localhost:8001/api/v1/pipelines/
    ```
 
 3. **Start frontend:**
+
    ```bash
    cd frontend
    npm run dev
@@ -26,9 +29,11 @@
 ## Creating Your First Pipeline
 
 ### Step 1: Navigate to Custom Pipelines
+
 - Click **Custom Pipelines** in the left sidebar
 
 ### Step 2: Create New Pipeline
+
 1. Click **+ Create New Pipeline** button
 2. Fill in the form:
    - **Name**: "My First Pipeline"
@@ -37,6 +42,7 @@
    - **Make Public**: Leave unchecked
 
 ### Step 3: Build the Pipeline
+
 1. Select node type: **Input**
 2. Click **+ Add Node**
 3. Drag the node to desired position
@@ -46,12 +52,14 @@
    - Add an **Output** node (Clean Data)
 
 ### Step 4: Connect Nodes
+
 1. Click and hold on the edge of the first node
 2. Drag to the next node
 3. Release to create connection
 4. Repeat to connect all nodes in sequence
 
 ### Step 5: Save Pipeline
+
 1. Click **Save Pipeline** button
 2. You'll see a success message
 3. Click **← Back to List** to return
@@ -59,10 +67,12 @@
 ## Merging Pipelines
 
 ### Step 1: Create Second Pipeline
+
 1. Follow the same steps to create another pipeline
 2. Example: "Analysis Pipeline" with Analysis and Output nodes
 
 ### Step 2: Merge Pipelines
+
 1. Go to **Custom Pipelines**
 2. Check the boxes next to the 2 pipelines you want to merge
 3. Click **Merge Selected (2)** button
@@ -72,6 +82,7 @@
    - Unique node IDs (p0_n0, p1_n3, etc.)
 
 ### Step 3: Save Merged Pipeline
+
 1. Optionally rename to "Complete Workflow"
 2. Click **Save Pipeline**
 3. Your merged pipeline is now ready to use
@@ -89,6 +100,7 @@ The complete pipeline configuration is stored with the run for reproducibility.
 ## Quick API Examples
 
 ### Get All Pipelines
+
 ```bash
 # Login and get token
 TOKEN=$(curl -s -X POST http://localhost:8001/api/v1/auth/login/access-token \
@@ -101,6 +113,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Create Pipeline via API
+
 ```bash
 curl -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -140,6 +153,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Merge Pipelines via API
+
 ```bash
 curl -X POST -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -152,32 +166,38 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ## Troubleshooting
 
 ### Can't See Custom Pipelines Menu
+
 - **Solution**: Refresh the page, ensure you're logged in
 
 ### Nodes Won't Connect
-- **Solution**: 
+
+- **Solution**:
   - Make sure both nodes are on the canvas
   - Try clicking precisely on the node edge
   - Check that you're not in read-only mode
 
 ### Save Button Not Working
-- **Solution**: 
+
+- **Solution**:
   - Ensure pipeline name is filled in
   - Check browser console for errors
   - Verify backend is running: `docker ps | grep backend`
 
 ### Merge Button Disabled
-- **Solution**: 
+
+- **Solution**:
   - You need to select at least 2 pipelines
   - Click the checkboxes next to pipeline cards
 
 ### API Returns 404
+
 - **Solution**:
   - Verify backend is running: `docker logs infrastructure-backend-1`
   - Check migration applied: `docker exec infrastructure-backend-1 alembic current`
   - Restart backend: `docker restart infrastructure-backend-1`
 
 ### Frontend Not Loading
+
 - **Solution**:
   ```bash
   cd frontend
@@ -188,6 +208,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ## Common Tasks
 
 ### Delete All Test Pipelines
+
 ```bash
 # Get all pipeline IDs
 curl -H "Authorization: Bearer $TOKEN" \
@@ -202,6 +223,7 @@ curl -X DELETE -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Export Pipeline Definition
+
 ```bash
 # Get pipeline and save to file
 curl -H "Authorization: Bearer $TOKEN" \
@@ -210,6 +232,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Import Pipeline Definition
+
 ```bash
 # Load from file and create new pipeline
 curl -X POST -H "Authorization: Bearer $TOKEN" \
@@ -225,6 +248,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Check Database Migration Status
+
 ```bash
 # See current migration version
 docker exec infrastructure-backend-1 alembic current
@@ -237,17 +261,18 @@ docker exec infrastructure-backend-1 alembic upgrade head
 ```
 
 ### View Pipeline in Database
+
 ```bash
 # Connect to PostgreSQL
 docker exec -it infrastructure-postgres-1 psql -U postgres -d omicsomics
 
 # Query pipelines
-SELECT id, name, category, is_public, owner_id 
+SELECT id, name, category, is_public, owner_id
 FROM custom_pipelines;
 
 # View full definition (formatted)
-SELECT id, name, jsonb_pretty(definition) 
-FROM custom_pipelines 
+SELECT id, name, jsonb_pretty(definition)
+FROM custom_pipelines
 WHERE id = 1;
 
 # Exit psql

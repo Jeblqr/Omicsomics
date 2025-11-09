@@ -7,6 +7,7 @@ Omicsomics now features a powerful visual pipeline builder that allows you to cr
 ## Key Features
 
 ### 1. Visual Pipeline Editor
+
 - **Drag-and-Drop Interface**: Build pipelines visually using React Flow
 - **6 Node Types**:
   - 🟢 **Input**: Data input nodes
@@ -17,6 +18,7 @@ Omicsomics now features a powerful visual pipeline builder that allows you to cr
   - ⚫ **Output**: Results and export nodes
 
 ### 2. Pipeline Management
+
 - **Create Custom Pipelines**: Design your own analysis workflows
 - **Edit Existing Pipelines**: Modify saved pipelines
 - **Delete Pipelines**: Remove unwanted pipelines
@@ -24,11 +26,12 @@ Omicsomics now features a powerful visual pipeline builder that allows you to cr
 - **Categories**: Organize by omics type (genomics, proteomics, metabolomics, etc.)
 
 ### 3. Pipeline Merging
+
 - **Multi-Select**: Select 2+ pipelines to merge
 - **Sequential Connection**: Automatically connects pipelines in sequence
-- **Smart Node Remapping**: Avoids ID conflicts (p{i}_n{offset} format)
+- **Smart Node Remapping**: Avoids ID conflicts (p{i}\_n{offset} format)
 - **Bridge Edges**: Creates connections between merged segments
-- **Parameter Namespacing**: Isolates parameters (pipeline_{i}_{key})
+- **Parameter Namespacing**: Isolates parameters (pipeline*{i}*{key})
 - **Metadata Tracking**: Records merge source and strategy
 
 ## How to Use
@@ -68,6 +71,7 @@ Omicsomics now features a powerful visual pipeline builder that allows you to cr
 6. Click **Save Pipeline** to save the merged result
 
 The merge algorithm will:
+
 - Combine all nodes from selected pipelines
 - Renumber node IDs to prevent conflicts
 - Connect the last node of pipeline N to the first node of pipeline N+1
@@ -140,17 +144,19 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ## Pipeline Definition Schema
 
 ### Node Structure
+
 ```json
 {
   "id": "node_1",
   "type": "process",
   "label": "Quality Check",
   "data": {},
-  "position": {"x": 100, "y": 100}
+  "position": { "x": 100, "y": 100 }
 }
 ```
 
 ### Edge Structure
+
 ```json
 {
   "id": "edge_1",
@@ -162,16 +168,35 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Complete Definition
+
 ```json
 {
   "nodes": [
-    {"id": "node_1", "type": "input", "label": "Raw Data", "data": {}, "position": {"x": 100, "y": 100}},
-    {"id": "node_2", "type": "process", "label": "QC", "data": {}, "position": {"x": 300, "y": 100}},
-    {"id": "node_3", "type": "output", "label": "Clean Data", "data": {}, "position": {"x": 500, "y": 100}}
+    {
+      "id": "node_1",
+      "type": "input",
+      "label": "Raw Data",
+      "data": {},
+      "position": { "x": 100, "y": 100 }
+    },
+    {
+      "id": "node_2",
+      "type": "process",
+      "label": "QC",
+      "data": {},
+      "position": { "x": 300, "y": 100 }
+    },
+    {
+      "id": "node_3",
+      "type": "output",
+      "label": "Clean Data",
+      "data": {},
+      "position": { "x": 500, "y": 100 }
+    }
   ],
   "edges": [
-    {"id": "e1", "source": "node_1", "target": "node_2"},
-    {"id": "e2", "source": "node_2", "target": "node_3"}
+    { "id": "e1", "source": "node_1", "target": "node_2" },
+    { "id": "e2", "source": "node_2", "target": "node_3" }
   ],
   "parameters": {}
 }
@@ -181,20 +206,24 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 
 When merging pipelines, the system performs:
 
-1. **Node ID Remapping**: 
+1. **Node ID Remapping**:
+
    - Format: `p{pipeline_index}_n{node_offset}`
    - Example: `p0_n0`, `p0_n1`, `p1_n2`, `p1_n3`
 
 2. **Edge ID Remapping**:
+
    - Format: `p{pipeline_index}_e{edge_offset}`
    - Example: `p0_e0`, `p0_e1`, `p1_e2`
 
 3. **Bridge Creation**:
+
    - Connects last node of pipeline N to first node of pipeline N+1
    - Format: `bridge_p{N}_to_p{N+1}_{offset}`
    - Type marked as "bridge"
 
 4. **Parameter Namespacing**:
+
    - Format: `pipeline_{index}_{original_key}`
    - Prevents parameter conflicts
 
@@ -205,6 +234,7 @@ When merging pipelines, the system performs:
 ## Database Schema
 
 ### Custom Pipelines Table
+
 ```sql
 CREATE TABLE custom_pipelines (
     id SERIAL PRIMARY KEY,
@@ -221,6 +251,7 @@ CREATE TABLE custom_pipelines (
 ```
 
 ### Runs Table Enhancement
+
 ```sql
 ALTER TABLE runs ADD COLUMN pipeline_config JSONB;
 ```
@@ -238,16 +269,19 @@ ALTER TABLE runs ADD COLUMN pipeline_config JSONB;
 ## Troubleshooting
 
 ### Pipeline Won't Save
+
 - Ensure all required fields are filled (name, definition)
 - Check that nodes have unique IDs
 - Verify edges reference existing node IDs
 
 ### Merge Fails
+
 - Ensure you've selected at least 2 pipelines
 - Check that all pipelines have valid definitions
 - Verify you have access to all selected pipelines
 
 ### Edges Not Connecting
+
 - Make sure source and target nodes exist
 - Try re-dragging the connection
 - Check that nodes are on the canvas (not deleted)
@@ -255,6 +289,7 @@ ALTER TABLE runs ADD COLUMN pipeline_config JSONB;
 ## Future Enhancements
 
 Planned features:
+
 - [ ] Real-time collaboration on pipeline editing
 - [ ] Pipeline templates library
 - [ ] Version control for pipelines
@@ -269,6 +304,7 @@ Planned features:
 ## Support
 
 For issues or questions:
+
 - Check the API documentation at `/docs` endpoint
 - Review error messages in browser console
 - Check backend logs: `docker logs infrastructure-backend-1`

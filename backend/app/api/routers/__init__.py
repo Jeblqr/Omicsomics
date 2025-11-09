@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from . import (
     auth,
+    converters,
     custom_pipelines,
     epigenomics,
     files,
@@ -26,6 +27,7 @@ from . import (
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(converters.router, prefix="/converters", tags=["converters"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(samples.router, prefix="/samples", tags=["samples"])
 api_router.include_router(files.router, prefix="/files", tags=["files"])

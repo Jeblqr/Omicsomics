@@ -300,3 +300,89 @@ async def merge_pipelines(
         "total_nodes": len(merged_definition["nodes"]),
         "total_edges": len(merged_definition["edges"]),
     }
+
+
+@router.get("/{pipeline_id}/export")
+async def export_pipeline(
+    pipeline_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Export a pipeline in a portable JSON format.
+    
+    This format can be shared and imported by other users.
+    """
+    pipeline = await pipeline_service.get_custom_pipeline(db, pipeline_id)
+    if pipeline is None:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    
+    # Check access rights
+    if pipeline.owner_id != current_user.id and not pipeline.is_public:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Create exportable format
+    export_data = {
+        "format_version": "1.0.0",
+        "pipeline": {
+            "name": pipeline.name,
+            "description": pipeline.description,
+            "category": pipeline.category,
+            "definition": pipeline.definition,
+            "metadata": {
+                "original_author": current_user.email,
+                "created_at": pipeline.created_at.isoformat() if pipeline.created_at else None,
+                "export_date": None  # Will be set by client
+            }
+        }
+    }
+    
+    return export_data
+
+
+@router.post("/import")
+async def import_pipeline(
+    pipeline_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Import a pipeline from exported JSON format.
+    
+    Creates a new pipeline in the current user's account.
+    """
+    # Validate format
+    if "format_version" not in pipeline_data or "pipeline" not in pipeline_data:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid pipeline format. Missing required fields."
+        )
+    
+    pipeline_info = pipeline_data["pipeline"]
+    
+    # Validate required fields
+    required_fields = ["name", "definition"]
+    for field in required_fields:
+        if field not in pipeline_info:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Missing required field: {field}"
+            )
+    
+    # Create pipeline
+    new_pipeline = await pipeline_service.create_custom_pipeline(
+        db=db,
+        name=pipeline_info["name"],
+        description=pipeline_info.get("description", "Imported pipeline"),
+        definition=pipeline_info["definition"],
+        owner_id=current_user.id,
+        category=pipeline_info.get("category", "custom"),
+        is_public=False  # Default to private on import
+    )
+    
+    return {
+        "id": new_pipeline.id,
+        "name": new_pipeline.name,
+        "message": "Pipeline imported successfully",
+        "original_author": pipeline_info.get("metadata", {}).get("original_author")
+    }

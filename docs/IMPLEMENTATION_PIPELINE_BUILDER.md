@@ -5,12 +5,15 @@
 ### Backend Implementation
 
 #### 1. Database Schema
+
 - ✅ **CustomPipeline Model** (`backend/app/models/custom_pipeline.py`)
+
   - Fields: name, description, definition (JSON), category, is_public, owner_id, template_id
   - Timestamps: created_at, updated_at
   - JSON definition stores visual graph: nodes, edges, parameters
 
 - ✅ **Run Model Enhancement** (`backend/app/models/run.py`)
+
   - Added `pipeline_config: Mapped[dict]` field
   - Stores complete pipeline definition with each run
   - Enables full reproducibility
@@ -23,6 +26,7 @@
 #### 2. Services Layer
 
 - ✅ **Custom Pipelines Service** (`backend/app/services/custom_pipelines.py`)
+
   - CRUD operations: create, get, list, update, delete
   - **Merge algorithm** with sophisticated features:
     - Node ID remapping: `p{i}_n{offset}` format
@@ -39,6 +43,7 @@
 #### 3. API Endpoints
 
 - ✅ **Custom Pipelines Router** (`backend/app/api/routers/custom_pipelines.py`)
+
   - `POST /custom-pipelines/` - Create custom pipeline
   - `GET /custom-pipelines/` - List pipelines (owner's + public)
   - `GET /custom-pipelines/{id}` - Get specific pipeline
@@ -48,6 +53,7 @@
   - Pydantic schemas: PipelineNode, PipelineEdge, PipelineDefinition
 
 - ✅ **Runs Router Update** (`backend/app/api/routers/runs.py`)
+
   - Updated RunCreate schema to accept pipeline_config
   - All endpoints return pipeline_config:
     - POST /runs/ - accepts and stores config
@@ -62,6 +68,7 @@
 #### 1. Visual Components
 
 - ✅ **PipelineEditor Component** (`frontend/src/components/PipelineEditor.tsx`)
+
   - React Flow integration for visual editing
   - Node palette with 6 types:
     - Input (green)
@@ -109,6 +116,7 @@
 #### 2. Navigation & Routing
 
 - ✅ **App Routes** (`frontend/src/pages/App.tsx`)
+
   - Added `/custom-pipelines` route
   - Integrated CustomPipelinesPage component
   - Protected with authentication
@@ -127,6 +135,7 @@
 ### Testing & Validation
 
 - ✅ **API Testing**
+
   - Created 2 test pipelines successfully
   - Merged pipelines with correct output:
     - 7 nodes total (4 + 3)
@@ -137,6 +146,7 @@
   - Authentication working correctly
 
 - ✅ **Database Migration**
+
   - Applied migration successfully
   - Tables created and columns added
   - No errors in migration log
@@ -149,6 +159,7 @@
 ### Version Control
 
 - ✅ **Git Commit**
+
   - Comprehensive commit message
   - All files staged and committed
   - 17 files changed, 1784 insertions
@@ -173,13 +184,16 @@
 ## Implementation Statistics
 
 ### Code Metrics
+
 - **Backend**:
+
   - 3 new models/services
   - 1 new API router (6 endpoints)
   - 1 database migration
   - ~500 lines of Python code
 
 - **Frontend**:
+
   - 2 new components/pages
   - React Flow integration
   - ~700 lines of TypeScript/React code
@@ -187,6 +201,7 @@
 - **Total**: 17 files modified/created, 1784+ lines added
 
 ### Features Delivered
+
 - ✅ Visual pipeline builder with drag-and-drop
 - ✅ 6 node types for different operations
 - ✅ Pipeline CRUD operations
@@ -203,6 +218,7 @@
 ## Architecture Highlights
 
 ### Pipeline Merge Algorithm
+
 The merge algorithm is particularly sophisticated:
 
 1. **Input Flexibility**: Accepts pipeline IDs, template IDs, or inline definitions
@@ -213,6 +229,7 @@ The merge algorithm is particularly sophisticated:
 6. **Metadata Tracking**: Records source and strategy for reproducibility
 
 ### Data Flow
+
 ```
 User Interface (React Flow)
     ↓
@@ -228,6 +245,7 @@ Run Execution (with stored config)
 ```
 
 ### JSON Schema
+
 ```json
 {
   "nodes": [
@@ -261,6 +279,7 @@ Run Execution (with stored config)
 ## API Examples
 
 ### Create Pipeline
+
 ```bash
 POST /api/v1/custom-pipelines/
 {
@@ -277,6 +296,7 @@ POST /api/v1/custom-pipelines/
 ```
 
 ### Merge Pipelines
+
 ```bash
 POST /api/v1/custom-pipelines/merge
 {
@@ -295,12 +315,14 @@ Response:
 ## Next Steps (Optional Enhancements)
 
 ### High Priority
+
 - [ ] Integrate with RunsPage to show pipeline config
 - [ ] Add "Create Run from Pipeline" button
 - [ ] Pipeline execution status tracking
 - [ ] Parameter configuration UI for nodes
 
 ### Medium Priority
+
 - [ ] Pipeline templates gallery
 - [ ] Search and filter in pipeline list
 - [ ] Pipeline versioning
@@ -308,6 +330,7 @@ Response:
 - [ ] Pipeline validation before save
 
 ### Low Priority
+
 - [ ] Real-time collaboration
 - [ ] Auto-layout algorithm for better visualization
 - [ ] Conditional branching support
@@ -318,6 +341,7 @@ Response:
 ## Conclusion
 
 The visual pipeline builder is **fully functional** with:
+
 - ✅ Complete backend API
 - ✅ Visual drag-and-drop editor
 - ✅ Sophisticated merge capability
