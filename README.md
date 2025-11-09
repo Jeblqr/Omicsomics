@@ -13,6 +13,7 @@
 ## ✨ 核心特性
 
 ### 🔬 多组学分析支持
+
 - **基因组学**: WGS/WES 变异检测、注释
 - **转录组学**: RNA-seq 差异表达分析
 - **单细胞**: scRNA-seq 聚类与注释
@@ -23,7 +24,8 @@
 - **GWAS**: 全基因组关联分析
 
 ### 🎨 功能亮点
-- ✅ **数据可视化** - 热图、火山图、散点图、MA图
+
+- ✅ **数据可视化** - 热图、火山图、散点图、MA 图
 - ✅ **Pipeline 模板库** - 10+ 预配置分析流程
 - ✅ **Pipeline Runs** - 实时监控与日志查看
 - ✅ **质量控制** - 自动化 QC 报告与评分
@@ -32,6 +34,7 @@
 - ✅ **数据导出** - CSV、TSV、Excel、JSON 格式
 
 ### 🏗️ 技术架构
+
 - **后端**: FastAPI + SQLAlchemy 2.0 (异步)
 - **前端**: React 18 + TypeScript + TailwindCSS
 - **数据库**: PostgreSQL 15
@@ -44,25 +47,35 @@
 ## 🚀 快速开始
 
 ### 前置要求
+
 - Docker & Docker Compose
 - Git
 
 ### 一键部署（推荐）
 
+````bash
 ```bash
-# 1. 克隆仓库
+# 1. 克隆项目
 git clone https://github.com/Jeblqr/Omicsomics.git
 cd Omicsomics
 
-# 2. 启动所有服务
-cd infrastructure
-docker compose up -d
+# 2. 配置环境变量
+cp .env.example .env
+# 编辑 .env 文件，填入你的配置
 
-# 3. 访问应用
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:8001/docs
-# MinIO Console: http://localhost:9001
-```
+# 3. 启动服务
+./manage.sh start
+````
+
+访问服务：
+
+- **前端**: http://localhost:5173
+- **后端 API**: http://localhost:8001/docs
+- **MinIO**: http://localhost:9001
+
+详细说明请查看 [QUICKSTART.md](QUICKSTART.md)
+
+````
 
 **默认凭据:**
 - MinIO: `minioadmin` / `minioadmin`
@@ -123,9 +136,10 @@ pytest
 
 # 查看测试覆盖率
 pytest --cov=app --cov-report=html
-```
+````
 
 **当前测试状态:**
+
 - ✅ 认证模块
 - ✅ 项目管理
 - ✅ 样本管理

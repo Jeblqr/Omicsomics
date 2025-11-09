@@ -1,48 +1,71 @@
 services:
+  # PostgreSQL 数据库 - 独立容器
   db:
     image: postgres:15-alpine
+    container_name: omicsomics-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
       POSTGRES_DB: ${POSTGRES_DB:-omicsomics}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+    networks:
+      - omicsomics-network
+    restart: unless-stopped
 
+  # MinIO 对象存储 - 独立容器
   minio:
     image: minio/minio:RELEASE.2024-09-22T00-33-43Z
+    container_name: omicsomics-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-changeme123}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - omicsomics-network
+    restart: unless-stopped
 
+  # Redis 缓存和消息队列 - 独立容器
   redis:
     image: redis:7-alpine
+    container_name: omicsomics-redis
+    command: redis-server --appendonly yes
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - redis-data:/data
+    networks:
+      - omicsomics-network
+    restart: unless-stopped
 
+  # FastAPI 后端 - 独立容器
   backend:
     build:
       context: ../backend
       dockerfile: Dockerfile
+    container_name: omicsomics-backend
     environment:
       API_HOST: 0.0.0.0
       API_PORT: 8001
@@ -50,85 +73,118 @@ services:
       OBJECT_STORAGE_ENDPOINT: http://minio:9000
       OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-changeme123}
-      OBJECT_STORAGE_BUCKET: omicsomics
+      OBJECT_STORAGE_BUCKET: ${MINIO_BUCKET:-omicsomics}
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       PYTHONPATH: /app
-      LOG_LEVEL: INFO
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PYTHONUNBUFFERED: "1"
     ports:
-      - "8001:8001"
+      - "${BACKEND_PORT:-8001}:8001"
     depends_on:
       db:
         condition: service_healthy
       minio:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_healthy
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
     volumes:
       - ../backend/app:/app/app:delegated
       - ../backend/alembic:/app/alembic:delegated
+    networks:
+      - omicsomics-network
     restart: unless-stopped
     healthcheck:
-      # backend exposes /healthz
       test: ["CMD", "curl", "-f", "http://localhost:8001/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
+  # Celery Worker - 异步任务处理
   celery-worker:
     build:
       context: ../backend
       dockerfile: Dockerfile
+    container_name: omicsomics-celery-worker
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-omicsomics}
       OBJECT_STORAGE_ENDPOINT: http://minio:9000
       OBJECT_STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       OBJECT_STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-changeme123}
-      OBJECT_STORAGE_BUCKET: omicsomics
+      OBJECT_STORAGE_BUCKET: ${MINIO_BUCKET:-omicsomics}
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
       PYTHONPATH: /app
-      LOG_LEVEL: INFO
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PYTHONUNBUFFERED: "1"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
       minio:
-        condition: service_started
-    command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+        condition: service_healthy
+    command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info", "--concurrency=4"]
     volumes:
       - ../backend/app:/app/app:delegated
+    networks:
+      - omicsomics-network
     restart: unless-stopped
 
+  # Vue.js 前端 - 独立容器
   frontend:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+    container_name: omicsomics-frontend
     environment:
-      VITE_API_BASE_URL: http://localhost:8001
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8001}
       VITE_API_TARGET: http://backend:8001
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     volumes:
-      - ../frontend:/usr/src/app:delegated
+      - ../frontend/src:/usr/src/app/src:delegated
+      - ../frontend/public:/usr/src/app/public:delegated
       - /usr/src/app/node_modules
-    command: ["npx", "vite", "dev", "--host", "0.0.0.0"]
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    networks:
+      - omicsomics-network
+    restart: unless-stopped
 
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   command: ["tunnel", "--no-autoupdate", "run", "--token", "${CLOUDFLARED_TOKEN}"]
-  #   depends_on:
-  #     - frontend
-  #   restart: unless-stopped
+  # Cloudflared Tunnel - 独立容器
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: omicsomics-cloudflared
+    command: ["tunnel", "--no-autoupdate", "run", "--token", "${CLOUDFLARED_TOKEN}"]
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+    networks:
+      - omicsomics-network
+    restart: unless-stopped
+    environment:
+      NO_AUTOUPDATE: "true"
 
+# Docker 网络
+networks:
+  omicsomics-network:
+    name: omicsomics-network
+    driver: bridge
+
+# 持久化卷
 volumes:
   pgdata:
+    name: omicsomics-pgdata
   minio-data:
+    name: omicsomics-minio-data
   redis-data:
+    name: omicsomics-redis-data

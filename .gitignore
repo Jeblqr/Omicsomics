@@ -32,6 +32,7 @@ dmypy.json
 
 # ===== Infrastructure Secrets =====
 infrastructure/docker-compose.local.yml
+infrastructure/docker-compose.yml.bak
 docker-compose.override.yml
 *.pem
 *.key
@@ -174,3 +175,13 @@ config/*.local.*
 # package-lock.json
 # yarn.lock
 # poetry.lock
+
+# Binary executables
+bin/
+*.exe
+*.dll
+
+# Backup files
+*.bak
+*.backup
+*.old
