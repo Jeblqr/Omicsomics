@@ -7,6 +7,7 @@ import App from './pages/App';
 import './styles/index.css';
 import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProjectsProvider } from './contexts/ProjectsContext';
 
 const root = document.getElementById('root');
 
@@ -18,9 +19,11 @@ ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <ProjectsProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ProjectsProvider>
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

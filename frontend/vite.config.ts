@@ -9,8 +9,12 @@ export default defineConfig({
     host: "0.0.0.0",
     proxy: {
       '/api': {
-        target: 'http://localhost:8001',
-        changeOrigin: true,
+        target: process.env.VITE_API_TARGET || 'http://localhost:8001',
+        // Do not change the origin header so backend's redirect Location
+        // stays reachable from the browser (avoids redirects to internal
+        // service names like "backend:8001" which the user's browser
+        // cannot resolve).
+        changeOrigin: false,
         secure: false,
         rewrite: (path) => path,
       }

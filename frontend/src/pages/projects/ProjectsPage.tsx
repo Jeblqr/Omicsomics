@@ -1,36 +1,66 @@
 import { useState } from 'react';
 import LoadingView from '../../components/LoadingView';
-import { useProjects } from '../../hooks/useProjects';
-import api from '../../lib/api';
+import { useProjectsContext } from '../../contexts/ProjectsContext';
 
 const ProjectsPage = () => {
-  const { data, isLoading, isError, error, refetch } = useProjects();
+  const { projects, isLoading, createProject, deleteProject, updateProject, setCurrentProject } = useProjectsContext();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const handleCreateProject = async (e: React.FormEvent) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitError('');
 
     try {
-      await api.post('/projects/', {
-        name,
-        description,
-      });
+      if (editingId) {
+        await updateProject(editingId, name, description);
+      } else {
+        await createProject(name, description);
+      }
       
       setName('');
       setDescription('');
       setShowForm(false);
-      refetch();
-    } catch (err: any) {
-      setSubmitError(err.response?.data?.detail || 'Failed to create project');
+      setEditingId(null);
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } }; message?: string };
+      setSubmitError(error.response?.data?.detail || error.message || 'Failed to save project');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEdit = (project: { id: number; name: string; description?: string }) => {
+    setEditingId(project.id);
+    setName(project.name);
+    setDescription(project.description || '');
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteProject(id);
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } }; message?: string };
+      alert(error.response?.data?.detail || error.message || 'Failed to delete project');
+    }
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setSubmitError('');
   };
 
   return (
@@ -38,10 +68,16 @@ const ProjectsPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2>Projects</h2>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              handleCancel();
+            } else {
+              setShowForm(true);
+            }
+          }}
           style={{
             padding: '0.5rem 1rem',
-            background: '#007bff',
+            background: showForm ? '#6c757d' : '#007bff',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -62,8 +98,10 @@ const ProjectsPage = () => {
           marginBottom: '1.5rem',
           border: '1px solid #dee2e6',
         }}>
-          <h3 style={{ marginTop: 0, color: '#212529' }}>Create New Project</h3>
-          <form onSubmit={handleCreateProject}>
+          <h3 style={{ marginTop: 0, color: '#212529' }}>
+            {editingId ? 'Edit Project' : 'Create New Project'}
+          </h3>
+          <form onSubmit={handleCreateOrUpdate}>
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="project-name" style={{ display: 'block', marginBottom: '0.5rem', color: '#212529', fontWeight: 500 }}>
                 Project Name *
@@ -135,28 +173,76 @@ const ProjectsPage = () => {
       )}
 
       {isLoading && <LoadingView />}
-      {isError && <p role="alert">Failed to load projects: {error?.message}</p>}
-      {data && data.length > 0 ? (
+      {!isLoading && projects.length > 0 ? (
         <table className="data-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Description</th>
               <th>Last Updated</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((project) => (
+            {projects.map((project) => (
               <tr key={project.id}>
-                <td>{project.name}</td>
-                <td>{project.description ?? '—'}</td>
+                <td>
+                  <strong>{project.name}</strong>
+                </td>
+                <td>{project.description || '—'}</td>
                 <td>{new Date(project.updated_at).toLocaleString()}</td>
+                <td>
+                  <button
+                    onClick={() => setCurrentProject(project)}
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      marginRight: '0.5rem',
+                      background: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    Select
+                  </button>
+                  <button
+                    onClick={() => handleEdit(project)}
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      marginRight: '0.5rem',
+                      background: '#ffc107',
+                      color: '#212529',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(project.id)}
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      background: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        !isLoading && <p>No projects yet. Click "New Project" to create one.</p>
+        !isLoading &&           <p>No projects yet. Click &quot;Create New Project&quot; to get started.</p>
       )}
     </section>
   );

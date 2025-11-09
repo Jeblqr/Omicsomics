@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
         60 * 24 * 8, env="ACCESS_TOKEN_EXPIRE_MINUTES"
     )  # 8 days
+    # MASTER_KEY is used to derive per-user encryption keys via HKDF.
+    # Important: keep this secret and rotate carefully. Provide a 64-hex
+    # string (32 bytes) in production via the MASTER_KEY env var.
+    MASTER_KEY: str = Field(
+        "8f3b2f8a9d6c4e2f8a9d6c4e2f8a9d6c4e2f8a9d6c4e2f8a9d6c4e2f8a9d6c4e",
+        env="MASTER_KEY",
+    )
 
 
 @lru_cache()
