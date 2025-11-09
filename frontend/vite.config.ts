@@ -7,6 +7,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: "0.0.0.0",
+    allowedHosts: true,
+    // allowedHosts: [
+    //   "localhost", // Allow all subdomains
+    // ],
     proxy: {
       '/api': {
         target: process.env.VITE_API_TARGET || 'http://localhost:8001',

@@ -1,9 +1,12 @@
 """Custom pipeline service for CRUD operations."""
 
+from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.custom_pipeline import CustomPipeline
+from app.core.tools_registry import get_tools_registry
+from app.schemas.tools import NodeToolConfig, ValidationResult
 
 
 async def create_custom_pipeline(
@@ -218,3 +221,240 @@ def merge_pipelines(pipeline_definitions: list[dict]) -> dict:
             merged["parameters"][namespaced_key] = value
 
     return merged
+
+
+def validate_pipeline_definition(definition: dict) -> ValidationResult:
+    """
+    Validate a pipeline definition including tool configurations.
+    
+    Checks:
+    - Pipeline structure (nodes, edges)
+    - Tool configurations for each node
+    - Edge connectivity
+    - Parameter dependencies
+    """
+    errors = []
+    warnings = []
+    
+    nodes = definition.get("nodes", [])
+    edges = definition.get("edges", [])
+    
+    if not nodes:
+        errors.append("Pipeline must contain at least one node")
+        return ValidationResult(valid=False, errors=errors, warnings=warnings)
+    
+    # Validate nodes
+    node_ids = set()
+    tool_nodes = []
+    
+    for i, node in enumerate(nodes):
+        node_id = node.get("id")
+        if not node_id:
+            errors.append(f"Node at index {i} is missing 'id' field")
+            continue
+        
+        if node_id in node_ids:
+            errors.append(f"Duplicate node ID: {node_id}")
+        node_ids.add(node_id)
+        
+        node_type = node.get("type")
+        if not node_type:
+            warnings.append(f"Node {node_id} is missing 'type' field")
+        
+        # Check for tool configuration
+        node_data = node.get("data", {})
+        tool_config_data = node_data.get("tool_config")
+        
+        if tool_config_data and node_type in ["process", "tool", "analysis"]:
+            tool_nodes.append({
+                "node_id": node_id,
+                "config": tool_config_data
+            })
+    
+    # Validate tool configurations
+    registry = get_tools_registry()
+    
+    for tool_node in tool_nodes:
+        node_id = tool_node["node_id"]
+        config_data = tool_node["config"]
+        
+        try:
+            # Convert dict to NodeToolConfig
+            config = NodeToolConfig(**config_data)
+            
+            # Validate tool configuration
+            tool = registry.get_tool(config.tool_id)
+            if not tool:
+                errors.append(f"Node {node_id}: Tool '{config.tool_id}' not found in registry")
+                continue
+            
+            # Check required parameters
+            required_params = [p.name for p in tool.parameters if p.required]
+            for param_name in required_params:
+                if param_name not in config.parameters:
+                    errors.append(
+                        f"Node {node_id}: Required parameter '{param_name}' is missing"
+                    )
+            
+            # Check required inputs are mapped
+            required_inputs = [i.name for i in tool.inputs if i.required]
+            for input_name in required_inputs:
+                if input_name not in config.input_mappings:
+                    warnings.append(
+                        f"Node {node_id}: Required input '{input_name}' is not mapped. "
+                        "This may be connected via edges."
+                    )
+            
+        except Exception as e:
+            errors.append(f"Node {node_id}: Invalid tool configuration - {str(e)}")
+    
+    # Validate edges
+    for i, edge in enumerate(edges):
+        edge_id = edge.get("id")
+        source = edge.get("source")
+        target = edge.get("target")
+        
+        if not source:
+            errors.append(f"Edge at index {i} is missing 'source' field")
+        elif source not in node_ids:
+            errors.append(f"Edge {edge_id or i}: Source node '{source}' not found")
+        
+        if not target:
+            errors.append(f"Edge at index {i} is missing 'target' field")
+        elif target not in node_ids:
+            errors.append(f"Edge {edge_id or i}: Target node '{target}' not found")
+    
+    # Check for cycles (simple check)
+    if has_cycle(nodes, edges):
+        warnings.append("Pipeline contains cycles. This may cause execution issues.")
+    
+    # Check for disconnected nodes
+    connected_nodes = set()
+    for edge in edges:
+        connected_nodes.add(edge.get("source"))
+        connected_nodes.add(edge.get("target"))
+    
+    disconnected = node_ids - connected_nodes
+    if len(disconnected) > 1:  # Allow one disconnected node (could be start/end)
+        warnings.append(
+            f"Pipeline has disconnected nodes: {', '.join(disconnected)}"
+        )
+    
+    return ValidationResult(
+        valid=len(errors) == 0,
+        errors=errors,
+        warnings=warnings
+    )
+
+
+def has_cycle(nodes: list[dict], edges: list[dict]) -> bool:
+    """
+    Check if the pipeline graph has cycles using DFS.
+    """
+    # Build adjacency list
+    graph = {}
+    for node in nodes:
+        graph[node.get("id")] = []
+    
+    for edge in edges:
+        source = edge.get("source")
+        target = edge.get("target")
+        if source and target:
+            if source not in graph:
+                graph[source] = []
+            graph[source].append(target)
+    
+    # DFS cycle detection
+    visited = set()
+    rec_stack = set()
+    
+    def dfs(node_id):
+        visited.add(node_id)
+        rec_stack.add(node_id)
+        
+        for neighbor in graph.get(node_id, []):
+            if neighbor not in visited:
+                if dfs(neighbor):
+                    return True
+            elif neighbor in rec_stack:
+                return True
+        
+        rec_stack.remove(node_id)
+        return False
+    
+    for node_id in graph:
+        if node_id not in visited:
+            if dfs(node_id):
+                return True
+    
+    return False
+
+
+def get_pipeline_dependencies(definition: dict) -> dict:
+    """
+    Analyze pipeline dependencies including tools and data formats.
+    
+    Returns:
+    - tools: List of required tools with versions
+    - formats: List of required data formats
+    - resources: Aggregated resource requirements
+    """
+    registry = get_tools_registry()
+    
+    tools_required = {}
+    formats_required = set()
+    total_resources = {
+        "min_cpu": 0,
+        "max_cpu": 0,
+        "min_memory_gb": 0,
+        "max_memory_gb": 0,
+        "gpu_required": False,
+    }
+    
+    nodes = definition.get("nodes", [])
+    
+    for node in nodes:
+        node_data = node.get("data", {})
+        tool_config_data = node_data.get("tool_config")
+        
+        if tool_config_data:
+            tool_id = tool_config_data.get("tool_id")
+            tool_version = tool_config_data.get("tool_version")
+            
+            if tool_id:
+                tool = registry.get_tool(tool_id)
+                if tool:
+                    tools_required[tool_id] = {
+                        "name": tool.name,
+                        "version": tool_version or tool.current_version,
+                        "docker_image": tool.docker_image,
+                        "category": tool.category.value,
+                    }
+                    
+                    # Collect input/output formats
+                    for input_def in tool.inputs:
+                        if input_def.format:
+                            formats_required.add(input_def.format)
+                    for output_def in tool.outputs:
+                        if output_def.format:
+                            formats_required.add(output_def.format)
+                    
+                    # Aggregate resources
+                    if tool.resources.min_cpu:
+                        total_resources["min_cpu"] += tool.resources.min_cpu
+                    if tool.resources.max_cpu:
+                        total_resources["max_cpu"] += tool.resources.max_cpu
+                    if tool.resources.min_memory_gb:
+                        total_resources["min_memory_gb"] += tool.resources.min_memory_gb
+                    if tool.resources.max_memory_gb:
+                        total_resources["max_memory_gb"] += tool.resources.max_memory_gb
+                    if tool.resources.gpu_required:
+                        total_resources["gpu_required"] = True
+    
+    return {
+        "tools": list(tools_required.values()),
+        "formats": sorted(list(formats_required)),
+        "resources": total_resources,
+        "node_count": len(nodes),
+    }
+

@@ -29,7 +29,7 @@ All omics data follows this standard structure:
         "step_name": "quality_control",
         "tool": "FastQC",
         "version": "0.11.9",
-        "parameters": {"threads": 4},
+        "parameters": { "threads": 4 },
         "timestamp": "2025-01-09T14:05:00Z"
       }
     ],
@@ -60,6 +60,7 @@ All omics data follows this standard structure:
 ### Genomics (WGS/WES)
 
 **Input Formats:**
+
 - VCF/VCF.GZ - Variant Call Format
 - BAM/SAM - Binary/Sequence Alignment Map
 - FASTA/FASTQ - Sequence files
@@ -67,6 +68,7 @@ All omics data follows this standard structure:
 - GFF/GTF/GFF3 - Gene annotation
 
 **Export Formats:**
+
 - VCF - For GATK, bcftools
 - BED - For bedtools, UCSC
 - PLINK binary (.bed/.bim/.fam) - For PLINK analysis
@@ -74,6 +76,7 @@ All omics data follows this standard structure:
 ### Transcriptomics (RNA-seq)
 
 **Input Formats:**
+
 - CSV/TSV/TXT - Count matrices, expression tables
 - FASTQ - Raw sequencing reads
 - BAM - Aligned reads
@@ -81,6 +84,7 @@ All omics data follows this standard structure:
 - Matrix Market (.mtx) - Sparse matrices
 
 **Export Formats:**
+
 - CSV/TSV - For DESeq2, edgeR
 - H5AD - For Scanpy
 - RDS - For Seurat
@@ -88,12 +92,14 @@ All omics data follows this standard structure:
 ### Proteomics (LC-MS/MS)
 
 **Input Formats:**
+
 - mzML/mzXML - Mass spectrometry data
 - MGF - Mascot Generic Format
 - CSV/TSV - Protein/peptide tables
 - MaxQuant outputs (peptides.txt, proteinGroups.txt)
 
 **Export Formats:**
+
 - mzML - For OpenMS, MSFragger
 - CSV - For custom analysis
 - MaxQuant format - For reanalysis
@@ -101,12 +107,14 @@ All omics data follows this standard structure:
 ### Metabolomics (LC-MS/GC-MS)
 
 **Input Formats:**
+
 - mzML/mzXML - Mass spectrometry data
 - NetCDF/CDF - Chromatography data
 - CSV/TSV - Feature tables
 - mzData - Mass spec data
 
 **Export Formats:**
+
 - mzML - For XCMS, MZmine
 - CSV - For MetaboAnalyst
 - NetCDF - For AMDIS
@@ -114,12 +122,14 @@ All omics data follows this standard structure:
 ### Epigenomics (ChIP-seq, ATAC-seq)
 
 **Input Formats:**
+
 - BED/narrowPeak/broadPeak - Peak files
 - BigWig/bedGraph - Signal tracks
 - BAM - Aligned reads
 - CSV/TSV - Methylation tables
 
 **Export Formats:**
+
 - BED - For MACS2, Homer
 - BigWig - For IGV, UCSC
 - BedGraph - For visualization
@@ -127,6 +137,7 @@ All omics data follows this standard structure:
 ### Single-Cell (scRNA-seq)
 
 **Input Formats:**
+
 - H5/H5AD - AnnData format
 - Matrix Market (.mtx) - 10x format
 - CSV/TSV - Count matrices
@@ -134,6 +145,7 @@ All omics data follows this standard structure:
 - RDS - Seurat objects
 
 **Export Formats:**
+
 - H5AD - For Scanpy
 - RDS - For Seurat
 - CSV - For custom analysis
@@ -157,6 +169,7 @@ curl -X POST "http://localhost:8001/api/v1/converters/convert/to-unified" \
 ```
 
 Response:
+
 ```json
 {
   "metadata": {...},
@@ -188,10 +201,21 @@ curl "http://localhost:8001/api/v1/converters/supported-formats/genomics" \
 ```
 
 Response:
+
 ```json
 {
   "omics_type": "genomics",
-  "supported_formats": ["vcf", "vcf.gz", "bam", "sam", "fasta", "fastq", "bed", "gff", "gtf"]
+  "supported_formats": [
+    "vcf",
+    "vcf.gz",
+    "bam",
+    "sam",
+    "fasta",
+    "fastq",
+    "bed",
+    "gff",
+    "gtf"
+  ]
 }
 ```
 
@@ -204,6 +228,7 @@ curl "http://localhost:8001/api/v1/converters/export-formats/plink" \
 ```
 
 Response:
+
 ```json
 {
   "tool": "plink",
@@ -254,7 +279,7 @@ from app.schemas.unified_format import OmicsType, UnifiedData
 
 @ConverterFactory.register(OmicsType.METABOLOMICS)
 class MetabolomicsConverter(BaseConverter):
-    
+
     async def to_unified(self, file_path, sample_id, source_format, **kwargs):
         # Your conversion logic here
         metadata = self.create_metadata(
@@ -262,18 +287,18 @@ class MetabolomicsConverter(BaseConverter):
             source_format=source_format,
             **kwargs
         )
-        
+
         # Parse file and create records
         records = []
         # ... parsing logic ...
-        
+
         return UnifiedData(
             metadata=metadata,
             headers=headers,
             records=records,
             statistics=statistics
         )
-    
+
     async def from_unified(self, unified_data, target_format, output_path, **kwargs):
         # Your export logic here
         # ... write to output_path ...
@@ -297,6 +322,7 @@ unified_data = converter.add_processing_step(
 ```
 
 This creates:
+
 ```json
 {
   "processing_steps": [
@@ -317,21 +343,25 @@ This creates:
 ## Benefits
 
 ### 1. Reproducibility
+
 - Complete processing history
 - Tool versions tracked
 - Parameters preserved
 
 ### 2. Interoperability
+
 - Easy data exchange between tools
 - Consistent format across platforms
 - Standard API for all omics types
 
 ### 3. Data Integration
+
 - Unified format enables multi-omics analysis
 - Common structure for all data types
 - Standardized field names
 
 ### 4. Quality Control
+
 - Embedded statistics
 - Format validation
 - Metadata completeness checks

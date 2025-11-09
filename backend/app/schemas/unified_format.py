@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 class OmicsType(str, Enum):
     """Supported omics types."""
+
     GENOMICS = "genomics"
     TRANSCRIPTOMICS = "transcriptomics"
     PROTEOMICS = "proteomics"
@@ -19,6 +20,7 @@ class OmicsType(str, Enum):
 
 class ProcessingStep(BaseModel):
     """Record of a processing step applied to the data."""
+
     step_name: str
     tool: str
     version: Optional[str] = None
@@ -28,6 +30,7 @@ class ProcessingStep(BaseModel):
 
 class UnifiedMetadata(BaseModel):
     """Common metadata for all omics data."""
+
     omics_type: OmicsType
     format_version: str = "1.0.0"
     source_format: str
@@ -42,76 +45,129 @@ class UnifiedMetadata(BaseModel):
 
 class UnifiedDataRecord(BaseModel):
     """A single data record in the unified format."""
+
     id: str
     values: Dict[str, Any]
-    
+
 
 class UnifiedData(BaseModel):
     """Unified data format for all omics types."""
+
     metadata: UnifiedMetadata
     headers: List[str]
     records: List[UnifiedDataRecord]
     statistics: Dict[str, Any] = Field(default_factory=dict)
-    
+
 
 # Format-specific extensions
 
+
 class GenomicsData(UnifiedData):
     """Unified format for genomics data (VCF, BAM, etc.)."""
+
     pass
 
 
 class TranscriptomicsData(UnifiedData):
     """Unified format for transcriptomics data (count matrix, expression)."""
+
     pass
 
 
 class ProteomicsData(UnifiedData):
     """Unified format for proteomics data (peptides, proteins)."""
+
     pass
 
 
 class MetabolomicsData(UnifiedData):
     """Unified format for metabolomics data (features, compounds)."""
+
     pass
 
 
 class EpigenomicsData(UnifiedData):
     """Unified format for epigenomics data (peaks, methylation)."""
+
     pass
 
 
 class SingleCellData(UnifiedData):
     """Unified format for single-cell data (cell x gene matrix)."""
+
     pass
 
 
 # Supported input formats mapping
 SUPPORTED_FORMATS = {
     OmicsType.GENOMICS: [
-        "vcf", "vcf.gz", "bam", "sam", "fasta", "fastq", 
-        "fastq.gz", "bed", "gff", "gtf", "gff3"
+        "vcf",
+        "vcf.gz",
+        "bam",
+        "sam",
+        "fasta",
+        "fastq",
+        "fastq.gz",
+        "bed",
+        "gff",
+        "gtf",
+        "gff3",
     ],
     OmicsType.TRANSCRIPTOMICS: [
-        "csv", "tsv", "txt", "count", "matrix", "h5", 
-        "h5ad", "fastq", "fastq.gz", "bam"
+        "csv",
+        "tsv",
+        "txt",
+        "count",
+        "matrix",
+        "h5",
+        "h5ad",
+        "fastq",
+        "fastq.gz",
+        "bam",
     ],
     OmicsType.PROTEOMICS: [
-        "mzml", "mzxml", "mgf", "csv", "tsv", "txt",
-        "maxquant", "peptides.txt", "proteinGroups.txt"
+        "mzml",
+        "mzxml",
+        "mgf",
+        "csv",
+        "tsv",
+        "txt",
+        "maxquant",
+        "peptides.txt",
+        "proteinGroups.txt",
     ],
     OmicsType.METABOLOMICS: [
-        "mzml", "mzxml", "csv", "tsv", "txt", "mzdata",
-        "netcdf", "cdf"
+        "mzml",
+        "mzxml",
+        "csv",
+        "tsv",
+        "txt",
+        "mzdata",
+        "netcdf",
+        "cdf",
     ],
     OmicsType.EPIGENOMICS: [
-        "bed", "narrowPeak", "broadPeak", "bigWig", "bw",
-        "wig", "bedGraph", "bam", "csv", "tsv"
+        "bed",
+        "narrowPeak",
+        "broadPeak",
+        "bigWig",
+        "bw",
+        "wig",
+        "bedGraph",
+        "bam",
+        "csv",
+        "tsv",
     ],
     OmicsType.SINGLE_CELL: [
-        "h5", "h5ad", "mtx", "matrix.mtx", "csv", "tsv",
-        "loom", "rds"
-    ]
+        "h5",
+        "h5ad",
+        "mtx",
+        "matrix.mtx",
+        "csv",
+        "tsv",
+        "loom",
+        "rds",
+    ],
 }
 
 
@@ -126,5 +182,5 @@ EXPORT_FORMATS = {
     "scanpy": ["h5ad"],
     "maxquant": ["mzml", "raw"],
     "xcms": ["mzml", "mzxml", "netcdf"],
-    "macs2": ["bed", "bam"]
+    "macs2": ["bed", "bam"],
 }

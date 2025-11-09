@@ -18,6 +18,7 @@ from . import (
     qc,
     samples,
     singlecell,
+    tools,
     transcriptomics,
     users,
     visualizations,
@@ -37,6 +38,7 @@ api_router.include_router(pipelines.router, prefix="/pipelines", tags=["pipeline
 api_router.include_router(
     custom_pipelines.router, prefix="/custom-pipelines", tags=["custom-pipelines"]
 )
+api_router.include_router(tools.router, prefix="/tools", tags=["tools"])
 api_router.include_router(workflows.router, prefix="/workflows", tags=["workflows"])
 api_router.include_router(qc.router, prefix="/qc", tags=["qc"])
 api_router.include_router(genomics.router, prefix="/genomics", tags=["genomics"])

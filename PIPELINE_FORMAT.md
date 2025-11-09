@@ -5,7 +5,7 @@
 Omicsomics uses a **standardized JSON format** for pipeline definitions. This enables:
 
 - **Pipeline sharing** across users and projects
-- **Cross-platform portability** 
+- **Cross-platform portability**
 - **Version control** for workflows
 - **Reproducible research** with documented workflows
 
@@ -19,7 +19,6 @@ Omicsomics uses a **standardized JSON format** for pipeline definitions. This en
   - Can be shared publicly or kept private
   - Portable across projects and users
   - Supports visual editing
-  
 - **Run**: An execution instance of a pipeline
   - Uses specific pipeline configuration
   - Operates on specific data files
@@ -54,21 +53,29 @@ Omicsomics uses a **standardized JSON format** for pipeline definitions. This en
               "paired_end": true
             }
           },
-          "position": {"x": 100, "y": 100}
+          "position": { "x": 100, "y": 100 }
         },
         {
           "id": "node_2",
           "type": "process",
           "label": "Quality Control",
           "data": {
-            "tool": "FastQC",
-            "version": "0.11.9",
-            "parameters": {
-              "threads": 4,
-              "kmers": 7
+            "tool_config": {
+              "tool_id": "fastqc",
+              "tool_version": "0.12.1",
+              "parameters": {
+                "threads": 4
+              },
+              "input_mappings": {
+                "fastq_files": "node_1.output"
+              },
+              "output_mappings": {
+                "html_report": "qc_report"
+              },
+              "enabled": true
             }
           },
-          "position": {"x": 300, "y": 100}
+          "position": { "x": 300, "y": 100 }
         },
         {
           "id": "node_3",
@@ -83,21 +90,40 @@ Omicsomics uses a **standardized JSON format** for pipeline definitions. This en
               "minlen": 36
             }
           },
-          "position": {"x": 500, "y": 100}
+          "position": { "x": 500, "y": 100 }
         },
         {
           "id": "node_4",
-          "type": "transform",
+          "type": "process",
           "label": "Alignment",
           "data": {
-            "tool": "STAR",
-            "version": "2.7.10",
-            "parameters": {
-              "threads": 8,
-              "outSAMtype": "BAM SortedByCoordinate"
+            "tool_config": {
+              "tool_id": "star",
+              "tool_version": "2.7.11a",
+              "parameters": {
+                "threads": 8,
+                "out_sam_type": "BAM SortedByCoordinate",
+                "quant_mode": "GeneCounts"
+              },
+              "input_mappings": {
+                "fastq_1": "node_3.output.read1",
+                "fastq_2": "node_3.output.read2",
+                "genome_index": "reference.genome_index"
+              },
+              "output_mappings": {
+                "aligned_bam": "aligned_reads",
+                "gene_counts": "raw_counts"
+              },
+              "resources": {
+                "min_cpu": 8,
+                "max_cpu": 16,
+                "min_memory_gb": 32,
+                "max_memory_gb": 64
+              },
+              "enabled": true
             }
           },
-          "position": {"x": 700, "y": 100}
+          "position": { "x": 700, "y": 100 }
         },
         {
           "id": "node_5",
@@ -111,7 +137,7 @@ Omicsomics uses a **standardized JSON format** for pipeline definitions. This en
               "lfcThreshold": 0
             }
           },
-          "position": {"x": 900, "y": 100}
+          "position": { "x": 900, "y": 100 }
         },
         {
           "id": "node_6",
@@ -121,7 +147,7 @@ Omicsomics uses a **standardized JSON format** for pipeline definitions. This en
             "outputs": ["counts", "de_genes", "plots"],
             "format": "csv"
           },
-          "position": {"x": 1100, "y": 100}
+          "position": { "x": 1100, "y": 100 }
         }
       ],
       "edges": [
@@ -184,6 +210,7 @@ Omicsomics uses a **standardized JSON format** for pipeline definitions. This en
 ## Node Types
 
 ### 1. Input Node
+
 Represents data input to the pipeline.
 
 ```json
@@ -197,11 +224,12 @@ Represents data input to the pipeline.
     "multiple": false,
     "parameters": {}
   },
-  "position": {"x": 100, "y": 100}
+  "position": { "x": 100, "y": 100 }
 }
 ```
 
 ### 2. Process Node
+
 Data processing step.
 
 ```json
@@ -217,11 +245,12 @@ Data processing step.
       "threads": 4
     }
   },
-  "position": {"x": 300, "y": 100}
+  "position": { "x": 300, "y": 100 }
 }
 ```
 
 ### 3. Filter Node
+
 Data filtering/selection.
 
 ```json
@@ -236,11 +265,12 @@ Data filtering/selection.
       "remove_duplicates": true
     }
   },
-  "position": {"x": 500, "y": 100}
+  "position": { "x": 500, "y": 100 }
 }
 ```
 
 ### 4. Transform Node
+
 Data transformation/conversion.
 
 ```json
@@ -255,11 +285,12 @@ Data transformation/conversion.
       "blind": false
     }
   },
-  "position": {"x": 700, "y": 100}
+  "position": { "x": 700, "y": 100 }
 }
 ```
 
 ### 5. Analysis Node
+
 Statistical analysis/computation.
 
 ```json
@@ -275,11 +306,12 @@ Statistical analysis/computation.
       "adj_pvalue": 0.05
     }
   },
-  "position": {"x": 900, "y": 100}
+  "position": { "x": 900, "y": 100 }
 }
 ```
 
 ### 6. Output Node
+
 Results output.
 
 ```json
@@ -292,7 +324,7 @@ Results output.
     "format": "csv",
     "compress": true
   },
-  "position": {"x": 1100, "y": 100}
+  "position": { "x": 1100, "y": 100 }
 }
 ```
 
@@ -358,6 +390,7 @@ curl -X POST "http://localhost:8001/api/v1/custom-pipelines/import" \
 ```
 
 Response:
+
 ```json
 {
   "id": 42,
@@ -399,6 +432,7 @@ curl -X POST "http://localhost:8001/api/v1/custom-pipelines/merge" \
 ```
 
 Response:
+
 ```json
 {
   "merged_definition": {
@@ -433,17 +467,20 @@ Predefined categories:
 ## Validation Rules
 
 ### Required Fields
+
 - `name` - Pipeline name (string)
 - `definition` - Pipeline definition (object)
 - `definition.nodes` - At least one node (array)
 - `definition.edges` - Edges list (array, can be empty)
 
 ### Node Validation
+
 - Unique `id` within pipeline
 - Valid `type` (input, process, filter, transform, analysis, output)
 - `data` object present
 
 ### Edge Validation
+
 - `source` and `target` must reference existing nodes
 - No circular dependencies (DAG required)
 - At least one path from input to output
@@ -500,32 +537,199 @@ merged = merge_pipelines([
 ])
 ```
 
+## Tool Configuration
+
+### Tool Config Structure
+
+Each process node can specify a `tool_config` object in its `data` field:
+
+```json
+{
+  "tool_config": {
+    "tool_id": "star",              // Tool identifier from registry
+    "tool_version": "2.7.11a",      // Specific version (optional)
+    "parameters": {                 // Tool-specific parameters
+      "threads": 8,
+      "out_sam_type": "BAM SortedByCoordinate"
+    },
+    "input_mappings": {             // Map inputs to data sources
+      "fastq_1": "previous_node.output",
+      "genome_index": "reference.index"
+    },
+    "output_mappings": {            // Map outputs to destinations
+      "aligned_bam": "aligned_reads",
+      "gene_counts": "expression_matrix"
+    },
+    "resources": {                  // Resource requirements
+      "min_cpu": 8,
+      "max_cpu": 16,
+      "min_memory_gb": 32,
+      "max_memory_gb": 64,
+      "gpu_required": false
+    },
+    "environment": {                // Environment variables
+      "TMPDIR": "/tmp",
+      "OMP_NUM_THREADS": "8"
+    },
+    "enabled": true                 // Toggle tool execution
+  }
+}
+```
+
+### Available Tools
+
+Query available tools via API:
+
+```bash
+# List all tools
+GET /api/v1/tools/
+
+# Search tools
+GET /api/v1/tools/search?q=alignment
+
+# Get tool details
+GET /api/v1/tools/star
+
+# Get tool parameters
+GET /api/v1/tools/star/parameters
+```
+
+### Tool Categories
+
+- **alignment**: BWA, STAR, Bowtie2, HISAT2
+- **variant_calling**: GATK, FreeBayes, VarScan, Strelka
+- **quality_control**: FastQC, MultiQC, Qualimap
+- **quantification**: Salmon, Kallisto, featureCounts, HTSeq
+- **differential_expression**: DESeq2, edgeR, limma
+- **single_cell**: Seurat, Scanpy, Cell Ranger, Monocle
+- **peak_calling**: MACS2, HOMER, SICER
+- **functional_analysis**: GSEA, GO enrichment, KEGG pathway
+
+### Parameter Types
+
+Tools define parameter types for validation:
+
+- **string**: Text values
+- **integer**: Whole numbers (with min/max)
+- **float**: Decimal numbers (with min/max)
+- **boolean**: true/false flags
+- **enum**: Select from predefined values
+- **file**: File input (with extension validation)
+- **directory**: Directory path
+- **array**: Multiple values
+
+### Validation
+
+Validate pipelines before execution:
+
+```bash
+# Validate pipeline definition
+POST /api/v1/custom-pipelines/validate
+{
+  "nodes": [...],
+  "edges": [...],
+  "parameters": {...}
+}
+
+# Validate existing pipeline
+GET /api/v1/custom-pipelines/{id}/validate
+```
+
+Returns validation results:
+
+```json
+{
+  "valid": true,
+  "errors": [],
+  "warnings": [
+    "Node star_align: Input 'fastq_2' not mapped (optional for single-end)"
+  ]
+}
+```
+
+### Dependencies
+
+Check pipeline dependencies:
+
+```bash
+GET /api/v1/custom-pipelines/{id}/dependencies
+```
+
+Returns:
+
+```json
+{
+  "tools": [
+    {
+      "name": "STAR",
+      "version": "2.7.11a",
+      "docker_image": "quay.io/biocontainers/star:2.7.11a",
+      "category": "alignment"
+    },
+    {
+      "name": "DESeq2",
+      "version": "1.40.0",
+      "docker_image": "bioconductor/bioconductor_docker:RELEASE_3_17",
+      "category": "differential_expression"
+    }
+  ],
+  "formats": ["fastq", "bam", "csv"],
+  "resources": {
+    "min_cpu": 10,
+    "max_cpu": 32,
+    "min_memory_gb": 40,
+    "max_memory_gb": 96,
+    "gpu_required": false
+  },
+  "node_count": 5
+}
+```
+
 ## Best Practices
 
 ### 1. Naming
+
 - Use descriptive names: "RNA-seq DE Analysis" not "Pipeline 1"
 - Include version in name if multiple versions exist
 - Use consistent naming scheme across pipelines
 
 ### 2. Documentation
+
 - Provide clear description
 - Document all parameters
 - List required inputs and expected outputs
 - Include citations for methods
 
 ### 3. Parameters
-- Use sensible defaults
+
+- Use sensible defaults from tool registry
 - Document parameter ranges
-- Validate parameter values
-- Use typed parameters where possible
+- Validate parameter values before execution
+- Use typed parameters for better validation
 
 ### 4. Modularity
+
 - Keep pipelines focused (5-10 nodes ideal)
 - Create reusable sub-pipelines
 - Use merge for complex workflows
 - Avoid deep nesting
 
+### 5. Tool Selection
+
+- Use registry tools when available (tested and validated)
+- Specify tool versions for reproducibility
+- Check resource requirements match available resources
+- Validate tool configurations before saving pipeline
+
+### 6. Input/Output Mapping
+
+- Explicitly map all required inputs
+- Use descriptive mapping names
+- Check data format compatibility between nodes
+- Document expected input formats in pipeline description
+
 ### 5. Metadata
+
 - Track tool versions
 - Document data sources
 - Include authorship info

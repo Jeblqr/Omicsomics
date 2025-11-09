@@ -8,6 +8,7 @@ from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.database import get_async_db
 from app.models.user import User
 from app.services import custom_pipelines as pipeline_service
+from app.schemas.tools import ValidationResult
 
 router = APIRouter()
 
@@ -310,17 +311,17 @@ async def export_pipeline(
 ):
     """
     Export a pipeline in a portable JSON format.
-    
+
     This format can be shared and imported by other users.
     """
     pipeline = await pipeline_service.get_custom_pipeline(db, pipeline_id)
     if pipeline is None:
         raise HTTPException(status_code=404, detail="Pipeline not found")
-    
+
     # Check access rights
     if pipeline.owner_id != current_user.id and not pipeline.is_public:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     # Create exportable format
     export_data = {
         "format_version": "1.0.0",
@@ -331,12 +332,14 @@ async def export_pipeline(
             "definition": pipeline.definition,
             "metadata": {
                 "original_author": current_user.email,
-                "created_at": pipeline.created_at.isoformat() if pipeline.created_at else None,
-                "export_date": None  # Will be set by client
-            }
-        }
+                "created_at": (
+                    pipeline.created_at.isoformat() if pipeline.created_at else None
+                ),
+                "export_date": None,  # Will be set by client
+            },
+        },
     }
-    
+
     return export_data
 
 
@@ -348,27 +351,25 @@ async def import_pipeline(
 ):
     """
     Import a pipeline from exported JSON format.
-    
+
     Creates a new pipeline in the current user's account.
     """
     # Validate format
     if "format_version" not in pipeline_data or "pipeline" not in pipeline_data:
         raise HTTPException(
-            status_code=400,
-            detail="Invalid pipeline format. Missing required fields."
+            status_code=400, detail="Invalid pipeline format. Missing required fields."
         )
-    
+
     pipeline_info = pipeline_data["pipeline"]
-    
+
     # Validate required fields
     required_fields = ["name", "definition"]
     for field in required_fields:
         if field not in pipeline_info:
             raise HTTPException(
-                status_code=400,
-                detail=f"Missing required field: {field}"
+                status_code=400, detail=f"Missing required field: {field}"
             )
-    
+
     # Create pipeline
     new_pipeline = await pipeline_service.create_custom_pipeline(
         db=db,
@@ -377,12 +378,84 @@ async def import_pipeline(
         definition=pipeline_info["definition"],
         owner_id=current_user.id,
         category=pipeline_info.get("category", "custom"),
-        is_public=False  # Default to private on import
+        is_public=False,  # Default to private on import
     )
-    
+
     return {
         "id": new_pipeline.id,
         "name": new_pipeline.name,
         "message": "Pipeline imported successfully",
-        "original_author": pipeline_info.get("metadata", {}).get("original_author")
+        "original_author": pipeline_info.get("metadata", {}).get("original_author"),
+    }
+
+
+@router.post("/validate", response_model=ValidationResult)
+async def validate_pipeline(
+    definition: PipelineDefinition,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Validate a pipeline definition without saving it.
+    
+    Checks:
+    - Pipeline structure (nodes, edges)
+    - Tool configurations
+    - Parameter completeness
+    - Edge connectivity
+    - Circular dependencies
+    """
+    result = pipeline_service.validate_pipeline_definition(definition.model_dump())
+    return result
+
+
+@router.get("/{pipeline_id}/validate", response_model=ValidationResult)
+async def validate_existing_pipeline(
+    pipeline_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Validate an existing pipeline.
+    """
+    pipeline = await pipeline_service.get_custom_pipeline(db, pipeline_id)
+    if pipeline is None:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    
+    # Check access rights
+    if pipeline.owner_id != current_user.id and not pipeline.is_public:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    result = pipeline_service.validate_pipeline_definition(pipeline.definition)
+    return result
+
+
+@router.get("/{pipeline_id}/dependencies")
+async def get_pipeline_dependencies(
+    pipeline_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Get dependencies for a pipeline.
+    
+    Returns:
+    - Required tools with versions
+    - Required data formats
+    - Aggregated resource requirements
+    - Node count
+    """
+    pipeline = await pipeline_service.get_custom_pipeline(db, pipeline_id)
+    if pipeline is None:
+        raise HTTPException(status_code=404, detail="Pipeline not found")
+    
+    # Check access rights
+    if pipeline.owner_id != current_user.id and not pipeline.is_public:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    dependencies = pipeline_service.get_pipeline_dependencies(pipeline.definition)
+    
+    return {
+        "pipeline_id": pipeline.id,
+        "pipeline_name": pipeline.name,
+        "dependencies": dependencies
     }
