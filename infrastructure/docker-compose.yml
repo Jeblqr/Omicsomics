@@ -158,22 +158,6 @@ services:
       - omicsomics-network
     restart: unless-stopped
 
-  # Cloudflared Tunnel - 独立容器
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: omicsomics-cloudflared
-    command: ["tunnel", "--no-autoupdate", "run", "--token", "${CLOUDFLARED_TOKEN}"]
-    depends_on:
-      frontend:
-        condition: service_started
-      backend:
-        condition: service_healthy
-    networks:
-      - omicsomics-network
-    restart: unless-stopped
-    environment:
-      NO_AUTOUPDATE: "true"
-
 # Docker 网络
 networks:
   omicsomics-network:
