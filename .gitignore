@@ -31,7 +31,7 @@ htmlcov/
 dmypy.json
 
 # ===== Infrastructure Secrets =====
-infrastructure/docker-compose.yml
+infrastructure/docker-compose.local.yml
 docker-compose.override.yml
 *.pem
 *.key

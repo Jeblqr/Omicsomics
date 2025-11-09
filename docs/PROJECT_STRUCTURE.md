@@ -60,6 +60,7 @@ backend/
 ```
 
 **关键功能**:
+
 - ✅ RESTful API (FastAPI)
 - ✅ 异步文件处理 (Celery)
 - ✅ 多格式数据转换
@@ -105,6 +106,7 @@ frontend/
 ```
 
 **关键功能**:
+
 - ✅ Vue 3 Composition API
 - ✅ TypeScript 类型安全
 - ✅ Pinia 状态管理
@@ -121,6 +123,7 @@ infrastructure/
 ```
 
 **服务组件**:
+
 - `db` - PostgreSQL 15 数据库
 - `minio` - 对象存储服务
 - `redis` - 缓存和消息队列
@@ -163,23 +166,23 @@ docs/
 
 ### 根目录配置
 
-| 文件 | 用途 | Git 追踪 |
-|-----|------|---------|
-| `.gitignore` | Git 忽略规则 | ✅ |
-| `.env.example` | 环境变量模板 | ✅ |
-| `.env` | 实际环境变量 | ❌ |
-| `README.md` | 项目说明 | ✅ |
-| `IMPLEMENTATION_COMPLETE.md` | 实现报告 | ✅ |
-| `SECURITY.md` | 安全策略 | ✅ |
+| 文件                         | 用途         | Git 追踪 |
+| ---------------------------- | ------------ | -------- |
+| `.gitignore`                 | Git 忽略规则 | ✅       |
+| `.env.example`               | 环境变量模板 | ✅       |
+| `.env`                       | 实际环境变量 | ❌       |
+| `README.md`                  | 项目说明     | ✅       |
+| `IMPLEMENTATION_COMPLETE.md` | 实现报告     | ✅       |
+| `SECURITY.md`                | 安全策略     | ✅       |
 
 ### 便捷脚本（根目录）
 
-| 脚本 | 功能 | 用途 |
-|-----|------|------|
+| 脚本              | 功能                 | 用途     |
+| ----------------- | -------------------- | -------- |
 | `docker-start.sh` | 启动所有 Docker 服务 | 生产环境 |
-| `docker-stop.sh` | 停止所有服务 | 管理 |
-| `docker-logs.sh` | 查看服务日志 | 调试 |
-| `docker-shell.sh` | 进入容器 shell | 调试 |
+| `docker-stop.sh`  | 停止所有服务         | 管理     |
+| `docker-logs.sh`  | 查看服务日志         | 调试     |
+| `docker-shell.sh` | 进入容器 shell       | 调试     |
 
 ## 📊 数据目录
 
@@ -258,12 +261,14 @@ data/              # MinIO - 上传的数据文件、结果文件
 ### 首次设置
 
 1. **复制环境变量模板**:
+
    ```bash
    cp .env.example .env
    # 编辑 .env，填入真实值
    ```
 
 2. **复制 Docker Compose 配置**:
+
    ```bash
    cp infrastructure/docker-compose.example.yml infrastructure/docker-compose.yml
    # 编辑 docker-compose.yml，配置密钥
