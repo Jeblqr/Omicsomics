@@ -785,3 +785,349 @@ async def get_task_status(
         response = {"state": task.state, "status": str(task.info)}
 
     return response
+
+
+@router.post("/search")
+async def search_data(
+    query: str | None = None,
+    feature_id: str | None = None,
+    field_ranges: str | None = None,  # JSON string: {"field": {"min": 0, "max": 100}}
+    exact_matches: str | None = None,  # JSON string: {"field": "value"}
+    datafile_id: int | None = None,
+    project_id: int | None = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Advanced search across processed data files.
+    
+    Args:
+        query: Full-text search query
+        feature_id: Search by feature/gene/protein ID
+        field_ranges: JSON string of range queries, e.g. {"expression": {"min": 10, "max": 100}}
+        exact_matches: JSON string of exact match filters, e.g. {"chromosome": "chr1"}
+        datafile_id: Optional: search specific datafile
+        project_id: Optional: search within project
+    
+    Returns:
+        {
+            "results": [...],
+            "total_results": int,
+            "datafiles_searched": int
+        }
+    """
+    from app.services import storage_service
+    from app.services.search import DataSearchService, SearchQuery
+    
+    # Build search query
+    search_query = SearchQuery()
+    
+    if query:
+        search_query.with_text(query)
+    
+    if feature_id:
+        search_query.with_feature_id(feature_id)
+    
+    if field_ranges:
+        try:
+            ranges = json.loads(field_ranges)
+            for field, range_spec in ranges.items():
+                search_query.with_range(
+                    field,
+                    min_val=range_spec.get('min'),
+                    max_val=range_spec.get('max')
+                )
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid field_ranges JSON")
+    
+    if exact_matches:
+        try:
+            matches = json.loads(exact_matches)
+            for field, value in matches.items():
+                search_query.with_exact_match(field, value)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid exact_matches JSON")
+    
+    # Get datafiles to search
+    datafiles = []
+    
+    if datafile_id:
+        # Search single datafile
+        df = await datafile_service.get_datafile(db, datafile_id)
+        if df is None:
+            raise HTTPException(status_code=404, detail="DataFile not found")
+        
+        project = await project_service.get_project(db, df.project_id)
+        if project is None or project.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        datafiles = [df]
+    
+    elif project_id:
+        # Search all datafiles in project
+        project = await project_service.get_project(db, project_id)
+        if project is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+        if project.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        datafiles = await datafile_service.list_datafiles(db, project_id)
+    
+    else:
+        # Search all user's datafiles
+        all_datafiles = await datafile_service.list_datafiles(db, None)
+        # Filter to user's files
+        user_projects = await project_service.get_projects(db, current_user.id)
+        user_project_ids = {p.id for p in user_projects}
+        datafiles = [df for df in all_datafiles if df.project_id in user_project_ids]
+    
+    # Search each datafile
+    all_results = []
+    datafiles_searched = 0
+    
+    for df in datafiles:
+        # Check if has processed file
+        metadata = df.metadata_ or {}
+        processed_file_id = metadata.get("processed_file_id")
+        
+        if not processed_file_id:
+            continue
+        
+        # Get processed file
+        processed_df = await datafile_service.get_datafile(db, processed_file_id)
+        if processed_df is None:
+            continue
+        
+        try:
+            # Download and decrypt
+            plaintext = await storage_service.download_and_decrypt(
+                current_user.id, processed_df.object_key
+            )
+            
+            # Deserialize
+            unified_data = FileProcessor.deserialize_unified_data(plaintext)
+            
+            # Search
+            results = DataSearchService.search(unified_data, search_query)
+            
+            # Add source info to results
+            for result in results:
+                result['_source'] = {
+                    'datafile_id': df.id,
+                    'filename': df.filename,
+                    'project_id': df.project_id
+                }
+            
+            all_results.extend(results)
+            datafiles_searched += 1
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to search datafile {df.id}: {e}")
+            continue
+    
+    return {
+        "results": all_results,
+        "total_results": len(all_results),
+        "datafiles_searched": datafiles_searched
+    }
+
+
+@router.post("/batch-upload", status_code=status.HTTP_201_CREATED)
+async def batch_upload_datafiles(
+    project_id: int = Form(...),
+    files: list[UploadFile] = File(...),
+    process_files: bool = Form(True),
+    async_processing: bool = Form(False),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Batch upload multiple data files.
+    
+    Args:
+        project_id: Project to upload to
+        files: List of files to upload
+        process_files: Whether to process files (default: True)
+        async_processing: Use async processing (default: False)
+    
+    Returns:
+        {
+            "uploaded": [...],
+            "failed": [...],
+            "total": int,
+            "success_count": int,
+            "failure_count": int
+        }
+    """
+    # Verify project
+    project = await project_service.get_project(db, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    uploaded = []
+    failed = []
+    
+    for file in files:
+        try:
+            filename = file.filename or "unnamed"
+            mime_type = file.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
+            content = await file.read()
+            
+            # Store raw file
+            df = await datafile_service.create_datafile(
+                db=db,
+                file_data=io.BytesIO(content),
+                filename=filename,
+                project_id=project_id,
+                user_id=current_user.id,
+                content_type=mime_type,
+            )
+            
+            result = {
+                "filename": filename,
+                "datafile_id": df.id,
+                "size": len(content),
+                "processed": False
+            }
+            
+            # Process if requested
+            if process_files:
+                if async_processing:
+                    try:
+                        from app.tasks.file_tasks import process_file_async
+                        task = process_file_async.delay(raw_file_id=df.id)
+                        result["task_id"] = task.id
+                        result["async"] = True
+                    except Exception as e:
+                        result["processing_error"] = str(e)
+                else:
+                    try:
+                        file_obj = io.BytesIO(content)
+                        processor = FileProcessor()
+                        unified_data, processing_info = await processor.process_file(
+                            file_data=file_obj,
+                            filename=filename,
+                            project_id=project_id
+                        )
+                        
+                        # Store processed file
+                        unified_json = processor.serialize_unified_data(unified_data)
+                        processed_df = await datafile_service.create_datafile(
+                            db=db,
+                            file_data=io.BytesIO(unified_json),
+                            filename=f"processed_{filename}.json",
+                            project_id=project_id,
+                            user_id=current_user.id,
+                            content_type="application/json",
+                        )
+                        
+                        # Link files
+                        metadata = df.metadata_ or {}
+                        metadata["processed_file_id"] = processed_df.id
+                        metadata["processing_info"] = processing_info
+                        df.metadata_ = metadata
+                        await db.commit()
+                        
+                        result["processed"] = True
+                        result["processed_file_id"] = processed_df.id
+                    except Exception as e:
+                        result["processing_error"] = str(e)
+            
+            uploaded.append(result)
+            
+        except Exception as e:
+            failed.append({
+                "filename": file.filename or "unknown",
+                "error": str(e)
+            })
+    
+    return {
+        "uploaded": uploaded,
+        "failed": failed,
+        "total": len(files),
+        "success_count": len(uploaded),
+        "failure_count": len(failed)
+    }
+
+
+@router.delete("/batch-delete")
+async def batch_delete_datafiles(
+    datafile_ids: str = Form(...),  # Comma-separated IDs
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Batch delete multiple data files.
+    
+    Args:
+        datafile_ids: Comma-separated list of datafile IDs
+    
+    Returns:
+        {
+            "deleted": [...],
+            "failed": [...],
+            "total": int,
+            "success_count": int,
+            "failure_count": int
+        }
+    """
+    # Parse IDs
+    try:
+        ids = [int(id.strip()) for id in datafile_ids.split(",")]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid datafile IDs format")
+    
+    deleted = []
+    failed = []
+    
+    for datafile_id in ids:
+        try:
+            # Get datafile
+            df = await datafile_service.get_datafile(db, datafile_id)
+            if df is None:
+                failed.append({
+                    "datafile_id": datafile_id,
+                    "error": "DataFile not found"
+                })
+                continue
+            
+            # Check authorization
+            project = await project_service.get_project(db, df.project_id)
+            if project is None or project.owner_id != current_user.id:
+                failed.append({
+                    "datafile_id": datafile_id,
+                    "error": "Not authorized"
+                })
+                continue
+            
+            # Delete processed version if exists
+            metadata = df.metadata_ or {}
+            processed_file_id = metadata.get("processed_file_id")
+            if processed_file_id:
+                await datafile_service.delete_datafile(db, processed_file_id)
+            
+            # Delete main file
+            await datafile_service.delete_datafile(db, datafile_id)
+            
+            deleted.append({
+                "datafile_id": datafile_id,
+                "filename": df.filename
+            })
+            
+        except Exception as e:
+            failed.append({
+                "datafile_id": datafile_id,
+                "error": str(e)
+            })
+    
+    return {
+        "deleted": deleted,
+        "failed": failed,
+        "total": len(ids),
+        "success_count": len(deleted),
+        "failure_count": len(failed)
+    }
