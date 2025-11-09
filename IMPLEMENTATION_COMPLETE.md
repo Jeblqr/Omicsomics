@@ -11,6 +11,7 @@
 All 7 enhancement features have been successfully implemented, tested, and deployed. The system includes comprehensive data visualization, export capabilities, advanced search, pipeline templates, runs management, batch operations, and quality control reporting.
 
 **Key Metrics:**
+
 - **10 Pipeline Templates** across 9 categories
 - **4 Visualization Components** (Heatmap, Scatter, Volcano, MA)
 - **4 Export Formats** (CSV, TSV, Excel, JSON)
@@ -23,22 +24,27 @@ All 7 enhancement features have been successfully implemented, tested, and deplo
 ## ✅ Implementation Status
 
 ### 1. Data Visualization Components
+
 **Location:** `frontend/src/components/visualizations/`
 
 #### Implemented Components:
+
 - **Heatmap.tsx** - Clustered heatmap with dendrograms
+
   - Color gradient customization
   - Row/column clustering
   - Interactive tooltips
   - Export to SVG/PNG
 
 - **ScatterPlot.tsx** - 2D/3D scatter plots
+
   - Multiple series support
   - Log scale options
   - Regression lines
   - Interactive selection
 
 - **VolcanoPlot.tsx** - DEG analysis visualization
+
   - Fold change vs p-value
   - Significance thresholds
   - Gene labeling
@@ -51,6 +57,7 @@ All 7 enhancement features have been successfully implemented, tested, and deplo
   - Interactive brushing
 
 **Technology Stack:**
+
 - React 18 + TypeScript
 - D3.js for rendering
 - Recharts for interactive charts
@@ -59,20 +66,24 @@ All 7 enhancement features have been successfully implemented, tested, and deplo
 ---
 
 ### 2. Data Export Functionality
+
 **Location:** `backend/app/api/routers/data.py`
 
 #### Export Endpoints:
+
 ```
 GET /api/v1/data/{data_id}/export?format={csv|tsv|excel|json}
 ```
 
 #### Features:
+
 - **CSV Export** - Comma-separated values with headers
 - **TSV Export** - Tab-separated for R/Python
 - **Excel Export** - XLSX with formatting and sheets
 - **JSON Export** - Structured data with metadata
 
 #### Implementation:
+
 - Content-Type negotiation
 - Streaming for large files
 - Filename generation with timestamps
@@ -80,6 +91,7 @@ GET /api/v1/data/{data_id}/export?format={csv|tsv|excel|json}
 - Compression options (gzip)
 
 **API Test:**
+
 ```bash
 curl -H "Authorization: Bearer $TOKEN" \
   "http://localhost:8001/api/v1/data/123/export?format=csv" \
@@ -89,9 +101,11 @@ curl -H "Authorization: Bearer $TOKEN" \
 ---
 
 ### 3. Advanced Search and Filtering
+
 **Location:** `backend/app/services/search.py` (195 lines)
 
 #### Features:
+
 ```python
 # Multi-scope search
 search = SearchQuery()
@@ -108,11 +122,13 @@ stats = await search.field_stats("experiment_date")
 ```
 
 #### Search Scopes:
+
 - **FILE** - Search within single file
 - **PROJECT** - Search within project
 - **USER** - Search all user's data
 
 #### Supported Filters:
+
 - Data type (genomics, transcriptomics, proteomics, etc.)
 - Processing status
 - Date range
@@ -122,43 +138,53 @@ stats = await search.field_stats("experiment_date")
 ---
 
 ### 4. Pipeline Template Library
+
 **Location:** `backend/app/services/pipeline_templates.py`
 
 #### Available Templates (10):
 
 1. **RNA-seq Basic Analysis** (transcriptomics)
+
    - FastQC → Trim Galore → STAR → featureCounts → DESeq2
    - 5 steps, 4 configurable parameters
 
 2. **Variant Calling Pipeline** (genomics)
+
    - BWA → Picard → GATK BaseRecalibration → HaplotypeCaller → SnpEff
    - 5 steps, 3 parameters
 
 3. **ChIP-seq Analysis** (epigenomics)
+
    - FastQC → Bowtie2 → Picard → MACS2 → HOMER
    - 5 steps, 3 parameters
 
 4. **Single Cell RNA-seq** (singlecell)
+
    - CellRanger → Seurat QC → Normalization → Clustering → Markers
    - 5 steps, 3 parameters
 
 5. **Label-free Proteomics Quantification** (proteomics)
+
    - MaxQuant → Filtering → ProteinProphet → Limma
    - 4 steps, 4 parameters
 
 6. **Proteomics Quality Control** (quality_control)
+
    - Data Loading → Missing Value Analysis → CV Analysis → Normalization → PCA
    - 5 steps, 3 parameters
 
 7. **GO Term Enrichment Analysis** (enrichment)
+
    - ID Mapping → TopGO → clusterProfiler (KEGG)
    - 3 steps, 3 parameters
 
 8. **Untargeted Metabolomics** (metabolomics)
+
    - XCMS → CAMERA → MetaboAnalyst → Mummichog
    - 4 steps, 3 parameters
 
 9. **Genome-Wide Association Study** (gwas)
+
    - PLINK QC → Minimac4 → Association Test → Manhattan Plot
    - 4 steps, 3 parameters
 
@@ -167,6 +193,7 @@ stats = await search.field_stats("experiment_date")
     - 4 steps, 3 parameters
 
 #### Template Structure:
+
 ```python
 {
     "id": "rna-seq-basic",
@@ -196,6 +223,7 @@ stats = await search.field_stats("experiment_date")
 ```
 
 #### API Endpoints:
+
 ```
 GET /api/v1/pipelines/                    # List all templates (10)
 GET /api/v1/pipelines/categories          # Get categories (10)
@@ -204,10 +232,11 @@ GET /api/v1/pipelines/category/{category} # Filter by category
 ```
 
 **API Test Results:**
+
 ```
 ✅ Total templates: 10
-✅ Categories: transcriptomics, genomics, proteomics, metabolomics, 
-               epigenomics, singlecell, multiomics, gwas, 
+✅ Categories: transcriptomics, genomics, proteomics, metabolomics,
+               epigenomics, singlecell, multiomics, gwas,
                quality_control, enrichment
 ✅ First template: RNA-seq Basic Analysis
 ```
@@ -215,11 +244,13 @@ GET /api/v1/pipelines/category/{category} # Filter by category
 ---
 
 ### 5. Pipeline Runs Management
+
 **Location:** `frontend/src/components/runs/`
 
 #### Components Created:
 
 **RunsManager.tsx** (348 lines)
+
 - Monitor all pipeline runs
 - Real-time status updates (5s refresh)
 - Start/Stop/Delete actions
@@ -228,6 +259,7 @@ GET /api/v1/pipelines/category/{category} # Filter by category
 - Log viewer modal
 
 **CreateRunDialog.tsx** (392 lines)
+
 - 4-step wizard interface:
   1. Select template from library
   2. Enter run details (name, description)
@@ -239,6 +271,7 @@ GET /api/v1/pipelines/category/{category} # Filter by category
 
 **Existing Implementation:**
 `frontend/src/pages/runs/RunsPage.tsx` already has full functionality:
+
 - Form-based run creation
 - Table view with sorting/filtering
 - Inline actions (start, stop, delete, logs)
@@ -246,6 +279,7 @@ GET /api/v1/pipelines/category/{category} # Filter by category
 - Pagination
 
 #### Backend API:
+
 ```
 GET    /api/v1/runs/              # List user runs
 POST   /api/v1/runs/              # Create new run
@@ -261,11 +295,13 @@ GET    /api/v1/runs/{run_id}/results  # Get results
 ---
 
 ### 6. Batch Operations
+
 **Location:** `backend/app/api/routers/data.py`
 
 #### Endpoints Implemented:
 
 **Bulk Upload:**
+
 ```python
 POST /api/v1/data/batch-upload
 Content-Type: multipart/form-data
@@ -277,6 +313,7 @@ data_type: OmicsType
 ```
 
 **Batch Delete:**
+
 ```python
 DELETE /api/v1/data/batch-delete
 Content-Type: application/json
@@ -288,6 +325,7 @@ Content-Type: application/json
 ```
 
 **Batch Status Update:**
+
 ```python
 PUT /api/v1/data/batch-update-status
 Content-Type: application/json
@@ -299,6 +337,7 @@ Content-Type: application/json
 ```
 
 #### Features:
+
 - Transaction safety (all-or-nothing)
 - Progress tracking for bulk operations
 - Error reporting per item
@@ -308,11 +347,13 @@ Content-Type: application/json
 ---
 
 ### 7. Quality Control Reports
+
 **Location:** `backend/app/services/quality_control.py` (297 lines)
 
 #### Features Implemented:
 
 **Missing Value Analysis:**
+
 ```python
 {
   "total_values": 10000,
@@ -324,6 +365,7 @@ Content-Type: application/json
 ```
 
 **Outlier Detection (IQR Method):**
+
 ```python
 {
   "method": "IQR",
@@ -340,6 +382,7 @@ Content-Type: application/json
 ```
 
 **Distribution Statistics:**
+
 ```python
 {
   "mean": 45.2,
@@ -355,6 +398,7 @@ Content-Type: application/json
 ```
 
 **Quality Score (0-100):**
+
 ```python
 def calculate_quality_score(data: pd.DataFrame) -> float:
     """
@@ -368,6 +412,7 @@ def calculate_quality_score(data: pd.DataFrame) -> float:
 ```
 
 #### API Endpoint:
+
 ```
 GET /api/v1/data/{data_id}/quality-report
 
@@ -394,6 +439,7 @@ Response:
 ### Backend API Tests
 
 **Authentication:**
+
 ```bash
 ✅ POST /api/v1/auth/register           # User registration
 ✅ POST /api/v1/auth/login/access-token # JWT token generation
@@ -401,6 +447,7 @@ Response:
 ```
 
 **Pipeline Templates:**
+
 ```bash
 ✅ GET /api/v1/pipelines/           # Returns 10 templates
 ✅ GET /api/v1/pipelines/categories # Returns 10 categories
@@ -409,6 +456,7 @@ Response:
 ```
 
 **Health & System:**
+
 ```bash
 ✅ GET /healthz                     # Returns {"status":"ok"}
 ✅ GET /api/v1/tools/              # Returns 17 tools
@@ -418,11 +466,13 @@ Response:
 ### Frontend Components
 
 **Created but Not Yet Integrated:**
+
 - `PipelineTemplateLibrary.tsx` (373 lines) - New component
 - `RunsManager.tsx` (348 lines) - New component
 - `CreateRunDialog.tsx` (392 lines) - New component
 
 **Existing Pages (Fully Functional):**
+
 - `PipelinesPage.tsx` - Has own template display
 - `RunsPage.tsx` - Full runs management with form
 
@@ -466,11 +516,13 @@ cfe3afb - fix: standardize pipeline template structure
 ### New Files Created
 
 **Backend:**
+
 - `services/search.py` - 195 lines
 - `services/quality_control.py` - 297 lines
 - `services/pipeline_templates.py` - Enhanced with 10 templates
 
 **Frontend:**
+
 - `components/visualizations/Heatmap.tsx`
 - `components/visualizations/ScatterPlot.tsx`
 - `components/visualizations/VolcanoPlot.tsx`
@@ -488,11 +540,13 @@ cfe3afb - fix: standardize pipeline template structure
 ### Critical Bugs Resolved:
 
 1. **Syntax Error in tools.py**
+
    - Line 1: `tool"""` → `"""`
    - Prevented backend startup
    - Fixed in commit 0f8417b
 
 2. **Pipeline Template Validation Errors**
+
    - Steps were string lists instead of dict lists
    - Missing `parameters` field in 6 templates
    - Fixed in commit cfe3afb
@@ -502,6 +556,7 @@ cfe3afb - fix: standardize pipeline template structure
    - Updated in implementation
 
 ### Port Conflicts:
+
 - Vite dev server on port 5173 - Resolved by killing existing process
 - All Docker containers healthy
 
@@ -512,34 +567,40 @@ cfe3afb - fix: standardize pipeline template structure
 Use this checklist to verify all features through the web interface:
 
 ### User Authentication
+
 - [ ] Register new user account at https://omicsomics.qrluo.uk
 - [ ] Login with credentials
 - [ ] Verify JWT token stored in browser
 
 ### Project Management
+
 - [ ] Create a new project
 - [ ] Navigate to project details
 - [ ] Upload sample data files
 
 ### Data Upload & Processing
+
 - [ ] Upload `test_data/sample_transcriptomics.csv`
 - [ ] Upload `test_data/sample_proteomics.csv`
 - [ ] Upload `test_data/sample_genomics.vcf`
 - [ ] Verify file parsing and metadata extraction
 
 ### Quality Control
+
 - [ ] View QC report for uploaded transcriptomics data
 - [ ] Check missing value analysis
 - [ ] Review outlier detection results
 - [ ] Verify quality score (0-100)
 
 ### Data Visualization
+
 - [ ] Generate heatmap for expression data
 - [ ] Create scatter plot comparing samples
 - [ ] Generate volcano plot for DEG analysis
 - [ ] Create MA plot for intensity visualization
 
 ### Data Export
+
 - [ ] Export data as CSV
 - [ ] Export data as TSV
 - [ ] Export data as Excel (XLSX)
@@ -547,18 +608,21 @@ Use this checklist to verify all features through the web interface:
 - [ ] Verify downloaded files
 
 ### Search & Filtering
+
 - [ ] Search for files by name
 - [ ] Filter by data type (transcriptomics)
 - [ ] Filter by status (completed)
 - [ ] Apply date range filter
 
 ### Pipeline Templates
+
 - [ ] Browse pipeline template library
 - [ ] View "RNA-seq Basic Analysis" details
 - [ ] Check template steps and parameters
 - [ ] Filter templates by category
 
 ### Pipeline Runs
+
 - [ ] Create new run from "Proteomics QC" template
 - [ ] Configure run parameters
 - [ ] Select input files
@@ -568,6 +632,7 @@ Use this checklist to verify all features through the web interface:
 - [ ] Download results
 
 ### Batch Operations
+
 - [ ] Select multiple files (checkbox)
 - [ ] Batch export selected files
 - [ ] Batch delete selected files (with confirmation)
@@ -580,6 +645,7 @@ Use this checklist to verify all features through the web interface:
 ### Environment Variables
 
 Required for production:
+
 ```bash
 # Database
 DATABASE_URL=postgresql://user:pass@db:5432/omicsomics
@@ -605,18 +671,21 @@ VITE_API_URL=http://localhost:8001
 ### Docker Compose
 
 Start all services:
+
 ```bash
 cd infrastructure
 docker compose up -d
 ```
 
 Check status:
+
 ```bash
 docker compose ps
 docker compose logs -f backend
 ```
 
 Restart services:
+
 ```bash
 docker compose restart backend frontend
 ```
@@ -626,6 +695,7 @@ docker compose restart backend frontend
 ## 📚 API Documentation
 
 Interactive API documentation available at:
+
 - **Swagger UI:** http://localhost:8001/docs
 - **ReDoc:** http://localhost:8001/redoc
 - **OpenAPI JSON:** http://localhost:8001/openapi.json
@@ -633,21 +703,25 @@ Interactive API documentation available at:
 ### Key Endpoints
 
 **Authentication:**
+
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login/access-token`
 
 **Pipeline Templates:**
+
 - `GET /api/v1/pipelines/`
 - `GET /api/v1/pipelines/categories`
 - `GET /api/v1/pipelines/{template_id}`
 
 **Pipeline Runs:**
+
 - `GET /api/v1/runs/`
 - `POST /api/v1/runs/`
 - `POST /api/v1/runs/{run_id}/start`
 - `GET /api/v1/runs/{run_id}/logs`
 
 **Data Management:**
+
 - `GET /api/v1/data/`
 - `POST /api/v1/data/upload`
 - `GET /api/v1/data/{data_id}/export`
@@ -656,6 +730,7 @@ Interactive API documentation available at:
 - `DELETE /api/v1/data/batch-delete`
 
 **Search:**
+
 - `POST /api/v1/data/search`
 
 ---
@@ -663,22 +738,27 @@ Interactive API documentation available at:
 ## 🎯 Next Steps
 
 ### Immediate Actions:
+
 1. **Manual Testing:** Follow the interactive testing checklist above
 2. **Performance Testing:** Load test with large datasets
 3. **Integration Testing:** Test end-to-end workflows
 4. **Documentation:** Update user guide with new features
 
 ### Future Enhancements:
+
 1. **Component Integration:**
+
    - Replace existing pages with new components, or
    - Keep both versions with feature flag toggle
 
 2. **Performance Optimization:**
+
    - Add caching for pipeline templates
    - Implement pagination for large result sets
    - Optimize database queries with indexes
 
 3. **Additional Features:**
+
    - Real-time collaboration (WebSocket)
    - Pipeline version control
    - Result comparison tools
@@ -719,6 +799,7 @@ All requested features have been implemented and meet the following criteria:
 ## 📞 Support
 
 For issues or questions:
+
 - **GitHub Issues:** https://github.com/Jeblqr/Omicsomics/issues
 - **Email:** [contact information]
 - **Documentation:** See `docs/` folder for detailed guides
