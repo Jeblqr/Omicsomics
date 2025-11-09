@@ -1112,3 +1112,89 @@ async def batch_delete_datafiles(
         "success_count": len(deleted),
         "failure_count": len(failed),
     }
+
+
+@router.get("/{datafile_id}/quality-report")
+async def get_quality_report(
+    datafile_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Generate comprehensive quality control report for a data file.
+    
+    Returns:
+        {
+            "record_count": int,
+            "field_count": int,
+            "missing_values": {...},
+            "outliers": {...},
+            "distributions": {...},
+            "completeness": {...},
+            "overall_quality_score": {...}
+        }
+    """
+    from app.services.quality_control import QualityControlService
+    from app.services import storage_service
+    
+    # Get datafile
+    df = await datafile_service.get_datafile(db, datafile_id)
+    if df is None:
+        raise HTTPException(status_code=404, detail="DataFile not found")
+    
+    # Check authorization
+    project = await project_service.get_project(db, df.project_id)
+    if project is None or project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get file content from storage
+    try:
+        file_bytes = await storage_service.download_encrypted_bytes(df.object_key)
+        if file_bytes is None:
+            raise HTTPException(
+                status_code=404, detail="File content not found in storage"
+            )
+        
+        # Load processed data if available
+        metadata = df.metadata_ or {}
+        processed_file_id = metadata.get("processed_file_id")
+        
+        if processed_file_id:
+            # Use processed file for QC
+            processed_df = await datafile_service.get_datafile(db, processed_file_id)
+            if processed_df:
+                file_bytes = await storage_service.download_encrypted_bytes(
+                    processed_df.object_key
+                )
+        
+        # Parse unified format JSON
+        try:
+            unified_data_dict = json.loads(file_bytes.decode("utf-8"))
+            from app.schemas.unified_format import UnifiedData
+            unified_data = UnifiedData(**unified_data_dict)
+        except Exception as parse_error:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File is not in valid unified format: {str(parse_error)}"
+            )
+        
+        # Generate QC report
+        qc_service = QualityControlService()
+        report = qc_service.generate_report(unified_data)
+        
+        # Add file metadata
+        report["datafile"] = {
+            "id": df.id,
+            "filename": df.filename,
+            "size": df.size,
+            "checksum": df.checksum,
+        }
+        
+        return report
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate quality report: {str(e)}"
+        )
