@@ -4,6 +4,7 @@ import DashboardPage from './dashboard/DashboardPage';
 import ProjectsPage from './projects/ProjectsPage';
 import RunsPage from './runs/RunsPage';
 import DataPage from './data/DataPage';
+import PipelinesPage from './pipelines/PipelinesPage';
 import SettingsPage from './settings/SettingsPage';
 import AuthPage from './auth/AuthPage';
 import Layout from '../components/Layout';
@@ -35,6 +36,7 @@ const App = () => {
         <Route element={<ProjectsPage />} path="projects" />
         <Route element={<RunsPage />} path="runs" />
         <Route element={<DataPage />} path="data" />
+        <Route element={<PipelinesPage />} path="pipelines" />
         <Route element={<SettingsPage />} path="settings" />
       </Route>
     </Routes>

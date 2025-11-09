@@ -45,9 +45,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       params.append('username', email);
       params.append('password', password);
 
-      console.log('Sending request to:', `${api.defaults.baseURL}/login/access-token`);
+      console.log('Sending request to:', `${api.defaults.baseURL}/auth/login/access-token`);
       
-      const response = await api.post('/login/access-token', params, {
+      const response = await api.post('/auth/login/access-token', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Attempting registration with:', email);
       
-      const response = await api.post('/register', {
+      const response = await api.post('/auth/register', {
         email,
         password,
         full_name: fullName,

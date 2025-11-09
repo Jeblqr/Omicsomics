@@ -6,6 +6,7 @@ const Sidebar = () => {
     { to: '/projects', label: 'Projects' },
     { to: '/runs', label: 'Runs' },
     { to: '/data', label: 'Data' },
+    { to: '/pipelines', label: 'Pipelines' },
     { to: '/settings', label: 'Settings' },
   ];
 

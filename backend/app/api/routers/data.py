@@ -44,7 +44,19 @@ async def upload_datafile(
         user_id=current_user.id,
         content_type=mime_type,
     )
-    return {"id": df.id, "filename": df.filename, "object_key": df.object_key}
+    return {
+        "id": df.id,
+        "filename": df.filename,
+        "object_key": df.object_key,
+        "metadata_": df.metadata_,
+        "size": df.size,
+        "checksum": df.checksum,
+        "project_id": df.project_id,
+        "run_id": df.run_id,
+        "uploaded_by_id": df.uploaded_by_id,
+        "created_at": df.created_at,
+        "updated_at": df.updated_at,
+    }
 
 
 @router.get("/")
@@ -66,7 +78,14 @@ async def list_datafiles(
             "id": r.id,
             "filename": r.filename,
             "object_key": r.object_key,
-            "metadata": r.metadata_,
+            "metadata_": r.metadata_,
+            "size": r.size,
+            "checksum": r.checksum,
+            "project_id": r.project_id,
+            "run_id": r.run_id,
+            "uploaded_by_id": r.uploaded_by_id,
+            "created_at": r.created_at,
+            "updated_at": r.updated_at,
         }
         for r in rows
     ]

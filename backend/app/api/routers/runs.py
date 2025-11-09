@@ -32,7 +32,18 @@ async def create_run(
     run = await runs_service.create_run(
         db, run_in.name, run_in.description or "", run_in.project_id, current_user.id
     )
-    return {"id": run.id, "name": run.name, "status": run.status}
+    return {
+        "id": run.id,
+        "name": run.name,
+        "description": run.description,
+        "status": run.status,
+        "project_id": run.project_id,
+        "owner_id": run.owner_id,
+        "started_at": run.started_at,
+        "finished_at": run.finished_at,
+        "created_at": run.created_at,
+        "updated_at": run.updated_at,
+    }
 
 
 @router.get("/")
@@ -50,7 +61,18 @@ async def list_runs(
 
     rows = await runs_service.list_runs(db, project_id)
     return [
-        {"id": r.id, "name": r.name, "status": r.status, "created_at": r.created_at}
+        {
+            "id": r.id,
+            "name": r.name,
+            "description": r.description,
+            "status": r.status,
+            "project_id": r.project_id,
+            "owner_id": r.owner_id,
+            "started_at": r.started_at,
+            "finished_at": r.finished_at,
+            "created_at": r.created_at,
+            "updated_at": r.updated_at,
+        }
         for r in rows
     ]
 
@@ -70,6 +92,12 @@ async def get_run(
     return {
         "id": run.id,
         "name": run.name,
-        "status": run.status,
         "description": run.description,
+        "status": run.status,
+        "project_id": run.project_id,
+        "owner_id": run.owner_id,
+        "started_at": run.started_at,
+        "finished_at": run.finished_at,
+        "created_at": run.created_at,
+        "updated_at": run.updated_at,
     }
