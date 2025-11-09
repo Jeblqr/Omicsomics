@@ -619,6 +619,117 @@ async def process_file_from_archive(
         )
 
 
+@router.get("/{datafile_id}/export")
+async def export_processed_data(
+    datafile_id: int,
+    format: str = "csv",  # Export format: csv, tsv, excel, json
+    columns: str | None = None,  # Comma-separated list of columns to include (None = all)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Export processed (unified format) data to various formats.
+    
+    Args:
+        datafile_id: ID of the datafile to export
+        format: Export format (csv, tsv, excel, json)
+        columns: Comma-separated list of columns to include (optional)
+    
+    Returns:
+        Exported data in specified format
+    """
+    from fastapi.responses import StreamingResponse
+    from app.services import storage_service
+    from app.utils.export import DataExporter
+    
+    # Get datafile
+    df = await datafile_service.get_datafile(db, datafile_id)
+    if df is None:
+        raise HTTPException(status_code=404, detail="DataFile not found")
+    
+    # Check authorization
+    project = await project_service.get_project(db, df.project_id)
+    if project is None or project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get processed file ID
+    metadata = df.metadata_ or {}
+    processed_file_id = metadata.get("processed_file_id")
+    
+    if not processed_file_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No processed data available. Please process the file first."
+        )
+    
+    # Get processed file
+    processed_df = await datafile_service.get_datafile(db, processed_file_id)
+    if processed_df is None:
+        raise HTTPException(status_code=404, detail="Processed file not found")
+    
+    # Download and decrypt processed file
+    try:
+        plaintext = await storage_service.download_and_decrypt(
+            current_user.id, processed_df.object_key
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve processed data: {str(e)}"
+        )
+    
+    # Deserialize unified data
+    try:
+        unified_data = FileProcessor.deserialize_unified_data(plaintext)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse processed data: {str(e)}"
+        )
+    
+    # Parse columns parameter
+    include_columns = None
+    if columns:
+        include_columns = [col.strip() for col in columns.split(",")]
+    
+    # Export data
+    try:
+        exported_data = DataExporter.export(
+            unified_data,
+            format=format,
+            include_columns=include_columns
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except ImportError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Export format not available: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to export data: {str(e)}"
+        )
+    
+    # Get MIME type and file extension
+    mime_type = DataExporter.get_mime_type(format)
+    file_extension = DataExporter.get_file_extension(format)
+    
+    # Generate filename
+    base_filename = df.filename.rsplit('.', 1)[0] if '.' in df.filename else df.filename
+    export_filename = f"{base_filename}_exported.{file_extension}"
+    
+    # Return as streaming response
+    return StreamingResponse(
+        io.BytesIO(exported_data),
+        media_type=mime_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{export_filename}"'
+        }
+    )
+
+
 @router.get("/task/{task_id}/status")
 async def get_task_status(
     task_id: str,
