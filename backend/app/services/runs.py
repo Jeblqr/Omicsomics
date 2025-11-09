@@ -4,10 +4,19 @@ from app.models.run import Run
 
 
 async def create_run(
-    db: AsyncSession, name: str, description: str, project_id: int, owner_id: int
+    db: AsyncSession,
+    name: str,
+    description: str,
+    project_id: int,
+    owner_id: int,
+    pipeline_config: dict | None = None,
 ) -> Run:
     run = Run(
-        name=name, description=description, project_id=project_id, owner_id=owner_id
+        name=name,
+        description=description,
+        project_id=project_id,
+        owner_id=owner_id,
+        pipeline_config=pipeline_config,
     )
     db.add(run)
     await db.commit()

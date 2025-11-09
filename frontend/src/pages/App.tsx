@@ -5,6 +5,7 @@ import ProjectsPage from './projects/ProjectsPage';
 import RunsPage from './runs/RunsPage';
 import DataPage from './data/DataPage';
 import PipelinesPage from './pipelines/PipelinesPage';
+import CustomPipelinesPage from './pipelines/CustomPipelinesPage';
 import SettingsPage from './settings/SettingsPage';
 import AuthPage from './auth/AuthPage';
 import Layout from '../components/Layout';
@@ -37,6 +38,7 @@ const App = () => {
         <Route element={<RunsPage />} path="runs" />
         <Route element={<DataPage />} path="data" />
         <Route element={<PipelinesPage />} path="pipelines" />
+        <Route element={<CustomPipelinesPage />} path="custom-pipelines" />
         <Route element={<SettingsPage />} path="settings" />
       </Route>
     </Routes>

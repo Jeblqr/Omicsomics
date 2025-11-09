@@ -22,7 +22,7 @@ async def list_pipeline_templates(
         templates = pipeline_templates.get_pipelines_by_category(category)
     else:
         templates = pipeline_templates.get_all_pipeline_templates()
-    
+
     return templates
 
 
@@ -35,5 +35,5 @@ async def get_pipeline_template(
     template = pipeline_templates.get_pipeline_template(pipeline_id)
     if template is None:
         raise HTTPException(status_code=404, detail="Pipeline template not found")
-    
+
     return template

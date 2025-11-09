@@ -15,6 +15,7 @@ class RunCreate(BaseModel):
     name: str
     description: str | None = ""
     project_id: int
+    pipeline_config: dict | None = None  # Optional pipeline configuration
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -30,13 +31,19 @@ async def create_run(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     run = await runs_service.create_run(
-        db, run_in.name, run_in.description or "", run_in.project_id, current_user.id
+        db,
+        run_in.name,
+        run_in.description or "",
+        run_in.project_id,
+        current_user.id,
+        run_in.pipeline_config,
     )
     return {
         "id": run.id,
         "name": run.name,
         "description": run.description,
         "status": run.status,
+        "pipeline_config": run.pipeline_config,
         "project_id": run.project_id,
         "owner_id": run.owner_id,
         "started_at": run.started_at,
@@ -66,6 +73,7 @@ async def list_runs(
             "name": r.name,
             "description": r.description,
             "status": r.status,
+            "pipeline_config": r.pipeline_config,
             "project_id": r.project_id,
             "owner_id": r.owner_id,
             "started_at": r.started_at,
@@ -94,6 +102,7 @@ async def get_run(
         "name": run.name,
         "description": run.description,
         "status": run.status,
+        "pipeline_config": run.pipeline_config,
         "project_id": run.project_id,
         "owner_id": run.owner_id,
         "started_at": run.started_at,

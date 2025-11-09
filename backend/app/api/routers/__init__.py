@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from . import (
     auth,
+    custom_pipelines,
     epigenomics,
     files,
     genomics,
@@ -31,6 +32,9 @@ api_router.include_router(files.router, prefix="/files", tags=["files"])
 api_router.include_router(data.router, prefix="/data", tags=["data"])
 api_router.include_router(runs.router, prefix="/runs", tags=["runs"])
 api_router.include_router(pipelines.router, prefix="/pipelines", tags=["pipelines"])
+api_router.include_router(
+    custom_pipelines.router, prefix="/custom-pipelines", tags=["custom-pipelines"]
+)
 api_router.include_router(workflows.router, prefix="/workflows", tags=["workflows"])
 api_router.include_router(qc.router, prefix="/qc", tags=["qc"])
 api_router.include_router(genomics.router, prefix="/genomics", tags=["genomics"])
