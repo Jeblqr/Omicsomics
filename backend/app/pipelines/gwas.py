@@ -1,7 +1,9 @@
 """Genome-Wide Association Study (GWAS) analysis pipeline."""
 
 import asyncio
+import json
 import logging
+import textwrap
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +22,44 @@ class GWASAnalyzer:
         """Initialize GWAS analyzer."""
         self.work_dir = work_dir or Path("/tmp/omicsomics_gwas")
         self.work_dir.mkdir(parents=True, exist_ok=True)
+        (self.work_dir / "outputs").mkdir(parents=True, exist_ok=True)
+
+    def _sandbox_path(self, path: Path) -> Path:
+        """Build a sandboxed path for the given target under the work directory."""
+        relative_parts = [part for part in path.parts if part not in ("", "/")]
+        return (self.work_dir / "outputs").joinpath(*relative_parts)
+
+    def _prepare_output_prefix(self, output_prefix: str) -> Path:
+        """Ensure output prefix parent exists, falling back to sandbox if needed."""
+        target = Path(output_prefix)
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            return target
+        except OSError:
+            sandboxed = self._sandbox_path(target)
+            sandboxed.parent.mkdir(parents=True, exist_ok=True)
+            logger.warning(
+                "Using sandboxed output prefix %s for requested path %s",
+                sandboxed,
+                target,
+            )
+            return sandboxed
+
+    def _prepare_output_dir(self, output_dir: str) -> Path:
+        """Ensure output directory exists, falling back to sandbox if needed."""
+        target = Path(output_dir)
+        try:
+            target.mkdir(parents=True, exist_ok=True)
+            return target
+        except OSError:
+            sandboxed = self._sandbox_path(target)
+            sandboxed.mkdir(parents=True, exist_ok=True)
+            logger.warning(
+                "Using sandboxed output directory %s for requested path %s",
+                sandboxed,
+                target,
+            )
+            return sandboxed
 
     async def run_plink_qc(
         self,
@@ -47,7 +87,8 @@ class GWASAnalyzer:
             Result with QC-filtered files
         """
         params = params or {}
-        Path(output_prefix).parent.mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_prefix(output_prefix)
+        output_prefix_str = str(output_path)
 
         # QC parameters
         geno = params.get("geno", 0.02)  # SNP missing rate
@@ -69,7 +110,7 @@ class GWASAnalyzer:
             str(hwe),
             "--make-bed",
             "--out",
-            output_prefix,
+            output_prefix_str,
         ]
 
         try:
@@ -92,10 +133,10 @@ class GWASAnalyzer:
 
             if process.returncode == 0:
                 output_files = {
-                    "bed": f"{output_prefix}.bed",
-                    "bim": f"{output_prefix}.bim",
-                    "fam": f"{output_prefix}.fam",
-                    "log": f"{output_prefix}.log",
+                    "bed": f"{output_prefix_str}.bed",
+                    "bim": f"{output_prefix_str}.bim",
+                    "fam": f"{output_prefix_str}.fam",
+                    "log": f"{output_prefix_str}.log",
                 }
 
                 if db:
@@ -160,7 +201,8 @@ class GWASAnalyzer:
             Result with association results
         """
         params = params or {}
-        Path(output_prefix).parent.mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_prefix(output_prefix)
+        output_prefix_str = str(output_path)
 
         cmd = [
             "plink",
@@ -171,7 +213,7 @@ class GWASAnalyzer:
             "--assoc",
             "--adjust",
             "--out",
-            output_prefix,
+            output_prefix_str,
         ]
 
         # Add covariates if provided
@@ -204,10 +246,10 @@ class GWASAnalyzer:
 
             if process.returncode == 0:
                 output_files = {
-                    "assoc": f"{output_prefix}.assoc"
+                    "assoc": f"{output_prefix_str}.assoc"
                     + (".logistic" if params.get("binary_trait") else ".linear"),
-                    "adjusted": f"{output_prefix}.assoc.adjusted",
-                    "log": f"{output_prefix}.log",
+                    "adjusted": f"{output_prefix_str}.assoc.adjusted",
+                    "log": f"{output_prefix_str}.log",
                 }
 
                 if db:
@@ -268,7 +310,8 @@ class GWASAnalyzer:
             Result with LD matrix
         """
         params = params or {}
-        Path(output_prefix).parent.mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_prefix(output_prefix)
+        output_prefix_str = str(output_path)
 
         # LD parameters
         ld_window = params.get("ld_window", 1000)  # Window size in kb
@@ -284,7 +327,7 @@ class GWASAnalyzer:
             "--ld-window-r2",
             str(ld_window_r2),
             "--out",
-            output_prefix,
+            output_prefix_str,
         ]
 
         try:
@@ -307,8 +350,8 @@ class GWASAnalyzer:
 
             if process.returncode == 0:
                 output_files = {
-                    "ld": f"{output_prefix}.ld",
-                    "log": f"{output_prefix}.log",
+                    "ld": f"{output_prefix_str}.ld",
+                    "log": f"{output_prefix_str}.log",
                 }
 
                 if db:
@@ -368,7 +411,8 @@ class GWASAnalyzer:
         Returns:
             Result with PRS scores
         """
-        Path(output_prefix).parent.mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_prefix(output_prefix)
+        output_prefix_str = str(output_path)
 
         cmd = [
             "plink",
@@ -377,7 +421,7 @@ class GWASAnalyzer:
             "--score",
             weights_file,
             "--out",
-            output_prefix,
+            output_prefix_str,
         ]
 
         try:
@@ -400,8 +444,8 @@ class GWASAnalyzer:
 
             if process.returncode == 0:
                 output_files = {
-                    "profile": f"{output_prefix}.profile",
-                    "log": f"{output_prefix}.log",
+                    "profile": f"{output_prefix_str}.profile",
+                    "log": f"{output_prefix_str}.log",
                 }
 
                 if db:
@@ -462,12 +506,13 @@ class GWASAnalyzer:
             Result with MTAG results
         """
         params = params or {}
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_dir(output_dir)
+        output_dir_str = str(output_path)
 
         # Generate MTAG config file
         config_content = f"""
 # MTAG Configuration
-output_dir: {output_dir}
+output_dir: {output_dir_str}
 traits:
 """
         for trait_name, sumstats_file in summary_stats_files.items():
@@ -478,76 +523,81 @@ traits:
         config_file.write_text(config_content)
 
         # Python script for MTAG
-        python_script = f"""
-import pandas as pd
-import numpy as np
-from scipy import stats
-import json
+        traits_literal = json.dumps(list(summary_stats_files.keys()))
+        summary_stats_literal = json.dumps(summary_stats_files)
+        python_script = textwrap.dedent(
+            f"""
+            import json
+            import numpy as np
+            import pandas as pd
+            from scipy import stats
 
-# Load summary statistics
-traits = {list(summary_stats_files.keys())}
-sumstats = {{}}
+            # Load summary statistics
+            traits = {traits_literal}
+            summary_stat_paths = {summary_stats_literal}
+            sumstats = {{}}
 
-for trait in traits:
-    sumstats[trait] = pd.read_csv("{summary_stats_files[trait]}", sep='\\t')
-    print(f"Loaded {{trait}}: {{len(sumstats[trait])}} SNPs")
+            for trait in traits:
+                sumstats[trait] = pd.read_csv(summary_stat_paths[trait], sep='\t')
+                print(f"Loaded {{trait}}: {{len(sumstats[trait])}} SNPs")
 
-# Simple cross-trait meta-analysis (placeholder for MTAG)
-# Full MTAG implementation requires complex genetic correlation estimation
+            # Simple cross-trait meta-analysis (placeholder for MTAG)
+            # Full MTAG implementation requires complex genetic correlation estimation
 
-# Find common SNPs across all traits
-common_snps = set(sumstats[traits[0]]['SNP'])
-for trait in traits[1:]:
-    common_snps &= set(sumstats[trait]['SNP'])
+            # Find common SNPs across all traits
+            common_snps = set(sumstats[traits[0]]['SNP'])
+            for trait in traits[1:]:
+                common_snps &= set(sumstats[trait]['SNP'])
 
-print(f"Common SNPs across all traits: {{len(common_snps)}}")
+            print(f"Common SNPs across all traits: {{len(common_snps)}}")
 
-# Perform inverse-variance weighted meta-analysis
-results = []
-for snp in common_snps:
-    snp_data = {{}}
-    for trait in traits:
-        trait_data = sumstats[trait][sumstats[trait]['SNP'] == snp].iloc[0]
-        snp_data[trait] = {{
-            'beta': trait_data.get('BETA', trait_data.get('B', 0)),
-            'se': trait_data.get('SE', 1),
-            'p': trait_data.get('P', 1)
-        }}
-    
-    # Inverse variance weighted meta-analysis
-    weights = [1 / (snp_data[t]['se'] ** 2) for t in traits]
-    meta_beta = sum(snp_data[t]['beta'] * w for t, w in zip(traits, weights)) / sum(weights)
-    meta_se = 1 / np.sqrt(sum(weights))
-    meta_z = meta_beta / meta_se
-    meta_p = 2 * (1 - stats.norm.cdf(abs(meta_z)))
-    
-    results.append({{
-        'SNP': snp,
-        'meta_beta': meta_beta,
-        'meta_se': meta_se,
-        'meta_z': meta_z,
-        'meta_p': meta_p
-    }})
+            # Perform inverse-variance weighted meta-analysis
+            results = []
+            for snp in common_snps:
+                snp_data = {{}}
+                for trait in traits:
+                    trait_data = sumstats[trait][sumstats[trait]['SNP'] == snp].iloc[0]
+                    snp_data[trait] = {{
+                        'beta': trait_data.get('BETA', trait_data.get('B', 0)),
+                        'se': trait_data.get('SE', 1),
+                        'p': trait_data.get('P', 1)
+                    }}
 
-# Save results
-results_df = pd.DataFrame(results)
-results_df = results_df.sort_values('meta_p')
-results_df.to_csv("{output_dir}/mtag_results.csv", index=False)
+                # Inverse variance weighted meta-analysis
+                weights = [1 / (snp_data[t]['se'] ** 2) for t in traits]
+                meta_beta = sum(snp_data[t]['beta'] * w for t, w in zip(traits, weights)) / sum(weights)
+                meta_se = 1 / np.sqrt(sum(weights))
+                meta_z = meta_beta / meta_se
+                meta_p = 2 * (1 - stats.norm.cdf(abs(meta_z)))
 
-# Summary
-summary = {{
-    'n_traits': len(traits),
-    'n_common_snps': len(common_snps),
-    'n_significant': sum(results_df['meta_p'] < 5e-8),
-    'top_snp': results_df.iloc[0].to_dict() if len(results_df) > 0 else None
-}}
+                results.append({{
+                    'SNP': snp,
+                    'meta_beta': meta_beta,
+                    'meta_se': meta_se,
+                    'meta_z': meta_z,
+                    'meta_p': meta_p
+                }})
 
-with open("{output_dir}/mtag_summary.json", "w") as f:
-    json.dump(summary, f, indent=2)
+            # Save results
+            results_df = pd.DataFrame(results)
+            results_df = results_df.sort_values('meta_p')
+            results_df.to_csv("{output_dir_str}/mtag_results.csv", index=False)
 
-print("MTAG analysis completed")
-print(f"Significant SNPs (p < 5e-8): {{summary['n_significant']}}")
-"""
+            # Summary
+            summary = {{
+                'n_traits': len(traits),
+                'n_common_snps': len(common_snps),
+                'n_significant': sum(results_df['meta_p'] < 5e-8),
+                'top_snp': results_df.iloc[0].to_dict() if len(results_df) > 0 else None
+            }}
+
+            with open("{output_dir_str}/mtag_summary.json", "w") as f:
+                json.dump(summary, f, indent=2)
+
+            print("MTAG analysis completed")
+            print(f"Significant SNPs (p < 5e-8): {{summary['n_significant']}}")
+            """
+        )
 
         script_path = self.work_dir / f"workflow_{workflow_id}_mtag.py"
         script_path.write_text(python_script)
@@ -574,8 +624,8 @@ print(f"Significant SNPs (p < 5e-8): {{summary['n_significant']}}")
 
             if process.returncode == 0:
                 output_files = {
-                    "results": f"{output_dir}/mtag_results.csv",
-                    "summary": f"{output_dir}/mtag_summary.json",
+                    "results": f"{output_dir_str}/mtag_results.csv",
+                    "summary": f"{output_dir_str}/mtag_summary.json",
                 }
 
                 if db:

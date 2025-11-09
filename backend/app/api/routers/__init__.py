@@ -14,6 +14,7 @@ from . import (
     samples,
     singlecell,
     transcriptomics,
+    users,
     visualizations,
     workflows,
 )
@@ -43,3 +44,4 @@ api_router.include_router(multiomics.router, prefix="/multiomics", tags=["multio
 api_router.include_router(
     visualizations.router, prefix="/visualizations", tags=["visualizations"]
 )
+api_router.include_router(users.router, prefix="/users", tags=["users"])

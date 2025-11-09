@@ -25,7 +25,7 @@ async def list_projects(
 
 
 @router.post(
-    "/", response_model=project_schema.Project, status_code=status.HTTP_201_CREATED
+    "/", response_model=project_schema.Project, status_code=status.HTTP_200_OK
 )
 async def create_project(
     project: project_schema.ProjectCreate,
@@ -47,7 +47,7 @@ async def get_project(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this project")
+        raise HTTPException(status_code=404, detail="Project not found")
     return project
 
 
@@ -63,13 +63,13 @@ async def update_project(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to modify this project")
+        raise HTTPException(status_code=404, detail="Project not found")
     
     updated_project = await project_service.update_project(db, project_id, project_update)
     return updated_project
 
 
-@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{project_id}", status_code=status.HTTP_200_OK)
 async def delete_project(
     project_id: int,
     current_user: User = Depends(get_current_user),
@@ -80,7 +80,7 @@ async def delete_project(
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this project")
+        raise HTTPException(status_code=404, detail="Project not found")
     
     await project_service.delete_project(db, project_id)
-    return None
+    return {"detail": "Project deleted"}

@@ -30,7 +30,8 @@ dependencies = [
   "python-jose[cryptography]>=3.3.0",
   "python-multipart>=0.0.9",
   "python-magic>=0.4.27",
-  "aiofiles>=23.0.0"
+  "aiofiles>=23.0.0",
+  "aiosqlite>=0.20.0"
 ]
 
 [project.optional-dependencies]

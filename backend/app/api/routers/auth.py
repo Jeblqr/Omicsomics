@@ -25,7 +25,7 @@ async def register_user(
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email already exists in the system.",
+            detail="The user with this email is already registered.",
         )
     user = await user_service.create_user(db, user_in=user_in)
     return user

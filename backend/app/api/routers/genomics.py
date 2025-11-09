@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/genomics", tags=["genomics"])
+router = APIRouter(tags=["genomics"])
 
 
 # Request/Response Models

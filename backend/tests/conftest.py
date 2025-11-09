@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import os
+from pathlib import Path
 from collections.abc import AsyncGenerator, Generator
 from typing import AsyncIterator
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
@@ -16,10 +18,46 @@ from app.models.base import Base
 from app.core.security import create_access_token, get_password_hash
 
 # Use PostgreSQL for testing in dev container, SQLite otherwise
-TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@db:5432/omicsomics_test",
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+DEFAULT_SQLITE_URL = "sqlite+aiosqlite:///./tests/test_database.sqlite3"
+
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", DEFAULT_SQLITE_URL)
+
+PARSED_DB_URL = make_url(TEST_DATABASE_URL)
+
+
+def _normalize_sqlite_path() -> None:
+    """Ensure the SQLite database directory exists before tests run."""
+
+    if not PARSED_DB_URL.drivername.startswith("sqlite"):
+        return
+
+    # SQLite URLs may include relative paths – resolve them against the project root.
+    db_path = PARSED_DB_URL.database if PARSED_DB_URL.database else ":memory:"
+    if db_path in {None, ":memory:"}:
+        return
+
+    resolved_path = (PROJECT_ROOT / db_path).resolve()
+    resolved_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if resolved_path.exists():
+        resolved_path.unlink()
+
+
+def _cleanup_sqlite_database() -> None:
+    """Remove the SQLite file after the tests to keep the workspace clean."""
+
+    if not PARSED_DB_URL.drivername.startswith("sqlite"):
+        return
+
+    db_path = PARSED_DB_URL.database if PARSED_DB_URL.database else ":memory:"
+    if db_path in {None, ":memory:"}:
+        return
+
+    resolved_path = (PROJECT_ROOT / db_path).resolve()
+    if resolved_path.exists():
+        resolved_path.unlink()
 
 
 @pytest.fixture(scope="session")
@@ -32,6 +70,8 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 @pytest.fixture(autouse=True)
 async def setup_database() -> AsyncIterator[None]:
     """Create and drop database tables for each test."""
+    _normalize_sqlite_path()
+
     engine = create_async_engine(TEST_DATABASE_URL, poolclass=NullPool, echo=False)
 
     async with engine.begin() as conn:
@@ -44,6 +84,7 @@ async def setup_database() -> AsyncIterator[None]:
         await conn.run_sync(Base.metadata.drop_all)
 
     await engine.dispose()
+    _cleanup_sqlite_database()
 
 
 @pytest.fixture()

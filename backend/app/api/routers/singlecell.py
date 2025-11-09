@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/singlecell", tags=["singlecell"])
+router = APIRouter(tags=["singlecell"])
 
 
 # Request/Response Models

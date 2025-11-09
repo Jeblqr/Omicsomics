@@ -21,6 +21,44 @@ class MultiOmicsIntegrator:
         """Initialize multi-omics integrator."""
         self.work_dir = work_dir or Path("/tmp/omicsomics_multiomics")
         self.work_dir.mkdir(parents=True, exist_ok=True)
+        (self.work_dir / "outputs").mkdir(parents=True, exist_ok=True)
+
+    def _sandbox_path(self, path: Path) -> Path:
+        """Construct a sandboxed path under the integrator work directory."""
+        relative_parts = [part for part in path.parts if part not in ("", "/")]
+        return (self.work_dir / "outputs").joinpath(*relative_parts)
+
+    def _prepare_output_dir(self, output_dir: str) -> Path:
+        """Ensure the output directory exists, falling back to sandbox if needed."""
+        target = Path(output_dir)
+        try:
+            target.mkdir(parents=True, exist_ok=True)
+            return target
+        except OSError:
+            sandboxed = self._sandbox_path(target)
+            sandboxed.mkdir(parents=True, exist_ok=True)
+            logger.warning(
+                "Using sandboxed output directory %s for requested path %s",
+                sandboxed,
+                target,
+            )
+            return sandboxed
+
+    def _prepare_output_file(self, output_file: str) -> Path:
+        """Ensure the output file parent exists, falling back to sandbox if needed."""
+        target = Path(output_file)
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            return target
+        except OSError:
+            sandboxed = self._sandbox_path(target)
+            sandboxed.parent.mkdir(parents=True, exist_ok=True)
+            logger.warning(
+                "Using sandboxed output file %s for requested path %s",
+                sandboxed,
+                target,
+            )
+            return sandboxed
 
     async def run_mofa2_integration(
         self,
@@ -44,11 +82,12 @@ class MultiOmicsIntegrator:
         Returns:
             Result with integrated factors
         """
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_dir(output_dir)
+        output_path_str = str(output_path)
         params = params or {}
 
         # R script for MOFA2
-        r_script = self._generate_mofa2_script(data_matrices, output_dir, params)
+        r_script = self._generate_mofa2_script(data_matrices, output_path_str, params)
         script_path = self.work_dir / f"workflow_{workflow_id}_mofa2.R"
         script_path.write_text(r_script)
 
@@ -74,11 +113,11 @@ class MultiOmicsIntegrator:
 
             if process.returncode == 0:
                 output_files = {
-                    "model": f"{output_dir}/mofa2_model.hdf5",
-                    "factors": f"{output_dir}/mofa2_factors.csv",
-                    "weights": f"{output_dir}/mofa2_weights.csv",
-                    "variance": f"{output_dir}/mofa2_variance.csv",
-                    "plots": f"{output_dir}/mofa2_plots.pdf",
+                    "model": f"{output_path_str}/mofa2_model.hdf5",
+                    "factors": f"{output_path_str}/mofa2_factors.csv",
+                    "weights": f"{output_path_str}/mofa2_weights.csv",
+                    "variance": f"{output_path_str}/mofa2_variance.csv",
+                    "plots": f"{output_path_str}/mofa2_plots.pdf",
                 }
 
                 if db:
@@ -233,12 +272,13 @@ cat("Views:", length(views_names(MOFAobject)), "\\n")
         Returns:
             Result with integrated components and biomarkers
         """
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_dir(output_dir)
+        output_path_str = str(output_path)
         params = params or {}
 
         # R script for DIABLO
         r_script = self._generate_diablo_script(
-            data_matrices, phenotype_file, output_dir, params
+            data_matrices, phenotype_file, output_path_str, params
         )
         script_path = self.work_dir / f"workflow_{workflow_id}_diablo.R"
         script_path.write_text(r_script)
@@ -265,12 +305,12 @@ cat("Views:", length(views_names(MOFAobject)), "\\n")
 
             if process.returncode == 0:
                 output_files = {
-                    "model": f"{output_dir}/diablo_model.rds",
-                    "components": f"{output_dir}/diablo_components.csv",
-                    "loadings": f"{output_dir}/diablo_loadings.csv",
-                    "performance": f"{output_dir}/diablo_performance.csv",
-                    "selected_features": f"{output_dir}/diablo_selected_features.csv",
-                    "plots": f"{output_dir}/diablo_plots.pdf",
+                    "model": f"{output_path_str}/diablo_model.rds",
+                    "components": f"{output_path_str}/diablo_components.csv",
+                    "loadings": f"{output_path_str}/diablo_loadings.csv",
+                    "performance": f"{output_path_str}/diablo_performance.csv",
+                    "selected_features": f"{output_path_str}/diablo_selected_features.csv",
+                    "plots": f"{output_path_str}/diablo_plots.pdf",
                 }
 
                 if db:
@@ -483,7 +523,8 @@ print(optimal_keepX)
         Returns:
             Result with enriched pathways
         """
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        output_path = self._prepare_output_dir(output_dir)
+        output_path_str = str(output_path)
 
         # Python script for pathway enrichment
         python_script = f"""
@@ -512,7 +553,7 @@ for omics_type, feature_file in feature_lists.items():
     }}
 
 # Save results
-with open("{output_dir}/pathway_enrichment.json", "w") as f:
+with open("{output_path_str}/pathway_enrichment.json", "w") as f:
     json.dump(enrichment_results, f, indent=2)
 
 print("Pathway enrichment analysis completed")
@@ -544,7 +585,7 @@ print(f"Analyzed {{len(feature_lists)}} omics layers")
 
             if process.returncode == 0:
                 output_files = {
-                    "pathways": f"{output_dir}/pathway_enrichment.json",
+                    "pathways": f"{output_path_str}/pathway_enrichment.json",
                 }
 
                 if db:
@@ -603,6 +644,9 @@ print(f"Analyzed {{len(feature_lists)}} omics layers")
             Result with sample mapping
         """
         # Python script for sample matching
+        output_path = self._prepare_output_file(output_file)
+        output_path_str = str(output_path)
+
         python_script = f"""
 import pandas as pd
 import json
@@ -636,10 +680,10 @@ for omics_type, samples in sample_sets.items():
     }}
 
 # Save mapping
-with open("{output_file}", "w") as f:
+with open("{output_path_str}", "w") as f:
     json.dump(sample_mapping, f, indent=2)
 
-print(f"\\nSample mapping saved to {output_file}")
+print(f"\nSample mapping saved to {output_path_str}")
 """
 
         script_path = self.work_dir / f"workflow_{workflow_id}_match_samples.py"
@@ -673,10 +717,10 @@ print(f"\\nSample mapping saved to {output_file}")
                         workflow_schema.WorkflowUpdate(
                             status=WorkflowStatus.COMPLETED,
                             logs=logs,
-                            output_files={"sample_mapping": output_file},
+                            output_files={"sample_mapping": output_path_str},
                         ),
                     )
-                return {"status": "success", "sample_mapping": output_file}
+                return {"status": "success", "sample_mapping": output_path_str}
             else:
                 if db:
                     await workflow_service.update_workflow(
