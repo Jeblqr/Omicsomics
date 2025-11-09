@@ -50,3 +50,8 @@ async def download_and_decrypt(user_id: int, object_key: str) -> bytes:
     blob = await s3_client.download_file(object_key)
     plaintext = crypto.decrypt_for_user(user_id, blob)
     return plaintext
+
+
+async def delete_object(object_key: str) -> None:
+    """Delete an object from storage."""
+    await s3_client.delete_file(object_key)

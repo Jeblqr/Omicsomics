@@ -546,32 +546,37 @@ Each process node can specify a `tool_config` object in its `data` field:
 ```json
 {
   "tool_config": {
-    "tool_id": "star",              // Tool identifier from registry
-    "tool_version": "2.7.11a",      // Specific version (optional)
-    "parameters": {                 // Tool-specific parameters
+    "tool_id": "star", // Tool identifier from registry
+    "tool_version": "2.7.11a", // Specific version (optional)
+    "parameters": {
+      // Tool-specific parameters
       "threads": 8,
       "out_sam_type": "BAM SortedByCoordinate"
     },
-    "input_mappings": {             // Map inputs to data sources
+    "input_mappings": {
+      // Map inputs to data sources
       "fastq_1": "previous_node.output",
       "genome_index": "reference.index"
     },
-    "output_mappings": {            // Map outputs to destinations
+    "output_mappings": {
+      // Map outputs to destinations
       "aligned_bam": "aligned_reads",
       "gene_counts": "expression_matrix"
     },
-    "resources": {                  // Resource requirements
+    "resources": {
+      // Resource requirements
       "min_cpu": 8,
       "max_cpu": 16,
       "min_memory_gb": 32,
       "max_memory_gb": 64,
       "gpu_required": false
     },
-    "environment": {                // Environment variables
+    "environment": {
+      // Environment variables
       "TMPDIR": "/tmp",
       "OMP_NUM_THREADS": "8"
     },
-    "enabled": true                 // Toggle tool execution
+    "enabled": true // Toggle tool execution
   }
 }
 ```

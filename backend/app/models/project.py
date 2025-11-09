@@ -22,4 +22,3 @@ class Project(Base):
 
     owner = relationship("User", back_populates="projects")
     samples = relationship("Sample", back_populates="project")
-

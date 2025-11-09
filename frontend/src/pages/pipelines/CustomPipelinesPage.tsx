@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Node, Edge } from 'reactflow';
-import axios from 'axios';
+import api from '../../lib/api';
 import PipelineEditor from '../../components/PipelineEditor';
+import { useProjectsContext } from '../../contexts/ProjectsContext';
+import { ProjectSwitcher } from '../../components/ProjectSwitcher';
 
 interface CustomPipeline {
   id: number;
@@ -22,6 +24,7 @@ interface CustomPipeline {
 
 const CustomPipelinesPage = () => {
   const navigate = useNavigate();
+  const { currentProject } = useProjectsContext();
   const [pipelines, setPipelines] = useState<CustomPipeline[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
@@ -33,22 +36,22 @@ const CustomPipelinesPage = () => {
   const [selectedPipelines, setSelectedPipelines] = useState<number[]>([]);
 
   useEffect(() => {
-    loadPipelines();
-  }, []);
+    if (currentProject) {
+      loadPipelines();
+    } else {
+      setPipelines([]);
+      setLoading(false);
+    }
+  }, [currentProject]);
 
   const loadPipelines = async () => {
+    if (!currentProject) return;
+    
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        'http://localhost:8001/api/v1/custom-pipelines/',
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await api.get(`/custom-pipelines/?project_id=${currentProject.id}`);
       setPipelines(response.data);
     } catch (error) {
       console.error('Failed to load pipelines:', error);
-      alert('Failed to load pipelines');
     } finally {
       setLoading(false);
     }
@@ -60,8 +63,12 @@ const CustomPipelinesPage = () => {
       return;
     }
 
+    if (!currentProject) {
+      alert('Please select a project first');
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('token');
       const definition = {
         nodes: nodes.map((node) => ({
           id: node.id,
@@ -80,36 +87,20 @@ const CustomPipelinesPage = () => {
         parameters: {},
       };
 
-      if (editingPipeline) {
-        await axios.put(
-          `http://localhost:8001/api/v1/custom-pipelines/${editingPipeline.id}`,
-          {
-            name: pipelineName,
-            description: pipelineDescription || null,
-            category: pipelineCategory,
-            is_public: isPublic,
-            definition,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        alert('Pipeline updated successfully');
+      const payload = {
+        name: pipelineName,
+        description: pipelineDescription || 'Custom pipeline',
+        category: pipelineCategory,
+        is_public: isPublic,
+        definition,
+      };
+
+      if (editingPipeline && editingPipeline.id > 0) {
+        await api.put(`/custom-pipelines/${editingPipeline.id}`, payload);
+        alert('Pipeline updated successfully ✅');
       } else {
-        await axios.post(
-          'http://localhost:8001/api/v1/custom-pipelines/',
-          {
-            name: pipelineName,
-            description: pipelineDescription || null,
-            category: pipelineCategory,
-            is_public: isPublic,
-            definition,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        alert('Pipeline created successfully');
+        await api.post('/custom-pipelines/', payload);
+        alert('Pipeline created successfully ✅');
       }
 
       setShowEditor(false);
@@ -131,13 +122,7 @@ const CustomPipelinesPage = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(
-        `http://localhost:8001/api/v1/custom-pipelines/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.delete(`/custom-pipelines/${id}`);
       alert('Pipeline deleted successfully');
       loadPipelines();
     } catch (error) {
@@ -177,16 +162,9 @@ const CustomPipelinesPage = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:8001/api/v1/custom-pipelines/merge',
-        {
-          pipeline_ids: selectedPipelines,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await api.post('/custom-pipelines/merge', {
+        pipeline_ids: selectedPipelines,
+      });
 
       const merged = response.data;
       setEditingPipeline({
@@ -378,9 +356,26 @@ const CustomPipelinesPage = () => {
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h1>Custom Pipelines</h1>
+    <div>
+      <ProjectSwitcher />
+      <div style={{ padding: '2rem' }}>
+        {!currentProject && (
+          <div style={{
+            padding: '1.5rem',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            marginBottom: '1rem',
+          }}>
+            <strong>⚠️ No project selected</strong>
+            <p style={{ marginBottom: 0, marginTop: '0.5rem' }}>
+              Please select a project from the dropdown above to view and create custom pipelines.
+            </p>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h1>Custom Pipelines</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button
             onClick={handleMergePipelines}
@@ -517,6 +512,7 @@ const CustomPipelinesPage = () => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };

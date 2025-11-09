@@ -72,3 +72,19 @@ async def list_datafiles(db: AsyncSession, project_id: int | None = None):
         q = q.where(DataFile.project_id == project_id)
     r = await db.execute(q)
     return list(r.scalars().all())
+
+
+async def delete_datafile(db: AsyncSession, datafile_id: int) -> None:
+    """Delete a data file and its storage object."""
+    df = await get_datafile(db, datafile_id)
+    if df:
+        # Delete from storage
+        try:
+            await storage_service.delete_object(df.object_key)
+        except Exception as e:
+            # Log but continue with DB deletion
+            print(f"Failed to delete storage object {df.object_key}: {e}")
+
+        # Delete from database
+        await db.delete(df)
+        await db.commit()

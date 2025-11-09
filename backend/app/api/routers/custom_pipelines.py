@@ -396,7 +396,7 @@ async def validate_pipeline(
 ):
     """
     Validate a pipeline definition without saving it.
-    
+
     Checks:
     - Pipeline structure (nodes, edges)
     - Tool configurations
@@ -420,11 +420,11 @@ async def validate_existing_pipeline(
     pipeline = await pipeline_service.get_custom_pipeline(db, pipeline_id)
     if pipeline is None:
         raise HTTPException(status_code=404, detail="Pipeline not found")
-    
+
     # Check access rights
     if pipeline.owner_id != current_user.id and not pipeline.is_public:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     result = pipeline_service.validate_pipeline_definition(pipeline.definition)
     return result
 
@@ -437,7 +437,7 @@ async def get_pipeline_dependencies(
 ):
     """
     Get dependencies for a pipeline.
-    
+
     Returns:
     - Required tools with versions
     - Required data formats
@@ -447,15 +447,15 @@ async def get_pipeline_dependencies(
     pipeline = await pipeline_service.get_custom_pipeline(db, pipeline_id)
     if pipeline is None:
         raise HTTPException(status_code=404, detail="Pipeline not found")
-    
+
     # Check access rights
     if pipeline.owner_id != current_user.id and not pipeline.is_public:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     dependencies = pipeline_service.get_pipeline_dependencies(pipeline.definition)
-    
+
     return {
         "pipeline_id": pipeline.id,
         "pipeline_name": pipeline.name,
-        "dependencies": dependencies
+        "dependencies": dependencies,
     }

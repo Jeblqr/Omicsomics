@@ -83,7 +83,9 @@ export const ProjectsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const deleteProject = async (id: number) => {
     await api.delete(`/projects/${id}`);
-    setProjects(projects.filter(p => p.id !== id));
+    // Refresh projects list to ensure consistency
+    await fetchProjects();
+    // Clear current project if it was deleted
     if (currentProject?.id === id) {
       setCurrentProject(null);
     }

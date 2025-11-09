@@ -1,7 +1,10 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.project import Project
+from app.models.run import Run
+from app.models.datafile import DataFile
+from app.models.sample import Sample
 from app.schemas import projects as project_schema
 
 
@@ -56,11 +59,21 @@ async def update_project(
 
 
 async def delete_project(db: AsyncSession, project_id: int) -> bool:
-    """Delete a project."""
+    """Delete a project and all its associated data (cascade delete)."""
     db_project = await get_project(db, project_id)
     if db_project is None:
         return False
 
+    # Delete all associated runs first
+    await db.execute(delete(Run).where(Run.project_id == project_id))
+
+    # Delete all associated data files
+    await db.execute(delete(DataFile).where(DataFile.project_id == project_id))
+
+    # Delete all associated samples
+    await db.execute(delete(Sample).where(Sample.project_id == project_id))
+
+    # Finally delete the project itself
     await db.delete(db_project)
     await db.commit()
     return True

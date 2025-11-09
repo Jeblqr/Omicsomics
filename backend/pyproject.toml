@@ -32,7 +32,9 @@ dependencies = [
   "python-magic>=0.4.27",
   "aiofiles>=23.0.0",
   "aiosqlite>=0.20.0",
-  "cryptography>=41.0.0"
+  "cryptography>=41.0.0",
+  "celery[redis]>=5.3.0",
+  "redis>=5.0.0"
 ]
 
 [project.optional-dependencies]

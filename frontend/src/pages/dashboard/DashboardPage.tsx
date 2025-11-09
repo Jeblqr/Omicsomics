@@ -1,10 +1,66 @@
-import { useProjects } from '../../hooks/useProjects';
+import { useState, useEffect } from 'react';
+import { useProjectsContext } from '../../contexts/ProjectsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingView from '../../components/LoadingView';
+import api from '../../lib/api';
+
+interface DashboardStats {
+  totalDataFiles: number;
+  activeRuns: number;
+  completedRuns: number;
+  pendingRuns: number;
+  totalRuns: number;
+}
 
 const DashboardPage = () => {
   const { user } = useAuth();
-  const { data: projects, isLoading } = useProjects();
+  const { projects, isLoading } = useProjectsContext();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalDataFiles: 0,
+    activeRuns: 0,
+    completedRuns: 0,
+    pendingRuns: 0,
+    totalRuns: 0,
+  });
+
+  useEffect(() => {
+    // Always fetch stats when component mounts or user changes
+    fetchStats();
+  }, [user]);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch all data files across all projects
+      const dataResponse = await api.get('/data/');
+      const allFiles = dataResponse.data;
+
+      // Fetch all runs across all projects
+      const runsResponse = await api.get('/runs/');
+      const allRuns = runsResponse.data;
+
+      // Calculate statistics
+      const newStats = {
+        totalDataFiles: allFiles.length,
+        activeRuns: allRuns.filter((r: any) => r.status === 'running').length,
+        completedRuns: allRuns.filter((r: any) => r.status === 'completed').length,
+        pendingRuns: allRuns.filter((r: any) => r.status === 'pending').length,
+        totalRuns: allRuns.length,
+      };
+
+      console.log('Dashboard stats updated:', newStats);
+      setStats(newStats);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      // Reset to zeros on error
+      setStats({
+        totalDataFiles: 0,
+        activeRuns: 0,
+        completedRuns: 0,
+        pendingRuns: 0,
+        totalRuns: 0,
+      });
+    }
+  };
 
   if (isLoading) {
     return <LoadingView />;
@@ -12,8 +68,28 @@ const DashboardPage = () => {
 
   return (
     <section>
-      <h2>Welcome back, {user?.full_name || user?.email}!</h2>
-      <p>Overview of your omics analysis platform.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Welcome back, {user?.full_name || user?.email}!</h2>
+          <p style={{ margin: '0.5rem 0 0 0', color: '#6c757d' }}>Overview of your omics analysis platform</p>
+        </div>
+        <button
+          onClick={fetchStats}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+          }}
+        >
+          🔄 Refresh Stats
+        </button>
+      </div>
 
       <div style={{
         display: 'grid',
@@ -32,7 +108,7 @@ const DashboardPage = () => {
             Total Projects
           </h3>
           <p style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: 0 }}>
-            {projects?.length || 0}
+            {projects.length}
           </p>
         </div>
 
@@ -44,10 +120,10 @@ const DashboardPage = () => {
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
         }}>
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', opacity: 0.9 }}>
-            Active Analyses
+            Active Runs
           </h3>
           <p style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: 0 }}>
-            0
+            {stats.activeRuns}
           </p>
         </div>
 
@@ -62,7 +138,7 @@ const DashboardPage = () => {
             Data Files
           </h3>
           <p style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: 0 }}>
-            0
+            {stats.totalDataFiles}
           </p>
         </div>
 
@@ -77,7 +153,37 @@ const DashboardPage = () => {
             Completed Runs
           </h3>
           <p style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: 0 }}>
-            0
+            {stats.completedRuns}
+          </p>
+        </div>
+
+        <div style={{
+          background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+          color: 'white',
+          padding: '2rem',
+          borderRadius: '12px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', opacity: 0.9 }}>
+            Pending Runs
+          </h3>
+          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: 0 }}>
+            {stats.pendingRuns}
+          </p>
+        </div>
+
+        <div style={{
+          background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+          color: '#333',
+          padding: '2rem',
+          borderRadius: '12px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+        }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', opacity: 0.9 }}>
+            Total Runs
+          </h3>
+          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', margin: 0 }}>
+            {stats.totalRuns}
           </p>
         </div>
       </div>

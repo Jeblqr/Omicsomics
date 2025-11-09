@@ -163,8 +163,24 @@ export const SandboxView: React.FC = () => {
                     {file.object_key}
                   </td>
                   <td style={{ padding: '0.5rem' }}>
-                    <button onClick={() => handleDownload(file.id, file.filename)}>
+                    <button onClick={() => handleDownload(file.id, file.filename)} style={{ marginRight: '0.5rem' }}>
                       Download (Decrypted)
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm(`Delete file "${file.filename}"?`)) {
+                          try {
+                            await api.delete(`/data/${file.id}`);
+                            fetchData();
+                          } catch (err) {
+                            console.error('Failed to delete file:', err);
+                            alert('Failed to delete file');
+                          }
+                        }
+                      }}
+                      style={{ background: '#dc3545', color: 'white', border: 'none', padding: '0.25rem 0.75rem', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>

@@ -44,8 +44,17 @@ data/
 *.tmp
 *.temp
 local*/
-backend/alembic/versions
+local_db_data/
 bin/
+test_data/
+test_results/
+downloads/
+*.test.log
+*.csv
+*.tsv
+*.txt
+!requirements.txt
+!README*.txt
 
 # Sequencing & bioinformatics large files
 *.fastq
