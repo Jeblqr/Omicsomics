@@ -17,24 +17,24 @@ from app.converters.proteomics import ProteomicsConverter
 
 async def test_raw_metadata():
     """Test RAW file metadata extraction."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 1: RAW File Metadata Extraction")
-    print("="*80)
-    
+    print("=" * 80)
+
     converter = ProteomicsConverter()
-    
+
     # Create a dummy RAW file for testing
     test_raw = Path("/tmp/test_sample.raw")
     test_raw.write_bytes(b"MOCK_RAW_FILE_DATA" * 1000)  # 18KB mock file
-    
+
     try:
         result = await converter.to_unified(
             file_path=test_raw,
             sample_id="test_001",
             source_format="raw",
-            organism="Homo sapiens"
+            organism="Homo sapiens",
         )
-        
+
         print(f"\n✓ Successfully extracted RAW file metadata")
         print(f"  - File: {result.metadata.custom_fields.get('file_name')}")
         print(f"  - Size: {result.metadata.custom_fields.get('file_size_mb')} MB")
@@ -42,10 +42,10 @@ async def test_raw_metadata():
         print(f"\nMetadata records:")
         for record in result.records:
             print(f"  • {record.values['property']}: {record.values['value']}")
-        
+
         print(f"\nConversion command:")
         print(f"  {result.metadata.custom_fields.get('conversion_command')}")
-        
+
         return True
     except Exception as e:
         print(f"\n✗ RAW metadata extraction failed: {e}")
@@ -56,12 +56,12 @@ async def test_raw_metadata():
 
 async def test_mzml_parsing():
     """Test mzML parsing with pyteomics vs XML fallback."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 2: mzML Parsing (Pyteomics vs XML Fallback)")
-    print("="*80)
-    
+    print("=" * 80)
+
     converter = ProteomicsConverter()
-    
+
     # Create a minimal valid mzML file
     test_mzml = Path("/tmp/test_sample.mzML")
     mzml_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -123,41 +123,42 @@ async def test_mzml_parsing():
     </spectrumList>
   </run>
 </mzML>"""
-    
+
     test_mzml.write_text(mzml_content)
-    
+
     try:
         result = await converter.to_unified(
             file_path=test_mzml,
             sample_id="test_002",
             source_format="mzml",
-            organism="Homo sapiens"
+            organism="Homo sapiens",
         )
-        
-        parser_used = result.metadata.custom_fields.get('parser', 'unknown')
+
+        parser_used = result.metadata.custom_fields.get("parser", "unknown")
         print(f"\n✓ Successfully parsed mzML file")
         print(f"  - Parser: {parser_used}")
         print(f"  - Total spectra: {result.statistics.get('total_spectra', 0)}")
         print(f"  - MS1 spectra: {result.statistics.get('ms1_spectra', 0)}")
         print(f"  - MS2 spectra: {result.statistics.get('ms2_spectra', 0)}")
-        
+
         if result.records:
             print(f"\nFirst spectrum details:")
             first = result.records[0]
             for key, value in first.values.items():
                 if value:  # Only show non-empty values
                     print(f"  • {key}: {value}")
-        
+
         if parser_used == "pyteomics":
             print("\n🎉 Pyteomics is available - using enhanced parsing!")
         else:
             print("\n⚠️  Using XML fallback parser (pyteomics not available)")
             print("   Install with: pip install pyteomics>=4.6.0")
-        
+
         return True
     except Exception as e:
         print(f"\n✗ mzML parsing failed: {e}")
         import traceback
+
         traceback.print_exc()
         return False
     finally:
@@ -166,12 +167,12 @@ async def test_mzml_parsing():
 
 async def test_mgf_parsing():
     """Test MGF format parsing."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 3: MGF (Mascot Generic Format) Parsing")
-    print("="*80)
-    
+    print("=" * 80)
+
     converter = ProteomicsConverter()
-    
+
     # Create a test MGF file
     test_mgf = Path("/tmp/test_sample.mgf")
     mgf_content = """BEGIN IONS
@@ -194,27 +195,27 @@ CHARGE=2+
 400.0 600.0
 END IONS
 """
-    
+
     test_mgf.write_text(mgf_content)
-    
+
     try:
         result = await converter.to_unified(
             file_path=test_mgf,
             sample_id="test_003",
             source_format="mgf",
-            organism="Homo sapiens"
+            organism="Homo sapiens",
         )
-        
+
         print(f"\n✓ Successfully parsed MGF file")
         print(f"  - Total spectra: {result.statistics.get('total_spectra', 0)}")
         print(f"  - Records: {len(result.records)}")
-        
+
         if result.records:
             print(f"\nFirst spectrum:")
             first = result.records[0]
             for key, value in first.values.items():
                 print(f"  • {key}: {value}")
-        
+
         return True
     except Exception as e:
         print(f"\n✗ MGF parsing failed: {e}")
@@ -225,95 +226,98 @@ END IONS
 
 async def test_format_comparison():
     """Compare different formats."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST 4: Format Feature Comparison")
-    print("="*80)
-    
+    print("=" * 80)
+
     formats = {
         "RAW": {
             "full_spectrum_data": False,
             "metadata_extraction": True,
             "requires_conversion": True,
-            "recommended_converter": "ThermoRawFileParser"
+            "recommended_converter": "ThermoRawFileParser",
         },
         "mzML": {
             "full_spectrum_data": True,
             "metadata_extraction": True,
             "requires_conversion": False,
-            "parser": "pyteomics (preferred) / XML fallback"
+            "parser": "pyteomics (preferred) / XML fallback",
         },
         "mzXML": {
             "full_spectrum_data": True,
             "metadata_extraction": True,
             "requires_conversion": False,
-            "parser": "pyteomics (preferred) / XML fallback"
+            "parser": "pyteomics (preferred) / XML fallback",
         },
         "MGF": {
             "full_spectrum_data": True,
             "metadata_extraction": True,
             "requires_conversion": False,
-            "parser": "Text-based"
+            "parser": "Text-based",
         },
         "CSV/TSV": {
             "full_spectrum_data": False,
             "metadata_extraction": True,
             "requires_conversion": False,
-            "parser": "Pandas/CSV"
-        }
+            "parser": "Pandas/CSV",
+        },
     }
-    
+
     print("\nFormat Support Matrix:\n")
-    print(f"{'Format':<12} {'Spectra':<10} {'Metadata':<10} {'Direct Parse':<13} {'Parser/Tool'}")
+    print(
+        f"{'Format':<12} {'Spectra':<10} {'Metadata':<10} {'Direct Parse':<13} {'Parser/Tool'}"
+    )
     print("-" * 80)
-    
+
     for fmt, features in formats.items():
         spectra = "✓" if features.get("full_spectrum_data") else "Metadata"
         metadata = "✓" if features.get("metadata_extraction") else "✗"
         direct = "✗ Convert" if features.get("requires_conversion") else "✓ Yes"
         parser = features.get("parser") or features.get("recommended_converter", "")
-        
+
         print(f"{fmt:<12} {spectra:<10} {metadata:<10} {direct:<13} {parser}")
-    
+
     return True
 
 
 async def main():
     """Run all proteomics format tests."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("ADVANCED PROTEOMICS FORMAT PARSING TESTS")
-    print("="*80)
+    print("=" * 80)
     print("\nTesting enhanced proteomics format support:")
     print("  - RAW file metadata extraction")
     print("  - mzML/mzXML parsing with pyteomics")
     print("  - MGF format support")
     print("  - Format comparison")
-    
+
     results = []
-    
+
     results.append(await test_raw_metadata())
     results.append(await test_mzml_parsing())
     results.append(await test_mgf_parsing())
     results.append(await test_format_comparison())
-    
+
     # Summary
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("TEST SUMMARY")
-    print("="*80)
-    
+    print("=" * 80)
+
     passed = sum(results)
     total = len(results)
-    
+
     print(f"\nTests passed: {passed}/{total}")
-    
+
     if passed == total:
         print("\n✅ All tests passed!")
     else:
         print(f"\n⚠️  {total - passed} test(s) failed")
-    
-    print("\n" + "="*80)
+
+    print("\n" + "=" * 80)
     print("NEXT STEPS")
-    print("="*80)
-    print("""
+    print("=" * 80)
+    print(
+        """
 1. Install pyteomics for enhanced parsing:
    pip install pyteomics>=4.6.0
 
@@ -333,8 +337,9 @@ async def main():
      -F "process_file=true"
 
 See docs/PROTEOMICS_FORMATS.md for detailed documentation.
-""")
-    
+"""
+    )
+
     return 0 if passed == total else 1
 
 

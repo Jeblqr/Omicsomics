@@ -359,6 +359,275 @@ async def delete_datafile(
     return None
 
 
+@router.get("/{datafile_id}/preview")
+async def preview_archive(
+    datafile_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Preview contents of an archive file (ZIP, TAR, TAR.GZ, TAR.BZ2).
+    
+    Returns list of files in the archive with metadata.
+    
+    Returns:
+        {
+            "is_archive": bool,
+            "files": [{"name": str, "path": str, "size": int, "mime_type": str}],
+            "total_files": int,
+            "total_size": int
+        }
+    """
+    from app.services import storage_service
+    from app.utils.archive import list_archive_contents, is_archive_file, ArchiveError
+    import tempfile
+    from pathlib import Path
+    
+    # Get datafile
+    df = await datafile_service.get_datafile(db, datafile_id)
+    if df is None:
+        raise HTTPException(status_code=404, detail="DataFile not found")
+    
+    # Check authorization
+    project = await project_service.get_project(db, df.project_id)
+    if project is None or project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Check if file is an archive
+    file_path = Path(df.filename)
+    if not is_archive_file(file_path):
+        return {
+            "is_archive": False,
+            "message": f"File '{df.filename}' is not a supported archive format"
+        }
+    
+    # Download and decrypt file
+    try:
+        plaintext = await storage_service.download_and_decrypt(
+            current_user.id, df.object_key
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to download file: {str(e)}"
+        )
+    
+    # Write to temporary file for archive processing
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_path.suffix) as tmp_file:
+        tmp_path = Path(tmp_file.name)
+        tmp_file.write(plaintext)
+    
+    try:
+        # List archive contents
+        files = list_archive_contents(tmp_path)
+        
+        # Calculate totals
+        total_size = sum(f.size for f in files)
+        
+        return {
+            "is_archive": True,
+            "files": [f.to_dict() for f in files],
+            "total_files": len(files),
+            "total_size": total_size,
+            "archive_filename": df.filename,
+        }
+    
+    except ArchiveError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to read archive: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {str(e)}"
+        )
+    finally:
+        # Clean up temporary file
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+
+@router.post("/{datafile_id}/process-from-archive", status_code=status.HTTP_201_CREATED)
+async def process_file_from_archive(
+    datafile_id: int,
+    file_path: str = Form(...),
+    sample_id: str = Form(None),
+    organism: str = Form(None),
+    reference_genome: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Extract and process a specific file from an archive.
+    
+    Args:
+        datafile_id: ID of the archive file
+        file_path: Path of the file within the archive to extract and process
+        sample_id: Optional sample identifier
+        organism: Optional organism name
+        reference_genome: Optional reference genome
+    
+    Returns:
+        {
+            "datafile_id": int,  # New datafile created from extracted file
+            "processed_file_id": int,  # Processed unified format file
+            "extracted_filename": str,
+            "processing_info": dict
+        }
+    """
+    from app.services import storage_service
+    from app.utils.archive import extract_archive, is_archive_file, ArchiveError
+    import tempfile
+    from pathlib import Path
+    
+    # Get archive datafile
+    archive_df = await datafile_service.get_datafile(db, datafile_id)
+    if archive_df is None:
+        raise HTTPException(status_code=404, detail="Archive file not found")
+    
+    # Check authorization
+    project = await project_service.get_project(db, archive_df.project_id)
+    if project is None or project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Verify it's an archive
+    archive_path = Path(archive_df.filename)
+    if not is_archive_file(archive_path):
+        raise HTTPException(
+            status_code=400,
+            detail=f"File '{archive_df.filename}' is not a supported archive format"
+        )
+    
+    # Download and decrypt archive
+    try:
+        plaintext = await storage_service.download_and_decrypt(
+            current_user.id, archive_df.object_key
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to download archive: {str(e)}"
+        )
+    
+    # Create temporary directory for extraction
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        
+        # Write archive to temp file
+        archive_tmp = tmp_path / archive_df.filename
+        archive_tmp.write_bytes(plaintext)
+        
+        # Extract specific file
+        extract_dir = tmp_path / "extracted"
+        try:
+            extracted_file = extract_archive(archive_tmp, extract_dir, file_path)
+        except ArchiveError as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Failed to extract file: {str(e)}"
+            )
+        
+        if not extracted_file.exists():
+            raise HTTPException(
+                status_code=404,
+                detail=f"File '{file_path}' not found in archive"
+            )
+        
+        # Read extracted file
+        extracted_content = extracted_file.read_bytes()
+        extracted_filename = extracted_file.name
+        
+        # Guess MIME type
+        mime_type = mimetypes.guess_type(extracted_filename)[0] or "application/octet-stream"
+    
+    # Create new datafile for extracted content
+    extracted_df = await datafile_service.create_datafile(
+        db=db,
+        file_data=io.BytesIO(extracted_content),
+        filename=extracted_filename,
+        project_id=archive_df.project_id,
+        user_id=current_user.id,
+        content_type=mime_type,
+    )
+    
+    # Update metadata to link to parent archive
+    extracted_metadata = extracted_df.metadata_ or {}
+    extracted_metadata["extracted_from_archive"] = {
+        "archive_id": datafile_id,
+        "archive_filename": archive_df.filename,
+        "file_path": file_path,
+    }
+    extracted_df.metadata_ = extracted_metadata
+    await db.commit()
+    
+    # Process the extracted file
+    try:
+        # Process file
+        result = await FileProcessor.process_file_async(
+            file_content=extracted_content,
+            filename=extracted_filename,
+            sample_id=sample_id,
+        )
+        
+        if not result.get("success"):
+            raise Exception(result.get("error", "Unknown processing error"))
+        
+        unified_data = result["unified_data"]
+        
+        # Serialize unified data
+        unified_json = FileProcessor.serialize_unified_data(unified_data)
+        
+        # Store processed file
+        processed_df = await datafile_service.create_datafile(
+            db=db,
+            file_data=io.BytesIO(unified_json),
+            filename=f"processed_{extracted_filename}.json",
+            project_id=archive_df.project_id,
+            user_id=current_user.id,
+            content_type="application/json",
+        )
+        
+        # Link files
+        metadata = extracted_df.metadata_ or {}
+        metadata["processed_file_id"] = processed_df.id
+        metadata["processing_info"] = {
+            "success": True,
+            "format_detected": unified_data.format,
+            "data_type": unified_data.data_type,
+            "features_count": len(unified_data.features),
+        }
+        extracted_df.metadata_ = metadata
+        await db.commit()
+        
+        return {
+            "datafile_id": extracted_df.id,
+            "processed_file_id": processed_df.id,
+            "extracted_filename": extracted_filename,
+            "archive_source": {
+                "archive_id": datafile_id,
+                "archive_filename": archive_df.filename,
+                "file_path": file_path,
+            },
+            "processing_info": metadata["processing_info"],
+        }
+    
+    except Exception as e:
+        # Update metadata with error
+        metadata = extracted_df.metadata_ or {}
+        metadata["processing_info"] = {
+            "success": False,
+            "error": str(e),
+        }
+        extracted_df.metadata_ = metadata
+        await db.commit()
+        
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process extracted file: {str(e)}"
+        )
+
+
 @router.get("/task/{task_id}/status")
 async def get_task_status(
     task_id: str,

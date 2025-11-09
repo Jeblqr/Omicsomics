@@ -96,11 +96,11 @@ class ProteomicsConverter(BaseConverter):
     ) -> ProteomicsData:
         """
         Convert Thermo RAW to unified format.
-        
+
         This method provides metadata extraction from RAW files.
         For full spectrum data, ThermoRawFileParser should be used to convert
         RAW -> mzML first, then process with _mzml_to_unified.
-        
+
         Note: Direct RAW file parsing requires platform-specific libraries.
         For production use, convert RAW to mzML using ThermoRawFileParser:
             ThermoRawFileParser -i input.raw -o output_dir -f 2
@@ -111,21 +111,23 @@ class ProteomicsConverter(BaseConverter):
             organism=kwargs.get("organism"),
             reference_genome=kwargs.get("reference_genome"),
         )
-        
+
         # Extract basic file metadata
         file_stats = file_path.stat()
-        metadata.custom_fields.update({
-            "file_size_mb": round(file_stats.st_size / (1024 * 1024), 2),
-            "file_name": file_path.name,
-            "parsing_note": (
-                "RAW file metadata only. For full spectrum data, "
-                "convert to mzML using ThermoRawFileParser first."
-            ),
-            "conversion_command": (
-                f"ThermoRawFileParser -i {file_path.name} -o output_dir -f 2"
-            ),
-        })
-        
+        metadata.custom_fields.update(
+            {
+                "file_size_mb": round(file_stats.st_size / (1024 * 1024), 2),
+                "file_name": file_path.name,
+                "parsing_note": (
+                    "RAW file metadata only. For full spectrum data, "
+                    "convert to mzML using ThermoRawFileParser first."
+                ),
+                "conversion_command": (
+                    f"ThermoRawFileParser -i {file_path.name} -o output_dir -f 2"
+                ),
+            }
+        )
+
         headers = ["property", "value"]
         records = [
             UnifiedDataRecord(
@@ -157,7 +159,7 @@ class ProteomicsConverter(BaseConverter):
                 },
             ),
         ]
-        
+
         return ProteomicsData(
             metadata=metadata,
             headers=headers,
@@ -170,7 +172,7 @@ class ProteomicsConverter(BaseConverter):
     ) -> ProteomicsData:
         """
         Convert mzML to unified format using pyteomics for better parsing.
-        
+
         Pyteomics provides more robust parsing of complex mzML files with
         better handling of different vendor formats and edge cases.
         """
@@ -180,7 +182,7 @@ class ProteomicsConverter(BaseConverter):
             organism=kwargs.get("organism"),
             reference_genome=kwargs.get("reference_genome"),
         )
-        
+
         headers = [
             "spectrum_id",
             "ms_level",
@@ -194,49 +196,65 @@ class ProteomicsConverter(BaseConverter):
             "total_ion_current",
         ]
         records = []
-        
+
         try:
             # Use pyteomics for robust parsing
             with pymzml.read(str(file_path)) as reader:
                 for spectrum in reader:
-                    spectrum_id = spectrum.get("id", f"scan_{spectrum.get('index', len(records))}")
+                    spectrum_id = spectrum.get(
+                        "id", f"scan_{spectrum.get('index', len(records))}"
+                    )
                     ms_level = spectrum.get("ms level", 1)
                     scan_num = spectrum.get("index", len(records))
-                    
+
                     # Extract retention time (in seconds)
-                    rt = spectrum.get("scanList", {}).get("scan", [{}])[0].get(
-                        "scan start time", None
+                    rt = (
+                        spectrum.get("scanList", {})
+                        .get("scan", [{}])[0]
+                        .get("scan start time", None)
                     )
-                    
+
                     # Extract precursor info for MS2/MS3
                     precursor_mz = None
                     precursor_charge = None
                     if ms_level > 1:
-                        precursors = spectrum.get("precursorList", {}).get("precursor", [])
+                        precursors = spectrum.get("precursorList", {}).get(
+                            "precursor", []
+                        )
                         if precursors:
-                            selected_ion = precursors[0].get("selectedIonList", {}).get(
-                                "selectedIon", [{}]
-                            )[0]
+                            selected_ion = (
+                                precursors[0]
+                                .get("selectedIonList", {})
+                                .get("selectedIon", [{}])[0]
+                            )
                             precursor_mz = selected_ion.get("selected ion m/z")
                             precursor_charge = selected_ion.get("charge state")
-                    
+
                     # Extract peak data
                     mz_array = spectrum.get("m/z array", [])
                     intensity_array = spectrum.get("intensity array", [])
                     num_peaks = len(mz_array)
-                    
+
                     # Calculate base peak
                     base_peak_mz = None
                     base_peak_intensity = None
                     if num_peaks > 0:
-                        max_idx = intensity_array.argmax() if len(intensity_array) > 0 else 0
-                        base_peak_mz = float(mz_array[max_idx]) if max_idx < len(mz_array) else None
+                        max_idx = (
+                            intensity_array.argmax() if len(intensity_array) > 0 else 0
+                        )
+                        base_peak_mz = (
+                            float(mz_array[max_idx])
+                            if max_idx < len(mz_array)
+                            else None
+                        )
                         base_peak_intensity = float(intensity_array[max_idx])
-                    
+
                     # Total ion current
-                    tic = spectrum.get("total ion current", 
-                                      intensity_array.sum() if len(intensity_array) > 0 else 0)
-                    
+                    tic = spectrum.get(
+                        "total ion current",
+                        intensity_array.sum() if len(intensity_array) > 0 else 0,
+                    )
+
                     record = UnifiedDataRecord(
                         id=spectrum_id,
                         values={
@@ -245,33 +263,45 @@ class ProteomicsConverter(BaseConverter):
                             "scan_number": str(scan_num),
                             "retention_time_seconds": str(rt) if rt else "",
                             "precursor_mz": str(precursor_mz) if precursor_mz else "",
-                            "precursor_charge": str(precursor_charge) if precursor_charge else "",
+                            "precursor_charge": (
+                                str(precursor_charge) if precursor_charge else ""
+                            ),
                             "num_peaks": str(num_peaks),
                             "base_peak_mz": str(base_peak_mz) if base_peak_mz else "",
-                            "base_peak_intensity": str(base_peak_intensity) if base_peak_intensity else "",
+                            "base_peak_intensity": (
+                                str(base_peak_intensity) if base_peak_intensity else ""
+                            ),
                             "total_ion_current": str(tic),
                         },
                     )
                     records.append(record)
-                    
+
         except Exception as e:
             logger.error(f"Error parsing mzML with pyteomics: {e}")
             # Fall back to basic XML parsing
-            return await self._mzml_to_unified(file_path, sample_id, source_format, **kwargs)
-        
-        metadata.custom_fields.update({
-            "total_spectra": len(records),
-            "parser": "pyteomics",
-        })
-        
+            return await self._mzml_to_unified(
+                file_path, sample_id, source_format, **kwargs
+            )
+
+        metadata.custom_fields.update(
+            {
+                "total_spectra": len(records),
+                "parser": "pyteomics",
+            }
+        )
+
         return ProteomicsData(
             metadata=metadata,
             headers=headers,
             records=records,
             statistics={
                 "total_spectra": len(records),
-                "ms1_spectra": sum(1 for r in records if r.values.get("ms_level") == "1"),
-                "ms2_spectra": sum(1 for r in records if r.values.get("ms_level") == "2"),
+                "ms1_spectra": sum(
+                    1 for r in records if r.values.get("ms_level") == "1"
+                ),
+                "ms2_spectra": sum(
+                    1 for r in records if r.values.get("ms_level") == "2"
+                ),
             },
         )
 
@@ -280,7 +310,7 @@ class ProteomicsConverter(BaseConverter):
     ) -> ProteomicsData:
         """
         Convert mzXML to unified format using pyteomics.
-        
+
         Similar to mzML parsing but for mzXML format.
         """
         metadata = self.create_metadata(
@@ -289,7 +319,7 @@ class ProteomicsConverter(BaseConverter):
             organism=kwargs.get("organism"),
             reference_genome=kwargs.get("reference_genome"),
         )
-        
+
         headers = [
             "scan_number",
             "ms_level",
@@ -301,38 +331,46 @@ class ProteomicsConverter(BaseConverter):
             "total_ion_current",
         ]
         records = []
-        
+
         try:
             with pymzxml.read(str(file_path)) as reader:
                 for scan in reader:
                     scan_num = scan.get("num", len(records))
                     ms_level = scan.get("msLevel", 1)
                     rt = scan.get("retentionTime", "")  # in seconds
-                    
+
                     # Precursor info
                     precursor_mz = None
                     if "precursorMz" in scan:
                         precursors = scan["precursorMz"]
                         if precursors and len(precursors) > 0:
                             precursor_mz = precursors[0].get("precursorMz")
-                    
+
                     # Peak data
                     mz_array = scan.get("m/z array", [])
                     intensity_array = scan.get("intensity array", [])
                     num_peaks = len(mz_array)
-                    
+
                     # Base peak
                     base_peak_mz = None
                     base_peak_intensity = None
                     if num_peaks > 0:
-                        max_idx = intensity_array.argmax() if len(intensity_array) > 0 else 0
-                        base_peak_mz = float(mz_array[max_idx]) if max_idx < len(mz_array) else None
+                        max_idx = (
+                            intensity_array.argmax() if len(intensity_array) > 0 else 0
+                        )
+                        base_peak_mz = (
+                            float(mz_array[max_idx])
+                            if max_idx < len(mz_array)
+                            else None
+                        )
                         base_peak_intensity = float(intensity_array[max_idx])
-                    
+
                     # TIC
-                    tic = scan.get("totIonCurrent", 
-                                  intensity_array.sum() if len(intensity_array) > 0 else 0)
-                    
+                    tic = scan.get(
+                        "totIonCurrent",
+                        intensity_array.sum() if len(intensity_array) > 0 else 0,
+                    )
+
                     record = UnifiedDataRecord(
                         id=f"scan_{scan_num}",
                         values={
@@ -342,22 +380,28 @@ class ProteomicsConverter(BaseConverter):
                             "precursor_mz": str(precursor_mz) if precursor_mz else "",
                             "num_peaks": str(num_peaks),
                             "base_peak_mz": str(base_peak_mz) if base_peak_mz else "",
-                            "base_peak_intensity": str(base_peak_intensity) if base_peak_intensity else "",
+                            "base_peak_intensity": (
+                                str(base_peak_intensity) if base_peak_intensity else ""
+                            ),
                             "total_ion_current": str(tic),
                         },
                     )
                     records.append(record)
-                    
+
         except Exception as e:
             logger.error(f"Error parsing mzXML with pyteomics: {e}")
             # Fall back to basic XML parsing
-            return await self._mzxml_to_unified(file_path, sample_id, source_format, **kwargs)
-        
-        metadata.custom_fields.update({
-            "total_scans": len(records),
-            "parser": "pyteomics",
-        })
-        
+            return await self._mzxml_to_unified(
+                file_path, sample_id, source_format, **kwargs
+            )
+
+        metadata.custom_fields.update(
+            {
+                "total_scans": len(records),
+                "parser": "pyteomics",
+            }
+        )
+
         return ProteomicsData(
             metadata=metadata,
             headers=headers,
@@ -375,7 +419,7 @@ class ProteomicsConverter(BaseConverter):
         """
         Convert mzML to unified format using basic XML parsing.
         Extracts spectrum information (m/z, intensity, retention time).
-        
+
         This is a fallback method when pyteomics is not available.
         """
         metadata = self.create_metadata(

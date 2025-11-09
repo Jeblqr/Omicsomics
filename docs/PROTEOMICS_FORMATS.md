@@ -6,22 +6,22 @@ This document describes the advanced proteomics data format support in Omicsomic
 
 ### Input Formats
 
-| Format | Extension | Description | Parser | Status |
-|--------|-----------|-------------|--------|--------|
-| mzML | `.mzml` | Open standard MS format | pyteomics / XML fallback | ✅ Full |
-| mzXML | `.mzxml` | Legacy open format | pyteomics / XML fallback | ✅ Full |
-| MGF | `.mgf` | Mascot Generic Format | Text parser | ✅ Full |
-| Thermo RAW | `.raw` | Thermo Fisher vendor format | Metadata extraction + conversion | ✅ Enhanced |
-| CSV/TSV | `.csv`, `.tsv` | Tabular data (search results) | Pandas | ✅ Full |
+| Format     | Extension      | Description                   | Parser                           | Status      |
+| ---------- | -------------- | ----------------------------- | -------------------------------- | ----------- |
+| mzML       | `.mzml`        | Open standard MS format       | pyteomics / XML fallback         | ✅ Full     |
+| mzXML      | `.mzxml`       | Legacy open format            | pyteomics / XML fallback         | ✅ Full     |
+| MGF        | `.mgf`         | Mascot Generic Format         | Text parser                      | ✅ Full     |
+| Thermo RAW | `.raw`         | Thermo Fisher vendor format   | Metadata extraction + conversion | ✅ Enhanced |
+| CSV/TSV    | `.csv`, `.tsv` | Tabular data (search results) | Pandas                           | ✅ Full     |
 
 ### Output Formats
 
-| Format | Description | Use Case |
-|--------|-------------|----------|
-| CSV | Comma-separated values | Spreadsheet analysis |
-| TSV | Tab-separated values | Unix pipelines |
-| MGF | Mascot Generic Format | MS/MS search engines |
-| JSON | Unified format | API integration, ML pipelines |
+| Format | Description            | Use Case                      |
+| ------ | ---------------------- | ----------------------------- |
+| CSV    | Comma-separated values | Spreadsheet analysis          |
+| TSV    | Tab-separated values   | Unix pipelines                |
+| MGF    | Mascot Generic Format  | MS/MS search engines          |
+| JSON   | Unified format         | API integration, ML pipelines |
 
 ## Thermo RAW File Support
 
@@ -121,12 +121,14 @@ pip install pyteomics>=4.6.0
 ### Features
 
 **Better mzML/mzXML Parsing**:
+
 - Robust handling of different vendor formats
 - Accurate extraction of precursor m/z and charge
 - Peak data arrays (m/z, intensity)
 - Comprehensive metadata extraction
 
 **Enhanced Data Extraction**:
+
 ```python
 {
     "spectrum_id": "controllerType=0 controllerNumber=1 scan=1",
@@ -186,9 +188,9 @@ async with httpx.AsyncClient() as client:
                 "async_processing": True  # Use Celery for large files
             }
         )
-    
+
     data_id = response.json()["id"]
-    
+
     # Poll processing status
     while True:
         status_response = await client.get(
@@ -196,12 +198,12 @@ async with httpx.AsyncClient() as client:
             headers={"Authorization": f"Bearer {token}"}
         )
         status = status_response.json()
-        
+
         if status["state"] in ["SUCCESS", "FAILURE"]:
             break
-        
+
         await asyncio.sleep(2)
-    
+
     # Retrieve processed data
     processed = await client.get(
         f"http://localhost:8000/api/v1/data/{data_id}/processed",
@@ -231,28 +233,31 @@ maxquant_response = await client.post(
 
 ### mzML vs mzXML
 
-| Feature | mzML | mzXML |
-|---------|------|-------|
-| Standard | PSI-MS (current) | ISB (legacy) |
-| File Size | Smaller (compression) | Larger |
-| Metadata | Rich CV terms | Limited |
-| Compatibility | Better | Older tools |
+| Feature            | mzML                    | mzXML                        |
+| ------------------ | ----------------------- | ---------------------------- |
+| Standard           | PSI-MS (current)        | ISB (legacy)                 |
+| File Size          | Smaller (compression)   | Larger                       |
+| Metadata           | Rich CV terms           | Limited                      |
+| Compatibility      | Better                  | Older tools                  |
 | **Recommendation** | ✅ Use for new projects | Use for legacy compatibility |
 
 ### When to Use Each Format
 
 **mzML**:
+
 - Modern workflows
 - Rich metadata requirements
 - Integration with Proteome Xchange
 - Storage efficiency
 
 **mzXML**:
+
 - Legacy pipeline compatibility
 - Older search engine requirements
 - Some visualization tools
 
 **MGF**:
+
 - Input to search engines (Mascot, X!Tandem)
 - Simple MS/MS spectrum representation
 - Human-readable format
@@ -261,35 +266,38 @@ maxquant_response = await client.post(
 
 ### File Sizes
 
-| Format | Typical Size (per scan) | Compression |
-|--------|------------------------|-------------|
-| RAW | ~100-500 KB | Proprietary |
-| mzML | ~50-200 KB | gzip available |
-| mzXML | ~100-300 KB | gzip available |
-| MGF | ~10-50 KB | Text only |
+| Format | Typical Size (per scan) | Compression    |
+| ------ | ----------------------- | -------------- |
+| RAW    | ~100-500 KB             | Proprietary    |
+| mzML   | ~50-200 KB              | gzip available |
+| mzXML  | ~100-300 KB             | gzip available |
+| MGF    | ~10-50 KB               | Text only      |
 
 ### Processing Time
 
-| Operation | Small File (< 100 MB) | Large File (> 1 GB) |
-|-----------|----------------------|---------------------|
-| RAW → mzML conversion | 1-2 min | 10-30 min |
-| mzML parsing (pyteomics) | 5-10 sec | 1-5 min |
-| mzML parsing (XML) | 10-20 sec | 2-10 min |
-| Upload + process | 10-30 sec | Async required |
+| Operation                | Small File (< 100 MB) | Large File (> 1 GB) |
+| ------------------------ | --------------------- | ------------------- |
+| RAW → mzML conversion    | 1-2 min               | 10-30 min           |
+| mzML parsing (pyteomics) | 5-10 sec              | 1-5 min             |
+| mzML parsing (XML)       | 10-20 sec             | 2-10 min            |
+| Upload + process         | 10-30 sec             | Async required      |
 
 ### Best Practices
 
 1. **Use async processing for files > 100 MB**
+
    ```python
    async_processing=True
    ```
 
 2. **Compress mzML files**
+
    ```bash
    gzip sample.mzML
    ```
 
 3. **Index large files**
+
    ```bash
    # Create index for faster access
    msconvert sample.raw --mzML --filter "index"
@@ -359,6 +367,7 @@ with pymzml.read(file_path, use_index=True) as reader:
 ## API Reference
 
 See the full API documentation at `/docs` for:
+
 - `/api/v1/proteomics/convert-raw` - RAW to mzML conversion
 - `/api/v1/proteomics/maxquant` - MaxQuant analysis
 - `/api/v1/proteomics/msfragger` - MSFragger search

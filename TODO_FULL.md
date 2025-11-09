@@ -30,12 +30,14 @@
 ### 已完成的核心功能 ✅
 
 **基础架构 (Tasks 1-4)**
+
 - ✅ API 格式标准化 - 统一返回格式和状态码
 - ✅ Dashboard Hook 修复 - 项目数量实时更新
 - ✅ 项目级联删除 - 自动清理关联数据
 - ✅ Run 后台会话修复 - 独立 DB session 支持
 
 **文件处理系统 (Tasks 5-10)**
+
 - ✅ FileProcessor 服务 - 自动格式检测与转换
 - ✅ 转录组学转换器 - CSV/TSV/Excel → Unified
 - ✅ 蛋白质组学转换器 - mzML/mzXML/MGF/CSV 支持
@@ -44,22 +46,26 @@
 - ✅ Processed 数据检索 - 统一数据格式 API
 
 **部署与测试 (Tasks 11-13)**
+
 - ✅ 全栈 Docker 化 - 完整容器化部署
 - ✅ 端到端集成测试 - 完整工作流验证
 - ✅ 前端处理 UI - 文件上传、处理、Run 管理
 
 **高级功能 (Tasks 14-16)**
+
 - ✅ 异步后台处理 - Celery + Redis 任务队列
 - ✅ 高级蛋白质组学解析 - Pyteomics 二进制格式支持
 - ✅ CI/CD 流水线 - GitHub Actions 完整自动化
 
 **项目管理 (Tasks 17-18)**
+
 - ✅ 文档整理与归档
 - ✅ 版本控制规范化
 
 ### 技术栈
 
 **后端**
+
 - FastAPI 0.115+ (异步 Web 框架)
 - SQLAlchemy 2.0 (异步 ORM)
 - PostgreSQL 16 (数据库)
@@ -69,12 +75,14 @@
 - Pyteomics 4.6+ (质谱数据解析)
 
 **前端**
+
 - React 18 + TypeScript
 - Vite (构建工具)
 - TanStack Query (数据获取)
 - React Router (路由)
 
 **DevOps**
+
 - Docker + Docker Compose
 - GitHub Actions (CI/CD)
 - pytest + coverage (测试)
@@ -88,7 +96,7 @@
 ### ✅ Task 1: API 格式标准化
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：统一后端 API 返回结构与 HTTP 状态码，避免前端解析差异
 - **主要文件**：`backend/app/api/routers/*.py`, `API_FORMAT_STANDARDS.md`
@@ -102,7 +110,7 @@
 ### ✅ Task 2: Dashboard Hook 修复
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：使用统一的 context hook 显示项目数量与数据
 - **主要文件**：`frontend/src/pages/dashboard/*`, `frontend/src/contexts/ProjectsContext.tsx`
@@ -115,7 +123,7 @@
 ### ✅ Task 3: 项目级联删除
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：删除项目时级联移除 Runs、DataFiles、Samples，避免 FK 约束错误
 - **主要文件**：`backend/app/services/projects.py`
@@ -128,7 +136,7 @@
 ### ✅ Task 4: Run 后台 DB 会话修复
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：后台执行的 run 使用独立的 DB session，避免请求生命周期问题
 - **主要文件**：`backend/app/services/pipeline_executor.py`, `backend/app/api/routers/runs.py`
@@ -141,7 +149,7 @@
 ### ✅ Task 5: FileProcessor 服务
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：实现自动格式检测与转换为统一格式（UnifiedData）
 - **主要文件**：`backend/app/services/file_processor.py`
@@ -155,7 +163,7 @@
 ### ✅ Task 6: 转录组学转换器
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：处理 CSV/TSV/Excel → Unified 格式，可导出为 CSV/TSV/DESeq2
 - **主要文件**：`backend/app/converters/transcriptomics.py`
@@ -169,7 +177,7 @@
 ### ✅ Task 7: 蛋白质组学转换器
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：支持 mzML/mzXML/MGF/CSV/TSV → Unified，导出 CSV/TSV/MGF
 - **主要文件**：`backend/app/converters/proteomics.py`
@@ -183,7 +191,7 @@
 ### ✅ Task 8: 代谢组学转换器
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：支持 mzData/mzML/CDF/CSV/TSV → Unified
 - **主要文件**：`backend/app/converters/metabolomics.py`
@@ -210,7 +218,7 @@
 ### ✅ Task 10: Processed 数据检索端点
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：新增 `GET /data/{id}/processed`，解密并返回 UnifiedData JSON 及处理信息
 - **主要文件**：`backend/app/api/routers/data.py`
@@ -224,7 +232,7 @@
 ### ✅ Task 11: 全栈 Docker 化
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：将后端/前端/db/minio 容器化，简化部署
 - **主要文件**：
@@ -243,7 +251,7 @@
 ### ✅ Task 12: 端到端集成测试
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：验证 upload → process → retrieve 完整流程
 - **主要文件**：`tests/integration/test_end_to_end.py`
@@ -265,7 +273,7 @@
 ### ✅ Task 13: 前端处理 UI
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：前端展示 processed data 并支持选择处理后数据进行分析 run
 - **主要文件**：
@@ -282,7 +290,7 @@
 ### ✅ Task 14: 异步后台处理（Celery）
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：对于大文件处理不阻塞 API，改用后台任务队列
 - **主要文件**：
@@ -303,7 +311,7 @@
 ### ✅ Task 15: 高级蛋白质组学二进制解析
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：实现 Thermo RAW / Bruker 等二进制格式的完整解析
 - **主要文件**：
@@ -322,7 +330,7 @@
 ### ✅ Task 16: CI/CD 流水线设置
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：配置 GitHub Actions，自动化测试和部署
 - **主要文件**：
@@ -347,7 +355,7 @@
 ### ✅ Task 17: 文档整理与归档
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：合并会话产生的摘要，清理冗余文件
 - **实现**：
@@ -359,7 +367,7 @@
 ### ✅ Task 18: 版本控制规范化
 
 **状态**：已完成  
-**完成时间**：2025-01  
+**完成时间**：2025-01
 
 - **目的**：规范化 git 提交和版本管理
 - **实现**：
@@ -375,6 +383,7 @@
 ### 完成的功能模块
 
 **1. 后端 API (44+ 端点)**
+
 - 用户认证与授权（JWT）
 - 项目管理（CRUD + 权限）
 - 样本管理（灵活元数据）
@@ -385,6 +394,7 @@
 - 多组学分析（8 大模块）
 
 **2. 文件处理系统**
+
 - 自动格式检测
 - 多格式转换器：
   - 基因组学：VCF, FASTA, FASTQ
@@ -396,6 +406,7 @@
 - 元数据链接
 
 **3. 异步处理基础设施**
+
 - Celery 任务队列
 - Redis 消息代理
 - 两个任务队列：
@@ -405,6 +416,7 @@
 - 状态轮询机制
 
 **4. 前端应用**
+
 - React 18 + TypeScript
 - 响应式设计
 - 8 个分析页面
@@ -414,6 +426,7 @@
 - 结果可视化
 
 **5. DevOps 基础设施**
+
 - Docker 多服务部署
 - GitHub Actions CI/CD
 - 自动化测试
@@ -444,11 +457,13 @@
 - **选择性处理**：支持从压缩包中选择特定文件进行处理
 
 **2. WebSocket 实时通信**
+
 - 替代轮询的实时进度推送
 - 实时日志流
 - 任务状态变更通知
 
 **3. 高级可视化**
+
 - 交互式数据探索
 - 自定义图表生成
 - 导出高质量图形
@@ -456,12 +471,14 @@
 ### 中期增强
 
 **4. Kubernetes 部署**
+
 - Helm charts
 - 自动扩缩容
 - 滚动更新
 - 服务网格（Istio/Linkerd）
 
 **5. 监控与告警**
+
 - Prometheus + Grafana metrics
 - ELK/Loki 日志聚合
 - 性能监控
@@ -469,6 +486,7 @@
 - 健康检查告警
 
 **6. 高级分析功能**
+
 - 机器学习模型集成
 - 批量数据处理
 - 高级统计分析
@@ -477,21 +495,25 @@
 ### 长期规划
 
 **7. 多租户支持**
+
 - 组织/团队管理
 - 资源配额限制
 - 成本追踪
 
 **8. 插件系统**
+
 - 第三方工具集成
 - 自定义分析模块
 - API 扩展机制
 
 **9. 协作功能**
+
 - 实时协作编辑
 - 注释与讨论
 - 结果分享
 
 **10. 性能优化**
+
 - 数据库查询优化
 - 缓存策略（Redis）
 - CDN 集成
@@ -504,12 +526,14 @@
 ### 本地开发
 
 **1. 克隆仓库**
+
 ```bash
 git clone https://github.com/Jeblqr/Omicsomics.git
 cd Omicsomics
 ```
 
 **2. 使用 Docker 启动（推荐）**
+
 ```bash
 # 一键启动所有服务
 ./docker-start.sh
@@ -521,6 +545,7 @@ cd Omicsomics
 ```
 
 **3. 查看日志**
+
 ```bash
 ./docker-logs.sh backend    # 后端日志
 ./docker-logs.sh frontend   # 前端日志
@@ -528,6 +553,7 @@ cd Omicsomics
 ```
 
 **4. 停止服务**
+
 ```bash
 ./docker-stop.sh
 ```
@@ -535,6 +561,7 @@ cd Omicsomics
 ### 运行测试
 
 **后端测试**
+
 ```bash
 cd backend
 
@@ -549,6 +576,7 @@ pytest --cov=app --cov-report=html
 ```
 
 **前端测试**
+
 ```bash
 cd frontend
 
@@ -563,11 +591,13 @@ npm run build
 ```
 
 **异步处理测试**
+
 ```bash
 python scripts/test_async_file_processing.py
 ```
 
 **蛋白质组学格式测试**
+
 ```bash
 python scripts/test_proteomics_formats.py
 ```
@@ -575,6 +605,7 @@ python scripts/test_proteomics_formats.py
 ### API 使用示例
 
 **1. 注册用户**
+
 ```bash
 curl -X POST "http://localhost:8000/api/v1/register" \
   -H "Content-Type: application/json" \
@@ -582,6 +613,7 @@ curl -X POST "http://localhost:8000/api/v1/register" \
 ```
 
 **2. 登录获取 Token**
+
 ```bash
 TOKEN=$(curl -s -X POST "http://localhost:8000/api/v1/login/access-token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
@@ -589,6 +621,7 @@ TOKEN=$(curl -s -X POST "http://localhost:8000/api/v1/login/access-token" \
 ```
 
 **3. 创建项目**
+
 ```bash
 curl -X POST "http://localhost:8000/api/v1/projects/" \
   -H "Authorization: Bearer $TOKEN" \
@@ -597,6 +630,7 @@ curl -X POST "http://localhost:8000/api/v1/projects/" \
 ```
 
 **4. 上传文件（带自动处理）**
+
 ```bash
 curl -X POST "http://localhost:8000/api/v1/data/upload" \
   -H "Authorization: Bearer $TOKEN" \
@@ -607,6 +641,7 @@ curl -X POST "http://localhost:8000/api/v1/data/upload" \
 ```
 
 **5. 查看处理后数据**
+
 ```bash
 curl -X GET "http://localhost:8000/api/v1/data/{id}/processed" \
   -H "Authorization: Bearer $TOKEN"
@@ -643,21 +678,25 @@ curl -X GET "http://localhost:8000/api/v1/data/{id}/processed" \
 ### 生产部署建议
 
 1. **Secrets 管理**
+
    - 不要将 secrets 写入 repo
    - 使用 `.env` + Docker secrets 或云 secret manager
    - 定期轮换密钥
 
 2. **容器安全**
+
    - 非 root 用户运行应用
    - 最小化镜像（多阶段构建）
    - 定期更新基础镜像
 
 3. **文件上传安全**
+
    - 严格检查文件类型和大小
    - 防止路径穿越攻击
    - 定期清理临时文件
 
 4. **API 保护**
+
    - 速率限制（rate limiting）
    - 基于角色的访问控制（RBAC）
    - 审计日志记录
@@ -698,6 +737,7 @@ curl -X GET "http://localhost:8000/api/v1/data/{id}/processed" \
 ## 九、项目统计
 
 ### 代码统计
+
 - **总代码行数**: 20,000+
 - **Python (后端)**: 16,000+
 - **TypeScript (前端)**: 4,000+
@@ -705,6 +745,7 @@ curl -X GET "http://localhost:8000/api/v1/data/{id}/processed" \
 - **测试用例**: 集成测试完整覆盖
 
 ### Docker 服务
+
 1. **db** - PostgreSQL 16 数据库
 2. **redis** - Redis 7 消息代理
 3. **backend** - FastAPI 应用服务器
@@ -714,6 +755,7 @@ curl -X GET "http://localhost:8000/api/v1/data/{id}/processed" \
 7. **cloudflared** - Cloudflare 隧道（可选）
 
 ### 支持的文件格式
+
 - **基因组学**: VCF, FASTA, FASTQ, BAM
 - **转录组学**: CSV, TSV, Excel, DESeq2
 - **蛋白质组学**: mzML, mzXML, MGF, CSV, Thermo RAW (元数据)
@@ -726,6 +768,7 @@ curl -X GET "http://localhost:8000/api/v1/data/{id}/processed" \
 ### 技术栈
 
 感谢以下开源项目：
+
 - [FastAPI](https://fastapi.tiangolo.com/) - 高性能 Web 框架
 - [React](https://reactjs.org/) - 用户界面库
 - [SQLAlchemy](https://www.sqlalchemy.org/) - Python SQL 工具包
@@ -752,6 +795,7 @@ Apache 2.0 License
 ✅ **18/18 任务完成 (100%)**
 
 **主要成就：**
+
 - 完整的多组学数据处理平台
 - 自动化文件格式转换
 - 异步后台处理支持
