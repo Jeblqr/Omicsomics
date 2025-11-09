@@ -124,14 +124,22 @@ async def main():
                                 progress = status.get("progress", 0)
                                 message = status.get("status", "Processing...")
 
-                                print(f"  [{elapsed}s] State: {state}, Progress: {progress}% - {message}")
+                                print(
+                                    f"  [{elapsed}s] State: {state}, Progress: {progress}% - {message}"
+                                )
 
                                 if state == "SUCCESS":
                                     print(f"\n✓ Processing completed successfully!")
                                     result_data = status.get("result", {})
-                                    print(f"  Processed file ID: {result_data.get('processed_file_id')}")
-                                    print(f"  Omics type: {result_data.get('omics_type')}")
-                                    print(f"  Record count: {result_data.get('record_count')}")
+                                    print(
+                                        f"  Processed file ID: {result_data.get('processed_file_id')}"
+                                    )
+                                    print(
+                                        f"  Omics type: {result_data.get('omics_type')}"
+                                    )
+                                    print(
+                                        f"  Record count: {result_data.get('record_count')}"
+                                    )
                                     break
                                 elif state == "FAILURE":
                                     print(f"\n✗ Processing failed!")
@@ -145,11 +153,15 @@ async def main():
                                     print(f"\n✗ Unknown state: {state}")
                                     break
                             else:
-                                print(f"✗ Failed to get task status: {status_response.status_code}")
+                                print(
+                                    f"✗ Failed to get task status: {status_response.status_code}"
+                                )
                                 break
 
                         if elapsed >= max_wait:
-                            print(f"\n⚠ Timeout: Task did not complete in {max_wait} seconds")
+                            print(
+                                f"\n⚠ Timeout: Task did not complete in {max_wait} seconds"
+                            )
 
                     else:
                         print("⚠ Async processing was not enabled in response")

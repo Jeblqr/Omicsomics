@@ -100,7 +100,6 @@
 - 已将本次会话的概要整合进 `MERGED_SUMMARIES.md`（并在 `TODO_FULL.md` 中引用）。
 - 建议：保留 `MERGED_SUMMARIES.md` 作为历史快照，`TODO_FULL.md` 继续作为主任务与运行决策中心。
 
-
 - 目的：上传文件、保存 raw、可选处理并保存 processed JSON，metadata 链接 raw↔processed。
 - 主要文件：`backend/app/api/routers/data.py`
 - 验收：上传返回 processing info 并在 metadata 中包含 processed_file_id。

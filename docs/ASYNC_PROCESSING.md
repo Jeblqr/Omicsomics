@@ -7,15 +7,18 @@ Omicsomics 平台支持异步文件处理，适用于大文件或长时间运行
 ## 架构组件
 
 ### 1. Celery Worker
+
 - 独立的后台进程，处理文件转换任务
 - 配置在 `docker-compose.yml` 中的 `celery-worker` 服务
 - 使用 Redis 作为消息代理和结果后端
 
 ### 2. 任务队列
+
 - `file_processing`: 默认队列，处理常规文件
 - `large_files`: 专用队列，处理大文件（>100MB）
 
 ### 3. 任务类型
+
 - `process_file_async`: 标准文件处理任务
 - `process_large_file_async`: 大文件优化处理任务
 
@@ -34,6 +37,7 @@ curl -X POST "http://localhost:8001/data/upload" \
 ```
 
 响应示例：
+
 ```json
 {
   "id": 123,
@@ -56,6 +60,7 @@ curl -X GET "http://localhost:8001/data/task/{task_id}/status" \
 ```
 
 响应示例（进行中）：
+
 ```json
 {
   "state": "PROGRESS",
@@ -65,6 +70,7 @@ curl -X GET "http://localhost:8001/data/task/{task_id}/status" \
 ```
 
 响应示例（完成）：
+
 ```json
 {
   "state": "SUCCESS",
@@ -82,6 +88,7 @@ curl -X GET "http://localhost:8001/data/task/{task_id}/status" \
 ## 本地开发设置
 
 ### 1. 启动 Redis
+
 ```bash
 # 使用 Docker Compose
 docker-compose up -d redis
@@ -91,18 +98,21 @@ redis-server
 ```
 
 ### 2. 启动 Celery Worker
+
 ```bash
 cd backend
 celery -A app.celery_app worker --loglevel=info --concurrency=2
 ```
 
 ### 3. 启动后端服务
+
 ```bash
 cd backend
 uvicorn app.main:app --reload --port 8001
 ```
 
 ### 4. 测试异步处理
+
 ```bash
 python scripts/test_async_file_processing.py
 ```
@@ -125,6 +135,7 @@ docker-compose ps
 ## 监控和调试
 
 ### 查看 Celery Worker 日志
+
 ```bash
 # Docker Compose
 docker-compose logs -f celery-worker
@@ -134,6 +145,7 @@ docker-compose logs -f celery-worker
 ```
 
 ### Flower（可选监控工具）
+
 如需图形化监控界面，可添加 Flower：
 
 ```bash
@@ -197,16 +209,19 @@ if process_file and (async_processing or auto_async):
 ## 故障排查
 
 ### 问题：任务一直处于 PENDING 状态
+
 - 检查 Redis 是否运行：`redis-cli ping`
 - 检查 Celery worker 是否运行：`docker-compose ps celery-worker`
 - 查看 worker 日志：`docker-compose logs celery-worker`
 
 ### 问题：任务失败但没有错误信息
+
 - 查看完整的 worker 日志
 - 检查文件格式是否支持
 - 验证数据库连接
 
 ### 问题：Worker 内存占用过高
+
 - 减少 `worker_prefetch_multiplier`
 - 降低 `worker_max_tasks_per_child`
 - 增加 worker 实例数量

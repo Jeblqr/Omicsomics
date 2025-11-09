@@ -94,6 +94,7 @@ The project uses GitHub Actions for continuous integration and deployment.
 ### Workflow Jobs
 
 #### 1. Backend Linting (`backend-lint`)
+
 - **Runs**: Ruff linter and formatter
 - **Purpose**: Code quality and style consistency
 - **Commands**:
@@ -103,6 +104,7 @@ The project uses GitHub Actions for continuous integration and deployment.
   ```
 
 #### 2. Backend Tests (`backend-tests`)
+
 - **Services**: PostgreSQL, Redis, MinIO
 - **Runs**: Full test suite with coverage
 - **Environment**:
@@ -112,6 +114,7 @@ The project uses GitHub Actions for continuous integration and deployment.
 - **Coverage**: Uploads to Codecov
 
 #### 3. Frontend Linting (`frontend-lint`)
+
 - **Runs**: ESLint + TypeScript type checking
 - **Commands**:
   ```bash
@@ -120,17 +123,20 @@ The project uses GitHub Actions for continuous integration and deployment.
   ```
 
 #### 4. Frontend Build (`frontend-build`)
+
 - **Runs**: Production build
 - **Artifacts**: Uploads `dist/` folder
 - **Purpose**: Ensures frontend builds successfully
 
 #### 5. Docker Build (`docker-build`)
+
 - **Trigger**: Pull requests only
 - **Builds**: Backend and frontend Docker images
 - **Purpose**: Validates Dockerfiles
 - **Cache**: Uses GitHub Actions cache
 
 #### 6. Integration Tests (`integration-tests`)
+
 - **Depends on**: backend-tests, frontend-build
 - **Services**: Full stack (db, redis, minio)
 - **Runs**: End-to-end integration tests
@@ -166,6 +172,7 @@ ENCRYPTION_KEY: test_encryption_key_for_ci_32bytes_long_string_here
 ### Current Coverage
 
 View coverage reports:
+
 - **Badge**: See README.md
 - **Codecov**: https://codecov.io/gh/Jeblqr/Omicsomics
 - **Local**: Run `pytest --cov=app --cov-report=html` and open `htmlcov/index.html`
@@ -173,7 +180,7 @@ View coverage reports:
 ### Coverage Goals
 
 | Component | Current | Target |
-|-----------|---------|--------|
+| --------- | ------- | ------ |
 | Core API  | 85%+    | 90%+   |
 | Services  | 70%+    | 85%+   |
 | Models    | 90%+    | 95%+   |
@@ -240,7 +247,7 @@ async def test_upload_process_workflow(
         data={"project_id": test_project.id}
     )
     assert response.status_code == 201
-    
+
     # Check processed data
     data_id = response.json()["id"]
     response = await async_client.get(
@@ -329,5 +336,6 @@ pre-commit run --all-files
 ## Contact
 
 For CI/CD issues or questions:
+
 - Open an issue: https://github.com/Jeblqr/Omicsomics/issues
 - Check workflow runs: https://github.com/Jeblqr/Omicsomics/actions
