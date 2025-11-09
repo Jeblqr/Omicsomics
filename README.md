@@ -1,18 +1,17 @@
-# Omicsomics - 多组学分析平台# Omicsomics - 统一组学分析平台
+# Omicsomics - 统一组学分析平台
 
+> 一个面向研究与临床的 Web 平台，支持常见组学数据（基因组学、转录组学、单细胞、表观、蛋白质组、代谢组、宏基因组等）的统一接收、处理和分析。
 
-
-> 一个现代化的全栈多组学数据分析平台，支持基因组学、转录组学、单细胞、表观基因组学、蛋白质组学、代谢组学和 GWAS 分析。一个面向研究与临床的 Web 平台，支持常见组学数据（基因组学、转录组学、单细胞、表观、蛋白质组、代谢组、宏基因组等）的统一接收、处理和分析。
-
-
-
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)## 特性
-
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.121.0-green.svg)](https://fastapi.tiangolo.com/)
-
-[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)### 已实现的核心功能 ✅
-
+[![CI/CD Pipeline](https://github.com/Jeblqr/Omicsomics/actions/workflows/ci.yml/badge.svg)](https://github.com/Jeblqr/Omicsomics/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![codecov](https://codecov.io/gh/Jeblqr/Omicsomics/branch/main/graph/badge.svg)](https://codecov.io/gh/Jeblqr/Omicsomics)
+
+## 特性
+
+### 已实现的核心功能 ✅
 
 1. **用户认证与授权**
 
