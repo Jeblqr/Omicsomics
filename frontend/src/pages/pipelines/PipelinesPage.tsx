@@ -98,7 +98,9 @@ const PipelinesPage = () => {
             style={{
               padding: '0.5rem',
               borderRadius: '4px',
-              border: '1px solid #ced4da',
+              border: '1px solid #4b5563',
+              backgroundColor: '#374151',
+              color: '#e5e7eb',
               fontSize: '1rem',
               minWidth: '200px',
             }}
