@@ -12,8 +12,8 @@
 .layout__content {
   flex: 1;
   padding: 1.5rem;
-  background-color: #0f172a;
-  color: #f8fafc;
+  background-color: #ffffff;
+  color: #212529;
   overflow-y: auto;
 }
 
@@ -51,18 +51,24 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: #ffffff;
 }
 
 .data-table th,
 .data-table td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  border-bottom: 1px solid #dee2e6;
+  color: #212529;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
 }
 
 .data-table tbody tr:hover {
-  background-color: rgba(56, 189, 248, 0.1);
+  background-color: #f8f9fa;
 }
 
 .sidebar__link:hover {

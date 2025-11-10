@@ -12,7 +12,9 @@ console.log(`API requests will be sent to: ${baseURL}`);
 
 const api = axios.create({
   baseURL,
-  timeout: 15000,
+  timeout: 300000, // 5 minutes for large file uploads
+  maxContentLength: 5 * 1024 * 1024 * 1024, // 5GB
+  maxBodyLength: 5 * 1024 * 1024 * 1024, // 5GB
 });
 
 // Add a request interceptor to include auth token and log requests

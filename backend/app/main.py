@@ -4,7 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import api_router
 
-app = FastAPI(title="Omicsomics API", version="0.1.0")
+app = FastAPI(
+    title="Omicsomics API",
+    version="0.1.0",
+    # Increase file upload size limit to 5GB
+    # Note: Also need to configure nginx/reverse proxy if using one
+)
 
 # Define allowed origins for local development
 allowed_origins = [

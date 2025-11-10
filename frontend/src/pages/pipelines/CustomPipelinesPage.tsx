@@ -34,6 +34,7 @@ const CustomPipelinesPage = () => {
   const [pipelineCategory, setPipelineCategory] = useState('custom');
   const [isPublic, setIsPublic] = useState(false);
   const [selectedPipelines, setSelectedPipelines] = useState<number[]>([]);
+  const [showAdvancedMode, setShowAdvancedMode] = useState(false);
 
   useEffect(() => {
     if (currentProject) {
@@ -359,6 +360,31 @@ const CustomPipelinesPage = () => {
     <div>
       <ProjectSwitcher />
       <div style={{ padding: '2rem' }}>
+        {/* Feature Status Banner */}
+        <div style={{
+          padding: '1rem',
+          backgroundColor: '#e3f2fd',
+          border: '1px solid #2196f3',
+          borderRadius: '4px',
+          marginBottom: '1.5rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>🚧</span>
+            <strong style={{ color: '#1976d2' }}>Custom Pipeline Editor - Beta Feature</strong>
+          </div>
+          <p style={{ marginBottom: 0, color: '#1565c0', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            This is a visual pipeline editor for creating custom workflows. Current limitations:
+          </p>
+          <ul style={{ marginBottom: 0, marginTop: '0.5rem', color: '#1565c0', fontSize: '0.9rem', paddingLeft: '1.5rem' }}>
+            <li>Basic node types and connections only</li>
+            <li>Parameter configuration needs enhancement</li>
+            <li>Execution engine integration in progress</li>
+          </ul>
+          <p style={{ marginTop: '0.5rem', marginBottom: 0, color: '#1565c0', fontSize: '0.85rem', fontStyle: 'italic' }}>
+            💡 For production workflows, please use the <strong>Common Pipelines</strong> module with pre-configured templates.
+          </p>
+        </div>
+
         {!currentProject && (
           <div style={{
             padding: '1.5rem',
@@ -366,16 +392,17 @@ const CustomPipelinesPage = () => {
             border: '1px solid #ffc107',
             borderRadius: '4px',
             marginBottom: '1rem',
+            color: '#856404',
           }}>
-            <strong>⚠️ No project selected</strong>
-            <p style={{ marginBottom: 0, marginTop: '0.5rem' }}>
+            <strong style={{ color: '#856404' }}>⚠️ No project selected</strong>
+            <p style={{ marginBottom: 0, marginTop: '0.5rem', color: '#856404' }}>
               Please select a project from the dropdown above to view and create custom pipelines.
             </p>
           </div>
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1>Custom Pipelines</h1>
+          <h1 style={{ color: '#212529' }}>Custom Pipelines</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button
             onClick={handleMergePipelines}
