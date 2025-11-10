@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Node, Edge } from 'reactflow';
 import api from '../../lib/api';
-import PipelineEditor from '../../components/PipelineEditor';
+import EnhancedPipelineEditor from '../../components/pipelines/EnhancedPipelineEditor';
+import { PipelineNodeData } from '../../components/pipelines/PipelineNode';
 import { useProjectsContext } from '../../contexts/ProjectsContext';
 import { ProjectSwitcher } from '../../components/ProjectSwitcher';
 
@@ -191,21 +192,17 @@ const CustomPipelinesPage = () => {
     }
   };
 
-  const convertToReactFlowNodes = (definition: CustomPipeline['definition']): Node[] => {
+  const convertToReactFlowNodes = (definition: CustomPipeline['definition']): Node<PipelineNodeData>[] => {
     return definition.nodes.map((node: any) => ({
       id: node.id,
-      type: 'default',
+      type: 'pipelineNode',
       position: node.position || { x: 0, y: 0 },
       data: {
-        label: node.label,
-        nodeType: node.type,
-      },
-      style: {
-        background: getNodeColor(node.type),
-        color: 'white',
-        border: '2px solid #222',
-        borderRadius: '8px',
-        padding: '10px',
+        label: node.label || node.data?.label || 'Unnamed Step',
+        tool: node.data?.tool,
+        version: node.data?.version,
+        parameters: node.data?.parameters || {},
+        nodeType: (node.type || node.data?.nodeType || 'process') as PipelineNodeData['nodeType'],
       },
     }));
   };
@@ -339,19 +336,21 @@ const CustomPipelinesPage = () => {
           </div>
         </div>
 
-        <PipelineEditor
-          initialNodes={
-            editingPipeline
-              ? convertToReactFlowNodes(editingPipeline.definition)
-              : []
-          }
-          initialEdges={
-            editingPipeline
-              ? convertToReactFlowEdges(editingPipeline.definition)
-              : []
-          }
-          onSave={handleSavePipeline}
-        />
+        <div style={{ height: '800px', width: '100%' }}>
+          <EnhancedPipelineEditor
+            initialNodes={
+              editingPipeline
+                ? convertToReactFlowNodes(editingPipeline.definition)
+                : []
+            }
+            initialEdges={
+              editingPipeline
+                ? convertToReactFlowEdges(editingPipeline.definition)
+                : []
+            }
+            onSave={handleSavePipeline}
+          />
+        </div>
       </div>
     );
   }
@@ -388,21 +387,21 @@ const CustomPipelinesPage = () => {
         {!currentProject && (
           <div style={{
             padding: '1.5rem',
-            backgroundColor: '#fff3cd',
-            border: '1px solid #ffc107',
+            backgroundColor: '#422006',
+            border: '1px solid #f59e0b',
             borderRadius: '4px',
             marginBottom: '1rem',
-            color: '#856404',
+            color: '#fcd34d',
           }}>
-            <strong style={{ color: '#856404' }}>⚠️ No project selected</strong>
-            <p style={{ marginBottom: 0, marginTop: '0.5rem', color: '#856404' }}>
+            <strong style={{ color: '#fbbf24' }}>⚠️ No project selected</strong>
+            <p style={{ marginBottom: 0, marginTop: '0.5rem', color: '#fcd34d' }}>
               Please select a project from the dropdown above to view and create custom pipelines.
             </p>
           </div>
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ color: '#212529' }}>Custom Pipelines</h1>
+          <h1 style={{ color: '#f3f4f6' }}>Custom Pipelines</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button
             onClick={handleMergePipelines}
