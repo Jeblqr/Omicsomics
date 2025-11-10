@@ -276,7 +276,7 @@ docker compose restart db
 
 ## ⚠️ 重要说明
 
-1. **环境文件**: `.env` 文件包含敏感信息，已在 `.gitignore` 中排除
+1. **环境文件**: `.env` 文件包含敏感信息
 2. **数据持久化**: 数据存储在 Docker volumes 中
 3. **网络隔离**: 所有容器在 `omicsomics-network` 网络中通信
 4. **健康检查**: 关键服务配置了健康检查，确保依赖顺序
