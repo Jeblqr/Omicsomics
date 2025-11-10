@@ -5,7 +5,7 @@ Celery tasks for file processing
 from celery import current_task
 from app.celery_app import celery_app
 from app.services.file_processor import FileProcessor
-from app.db.database import AsyncSessionMaker
+from app.database import AsyncSessionMaker
 from app.models.datafile import DataFile
 from sqlalchemy.orm.attributes import flag_modified
 import logging
