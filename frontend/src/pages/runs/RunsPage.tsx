@@ -143,7 +143,7 @@ const RunsPage = () => {
       
       <div style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2>Pipeline Runs</h2>
+          <h2 style={{ color: '#212529' }}>Pipeline Runs</h2>
           {currentProject && (
             <button
               onClick={() => setShowForm(!showForm)}
@@ -161,7 +161,7 @@ const RunsPage = () => {
           )}
         </div>
         
-        <p>Track workflow executions, logs, and outputs.</p>
+        <p style={{ color: '#6c757d' }}>Track workflow executions, logs, and outputs.</p>
 
         {!currentProject && (
           <div style={{
