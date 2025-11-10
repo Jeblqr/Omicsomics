@@ -2,12 +2,20 @@ import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import LoadingView from '../../components/LoadingView';
 
+interface PipelineStep {
+  name: string;
+  tool: string;
+  version: string;
+  parameters: Record<string, any>;
+}
+
 interface PipelineTemplate {
   id: string;
   name: string;
   description: string;
   category: string;
-  steps: string[];
+  steps: PipelineStep[];
+  parameters: Record<string, any>;
   inputs: string[];
   outputs: string[];
 }
@@ -159,8 +167,9 @@ const PipelinesPage = () => {
                           fontSize: '0.85rem',
                           color: '#495057',
                         }}
+                        title={`${step.tool} ${step.version}`}
                       >
-                        {step}
+                        {step.name}
                       </span>
                     ))}
                   </div>
