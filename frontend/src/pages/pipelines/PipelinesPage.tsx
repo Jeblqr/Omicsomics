@@ -82,13 +82,13 @@ const PipelinesPage = () => {
     <section>
       <div style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ color: '#212529' }}>Common Pipelines</h2>
+          <h2 style={{ color: '#f3f4f6' }}>Common Pipelines</h2>
         </div>
         
-        <p style={{ color: '#6c757d' }}>Pre-configured analysis pipelines available to all users.</p>
+        <p style={{ color: '#9ca3af' }}>Pre-configured analysis pipelines available to all users.</p>
 
         <div style={{ marginBottom: '1.5rem' }}>
-          <label htmlFor="category-filter" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#212529' }}>
+          <label htmlFor="category-filter" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#f3f4f6' }}>
             Filter by Category:
           </label>
           <select
@@ -112,8 +112,8 @@ const PipelinesPage = () => {
         </div>
 
         {error && (
-          <div style={{ color: '#856404', padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
-            <strong style={{ color: '#856404' }}>{error}</strong>
+          <div style={{ color: '#fcd34d', padding: '1rem', backgroundColor: '#422006', border: '1px solid #f59e0b', borderRadius: '4px', marginBottom: '1rem' }}>
+            <strong style={{ color: '#fbbf24' }}>{error}</strong>
           </div>
         )}
 
@@ -194,7 +194,7 @@ const PipelinesPage = () => {
         )}
 
         {!isLoading && templates.length === 0 && !error && (
-          <p style={{ color: '#6c757d' }}>No pipeline templates found for the selected category.</p>
+          <p style={{ color: '#9ca3af' }}>No pipeline templates found for the selected category.</p>
         )}
       </div>
     </section>

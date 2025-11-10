@@ -12,8 +12,8 @@
 .layout__content {
   flex: 1;
   padding: 1.5rem;
-  background-color: #ffffff;
-  color: #212529;
+  background-color: #1a1d2e;
+  color: #e5e7eb;
   overflow-y: auto;
 }
 
@@ -51,24 +51,26 @@
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
-  background-color: #ffffff;
+  background-color: #252839;
+  color: #e5e7eb;
 }
 
 .data-table th,
 .data-table td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid #dee2e6;
-  color: #212529;
+  border-bottom: 1px solid #374151;
+  color: #e5e7eb;
 }
 
 .data-table th {
-  background-color: #f8f9fa;
+  background-color: #1f2937;
   font-weight: 600;
+  color: #f3f4f6;
 }
 
 .data-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: #2d3348;
 }
 
 .sidebar__link:hover {

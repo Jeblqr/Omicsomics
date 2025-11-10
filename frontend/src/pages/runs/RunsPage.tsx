@@ -143,7 +143,7 @@ const RunsPage = () => {
       
       <div style={{ padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2 style={{ color: '#212529' }}>Pipeline Runs</h2>
+          <h2 style={{ color: '#f3f4f6' }}>Pipeline Runs</h2>
           {currentProject && (
             <button
               onClick={() => setShowForm(!showForm)}
@@ -161,18 +161,19 @@ const RunsPage = () => {
           )}
         </div>
         
-        <p style={{ color: '#6c757d' }}>Track workflow executions, logs, and outputs.</p>
+        <p style={{ color: '#9ca3af' }}>Track workflow executions, logs, and outputs.</p>
 
         {!currentProject && (
           <div style={{
             padding: '1.5rem',
-            backgroundColor: '#fff3cd',
-            border: '1px solid #ffc107',
+            backgroundColor: '#422006',
+            border: '1px solid #f59e0b',
             borderRadius: '4px',
             marginTop: '1rem',
+            color: '#fcd34d',
           }}>
-            <strong>⚠️ No project selected</strong>
-            <p style={{ marginBottom: 0, marginTop: '0.5rem' }}>
+            <strong style={{ color: '#fbbf24' }}>⚠️ No project selected</strong>
+            <p style={{ marginBottom: 0, marginTop: '0.5rem', color: '#fcd34d' }}>
               Please select a project from the dropdown above to view and create runs.
             </p>
           </div>
