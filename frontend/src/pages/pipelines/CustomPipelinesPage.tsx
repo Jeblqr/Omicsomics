@@ -247,8 +247,8 @@ const CustomPipelinesPage = () => {
             }}
             style={{
               padding: '0.5rem 1rem',
-              backgroundColor: '#666',
-              color: 'white',
+              backgroundColor: '#4b5563',
+              color: '#f3f4f6',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
@@ -258,13 +258,13 @@ const CustomPipelinesPage = () => {
             ← Back to List
           </button>
 
-          <h2 style={{ marginBottom: '1rem' }}>
+          <h2 style={{ marginBottom: '1rem', color: '#f3f4f6' }}>
             {editingPipeline && editingPipeline.id > 0 ? 'Edit Pipeline' : 'Create New Pipeline'}
           </h2>
 
           <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#f3f4f6' }}>
                 Pipeline Name:
               </label>
               <input
@@ -275,14 +275,16 @@ const CustomPipelinesPage = () => {
                   width: '100%',
                   padding: '0.5rem',
                   borderRadius: '4px',
-                  border: '1px solid #ccc',
+                  border: '1px solid #4b5563',
+                  backgroundColor: '#374151',
+                  color: '#e5e7eb',
                 }}
                 placeholder="Enter pipeline name"
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#f3f4f6' }}>
                 Description:
               </label>
               <textarea
@@ -292,7 +294,9 @@ const CustomPipelinesPage = () => {
                   width: '100%',
                   padding: '0.5rem',
                   borderRadius: '4px',
-                  border: '1px solid #ccc',
+                  border: '1px solid #4b5563',
+                  backgroundColor: '#374151',
+                  color: '#e5e7eb',
                   minHeight: '80px',
                 }}
                 placeholder="Enter pipeline description"
@@ -301,7 +305,7 @@ const CustomPipelinesPage = () => {
 
             <div style={{ display: 'flex', gap: '2rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#f3f4f6' }}>
                   Category:
                 </label>
                 <select
@@ -310,7 +314,9 @@ const CustomPipelinesPage = () => {
                   style={{
                     padding: '0.5rem',
                     borderRadius: '4px',
-                    border: '1px solid #ccc',
+                    border: '1px solid #4b5563',
+                    backgroundColor: '#374151',
+                    color: '#e5e7eb',
                   }}
                 >
                   <option value="custom">Custom</option>
@@ -322,7 +328,7 @@ const CustomPipelinesPage = () => {
               </div>
 
               <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#f3f4f6' }}>
                   <input
                     type="checkbox"
                     checked={isPublic}
