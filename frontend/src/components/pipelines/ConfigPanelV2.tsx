@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { Node } from 'reactflow';
 import { PipelineNodeData } from './PipelineNode';
 import { getToolById, ToolParameter } from './ToolDefinitions';
+import {
+  getPresetsForTool,
+  savePreset,
+  deletePreset,
+  initializeDefaultPresets,
+  type ParameterPreset,
+} from '../../utils/parameterPresets';
 
 interface ConfigPanelV2Props {
   selectedNode: Node<PipelineNodeData> | null;
@@ -15,6 +22,15 @@ const ConfigPanelV2 = ({ selectedNode, onUpdate, onClose }: ConfigPanelV2Props) 
   const [version, setVersion] = useState('');
   const [parameters, setParameters] = useState<Record<string, any>>({});
   const [toolDefinition, setToolDefinition] = useState<any>(null);
+  const [availablePresets, setAvailablePresets] = useState<ParameterPreset[]>([]);
+  const [showPresetDialog, setShowPresetDialog] = useState(false);
+  const [newPresetName, setNewPresetName] = useState('');
+  const [newPresetDescription, setNewPresetDescription] = useState('');
+
+  useEffect(() => {
+    // Initialize default presets on first load
+    initializeDefaultPresets();
+  }, []);
 
   useEffect(() => {
     if (selectedNode) {
@@ -35,8 +51,12 @@ const ConfigPanelV2 = ({ selectedNode, onUpdate, onClose }: ConfigPanelV2Props) 
           }
         });
         setParameters(newParams);
+        
+        // Load presets for this tool
+        setAvailablePresets(getPresetsForTool(toolDef.id));
       } else {
         setToolDefinition(null);
+        setAvailablePresets([]);
       }
     }
   }, [selectedNode]);
@@ -78,6 +98,46 @@ const ConfigPanelV2 = ({ selectedNode, onUpdate, onClose }: ConfigPanelV2Props) 
       ...parameters,
       [paramName]: value,
     });
+  };
+
+  const handleLoadPreset = (preset: ParameterPreset) => {
+    setParameters(preset.parameters);
+  };
+
+  const handleSavePreset = () => {
+    if (!newPresetName.trim() || !toolDefinition) return;
+    
+    savePreset({
+      name: newPresetName,
+      description: newPresetDescription,
+      toolId: toolDefinition.id,
+      parameters,
+    });
+    
+    setAvailablePresets(getPresetsForTool(toolDefinition.id));
+    setShowPresetDialog(false);
+    setNewPresetName('');
+    setNewPresetDescription('');
+  };
+
+  const handleDeletePreset = (presetId: string) => {
+    if (window.confirm('Delete this preset?')) {
+      deletePreset(presetId);
+      setAvailablePresets(getPresetsForTool(toolDefinition.id));
+    }
+  };
+
+  const handleResetToDefaults = () => {
+    if (!toolDefinition) return;
+    if (window.confirm('Reset all parameters to default values?')) {
+      const defaults: Record<string, any> = {};
+      toolDefinition.parameterTemplate.forEach((param: ToolParameter) => {
+        if (param.default !== undefined) {
+          defaults[param.name] = param.default;
+        }
+      });
+      setParameters(defaults);
+    }
   };
 
   const renderParameterInput = (param: ToolParameter) => {
@@ -328,11 +388,197 @@ const ConfigPanelV2 = ({ selectedNode, onUpdate, onClose }: ConfigPanelV2Props) 
           </div>
         </div>
 
+        {/* Parameter Presets */}
+        {toolDefinition && availablePresets.length > 0 && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#f3f4f6', fontSize: '0.9rem', fontWeight: 600 }}>
+              📋 Parameter Presets
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {availablePresets.map((preset) => (
+                <div
+                  key={preset.id}
+                  style={{
+                    padding: '0.75rem',
+                    backgroundColor: '#111827',
+                    borderRadius: '6px',
+                    border: '1px solid #374151',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 500, color: '#f3f4f6', marginBottom: '0.25rem' }}>
+                      {preset.name}
+                    </div>
+                    {preset.description && (
+                      <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>
+                        {preset.description}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => handleLoadPreset(preset)}
+                      style={{
+                        padding: '0.25rem 0.75rem',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      Load
+                    </button>
+                    <button
+                      onClick={() => handleDeletePreset(preset.id)}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: '#374151',
+                        color: '#9ca3af',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Save Preset Dialog */}
+        {showPresetDialog && (
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#111827', borderRadius: '6px', border: '2px solid #3b82f6' }}>
+            <h4 style={{ margin: '0 0 0.75rem 0', color: '#f3f4f6', fontSize: '0.9rem', fontWeight: 600 }}>
+              Save Current Parameters as Preset
+            </h4>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', color: '#e5e7eb' }}>
+                Preset Name *
+              </label>
+              <input
+                type="text"
+                value={newPresetName}
+                onChange={(e) => setNewPresetName(e.target.value)}
+                placeholder="e.g., High Quality Q30"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  backgroundColor: '#374151',
+                  border: '1px solid #4b5563',
+                  borderRadius: '4px',
+                  color: '#e5e7eb',
+                  fontSize: '0.875rem',
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem', color: '#e5e7eb' }}>
+                Description (optional)
+              </label>
+              <textarea
+                value={newPresetDescription}
+                onChange={(e) => setNewPresetDescription(e.target.value)}
+                placeholder="Describe this preset..."
+                rows={2}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  backgroundColor: '#374151',
+                  border: '1px solid #4b5563',
+                  borderRadius: '4px',
+                  color: '#e5e7eb',
+                  fontSize: '0.875rem',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={handleSavePreset}
+                disabled={!newPresetName.trim()}
+                style={{
+                  flex: 1,
+                  padding: '0.5rem',
+                  backgroundColor: newPresetName.trim() ? '#059669' : '#374151',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: newPresetName.trim() ? 'pointer' : 'not-allowed',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                }}
+              >
+                💾 Save Preset
+              </button>
+              <button
+                onClick={() => {
+                  setShowPresetDialog(false);
+                  setNewPresetName('');
+                  setNewPresetDescription('');
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#374151',
+                  color: '#e5e7eb',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Parameters */}
         <div>
-          <h4 style={{ margin: '0 0 0.75rem 0', color: '#f3f4f6', fontSize: '0.9rem', fontWeight: 600 }}>
-            Parameters
-          </h4>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <h4 style={{ margin: 0, color: '#f3f4f6', fontSize: '0.9rem', fontWeight: 600 }}>
+              Parameters
+            </h4>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setShowPresetDialog(!showPresetDialog)}
+                style={{
+                  padding: '0.25rem 0.75rem',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                }}
+              >
+                💾 Save Preset
+              </button>
+              <button
+                onClick={handleResetToDefaults}
+                style={{
+                  padding: '0.25rem 0.75rem',
+                  backgroundColor: '#374151',
+                  color: '#e5e7eb',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                }}
+              >
+                🔄 Reset
+              </button>
+            </div>
+          </div>
 
           {toolDefinition && toolDefinition.parameterTemplate.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
