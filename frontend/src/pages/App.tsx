@@ -4,8 +4,11 @@ import DashboardPage from './dashboard/DashboardPage';
 import ProjectsPage from './projects/ProjectsPage';
 import RunsPage from './runs/RunsPage';
 import DataPage from './data/DataPage';
+import DataBrowserPage from './DataBrowserPage';
+import VisualizationToolsPage from './VisualizationToolsPage';
 import PipelinesPage from './pipelines/PipelinesPage';
 import CustomPipelinesPage from './pipelines/CustomPipelinesPage';
+import ToolManagerPage from './ToolManagerPage';
 import SettingsPage from './settings/SettingsPage';
 import AuthPage from './auth/AuthPage';
 import Layout from '../components/Layout';
@@ -37,8 +40,11 @@ const App = () => {
         <Route element={<ProjectsPage />} path="projects" />
         <Route element={<RunsPage />} path="runs" />
         <Route element={<DataPage />} path="data" />
+        <Route element={<DataBrowserPage />} path="data-browser" />
+        <Route element={<VisualizationToolsPage />} path="visualization-tools" />
         <Route element={<PipelinesPage />} path="pipelines" />
         <Route element={<CustomPipelinesPage />} path="custom-pipelines" />
+        <Route element={<ToolManagerPage />} path="tools" />
         <Route element={<SettingsPage />} path="settings" />
       </Route>
     </Routes>

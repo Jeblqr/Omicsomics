@@ -1,0 +1,621 @@
+[
+  {
+    "tool_id": "ggplot2_scatter",
+    "name": "ggplot2 Scatter Plot",
+    "category": "visualization",
+    "runtime": "r",
+    "language": "R",
+    "description": "Create publication-ready scatter plots using ggplot2",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "scatter", "ggplot2", "R"],
+    "inputs": [
+      {
+        "name": "data_file",
+        "type": "file",
+        "label": "Input Data File",
+        "description": "CSV or TSV file with data",
+        "required": true,
+        "formats": ["csv", "tsv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "plot",
+        "type": "file",
+        "label": "Plot Image",
+        "description": "Generated scatter plot",
+        "format": "pdf"
+      }
+    ],
+    "parameters": {
+      "x_column": {
+        "type": "string",
+        "label": "X-axis Column",
+        "description": "Column name for X-axis",
+        "default": "",
+        "required": true
+      },
+      "y_column": {
+        "type": "string",
+        "label": "Y-axis Column",
+        "description": "Column name for Y-axis",
+        "default": "",
+        "required": true
+      },
+      "color_column": {
+        "type": "string",
+        "label": "Color Column",
+        "description": "Column name for point colors (optional)",
+        "default": "",
+        "required": false
+      },
+      "point_size": {
+        "type": "number",
+        "label": "Point Size",
+        "description": "Size of points",
+        "default": 2,
+        "min": 0.5,
+        "max": 10
+      },
+      "alpha": {
+        "type": "number",
+        "label": "Transparency",
+        "description": "Point transparency (0-1)",
+        "default": 0.7,
+        "min": 0,
+        "max": 1
+      },
+      "theme": {
+        "type": "select",
+        "label": "Theme",
+        "description": "ggplot2 theme",
+        "default": "bw",
+        "options": ["bw", "classic", "minimal", "light", "dark", "void"]
+      },
+      "title": {
+        "type": "string",
+        "label": "Plot Title",
+        "description": "Main title for the plot",
+        "default": "Scatter Plot"
+      },
+      "x_label": {
+        "type": "string",
+        "label": "X-axis Label",
+        "description": "Label for X-axis",
+        "default": ""
+      },
+      "y_label": {
+        "type": "string",
+        "label": "Y-axis Label",
+        "description": "Label for Y-axis",
+        "default": ""
+      },
+      "width": {
+        "type": "number",
+        "label": "Width (inches)",
+        "description": "Plot width",
+        "default": 10,
+        "min": 3,
+        "max": 20
+      },
+      "height": {
+        "type": "number",
+        "label": "Height (inches)",
+        "description": "Plot height",
+        "default": 8,
+        "min": 3,
+        "max": 20
+      },
+      "dpi": {
+        "type": "number",
+        "label": "DPI",
+        "description": "Resolution",
+        "default": 300,
+        "options": [150, 300, 600]
+      }
+    },
+    "script": "library(ggplot2)\nlibrary(readr)\n\n# Read data\ndata <- read_csv('{{data_file}}')\n\n# Create plot\np <- ggplot(data, aes(x={{x_column}}, y={{y_column}}{{#if color_column}}, color={{color_column}}{{/if}})) +\n  geom_point(size={{point_size}}, alpha={{alpha}}) +\n  theme_{{theme}}() +\n  labs(title='{{title}}', x='{{x_label}}', y='{{y_label}}')\n\n# Save plot\nggsave('{{output_plot}}', p, width={{width}}, height={{height}}, dpi={{dpi}})"
+  },
+  {
+    "tool_id": "enriched_heatmap",
+    "name": "EnrichedHeatmap",
+    "category": "visualization",
+    "runtime": "r",
+    "language": "R",
+    "description": "Create enriched heatmaps for genomic regions using EnrichedHeatmap package",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "heatmap", "genomics", "EnrichedHeatmap", "R"],
+    "inputs": [
+      {
+        "name": "matrix_file",
+        "type": "file",
+        "label": "Input Matrix",
+        "description": "Tab-delimited matrix file",
+        "required": true,
+        "formats": ["txt", "tsv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "heatmap",
+        "type": "file",
+        "label": "Heatmap Image",
+        "description": "Generated enriched heatmap",
+        "format": "pdf"
+      }
+    ],
+    "parameters": {
+      "min_value": {
+        "type": "number",
+        "label": "Min Value",
+        "description": "Minimum value for color scale",
+        "default": -2
+      },
+      "max_value": {
+        "type": "number",
+        "label": "Max Value",
+        "description": "Maximum value for color scale",
+        "default": 2
+      },
+      "legend_name": {
+        "type": "string",
+        "label": "Legend Name",
+        "description": "Name for the legend",
+        "default": "Expression"
+      },
+      "title": {
+        "type": "string",
+        "label": "Column Title",
+        "description": "Title for the heatmap",
+        "default": "Gene Expression Heatmap"
+      },
+      "show_row_names": {
+        "type": "boolean",
+        "label": "Show Row Names",
+        "description": "Display row names",
+        "default": true
+      },
+      "width": {
+        "type": "number",
+        "label": "Width (inches)",
+        "default": 10,
+        "min": 5,
+        "max": 20
+      },
+      "height": {
+        "type": "number",
+        "label": "Height (inches)",
+        "default": 8,
+        "min": 5,
+        "max": 20
+      }
+    },
+    "script": "library(EnrichedHeatmap)\nlibrary(circlize)\n\n# Read matrix\nmat <- read.table('{{matrix_file}}', header=TRUE, row.names=1)\n\n# Create color function\ncol_fun <- colorRamp2(c({{min_value}}, 0, {{max_value}}), c('blue', 'white', 'red'))\n\n# Create heatmap\npdf('{{output_heatmap}}', width={{width}}, height={{height}})\nEnrichedHeatmap(mat, col=col_fun, name='{{legend_name}}',\n                column_title='{{title}}',\n                show_row_names={{show_row_names}})\ndev.off()"
+  },
+  {
+    "tool_id": "seaborn_heatmap",
+    "name": "seaborn Heatmap",
+    "category": "visualization",
+    "runtime": "python",
+    "language": "Python",
+    "description": "Create statistical heatmaps using seaborn",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "heatmap", "seaborn", "Python"],
+    "inputs": [
+      {
+        "name": "data_file",
+        "type": "file",
+        "label": "Input Data",
+        "description": "CSV file with data matrix",
+        "required": true,
+        "formats": ["csv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "heatmap",
+        "type": "file",
+        "label": "Heatmap Image",
+        "description": "Generated heatmap",
+        "format": "png"
+      }
+    ],
+    "parameters": {
+      "colormap": {
+        "type": "select",
+        "label": "Colormap",
+        "description": "Color scheme for the heatmap",
+        "default": "RdBu_r",
+        "options": ["RdBu_r", "viridis", "coolwarm", "YlOrRd", "Blues"]
+      },
+      "center": {
+        "type": "number",
+        "label": "Center Value",
+        "description": "Value at which to center the colormap",
+        "default": 0
+      },
+      "annot": {
+        "type": "boolean",
+        "label": "Annotate Cells",
+        "description": "Show values in cells",
+        "default": false
+      },
+      "fmt": {
+        "type": "string",
+        "label": "Format String",
+        "description": "Format for annotations (e.g., '.2f')",
+        "default": ".2f"
+      },
+      "cbar_label": {
+        "type": "string",
+        "label": "Colorbar Label",
+        "description": "Label for the colorbar",
+        "default": "Expression"
+      },
+      "title": {
+        "type": "string",
+        "label": "Title",
+        "description": "Plot title",
+        "default": "Heatmap"
+      },
+      "width": {
+        "type": "number",
+        "label": "Width (inches)",
+        "default": 10,
+        "min": 5,
+        "max": 20
+      },
+      "height": {
+        "type": "number",
+        "label": "Height (inches)",
+        "default": 8,
+        "min": 5,
+        "max": 20
+      },
+      "dpi": {
+        "type": "number",
+        "label": "DPI",
+        "default": 300,
+        "options": [150, 300, 600]
+      }
+    },
+    "script": "import pandas as pd\nimport seaborn as sns\nimport matplotlib.pyplot as plt\n\n# Read data\ndata = pd.read_csv('{{data_file}}', index_col=0)\n\n# Create figure\nplt.figure(figsize=({{width}}, {{height}}))\n\n# Create heatmap\nsns.heatmap(data, cmap='{{colormap}}', center={{center}},\n            annot={{annot}}, fmt='{{fmt}}',\n            cbar_kws={'label': '{{cbar_label}}'})\n\nplt.title('{{title}}')\nplt.savefig('{{output_heatmap}}', dpi={{dpi}}, bbox_inches='tight')\nplt.close()"
+  },
+  {
+    "tool_id": "plotly_3d_scatter",
+    "name": "Plotly 3D Scatter Plot",
+    "category": "visualization",
+    "runtime": "python",
+    "language": "Python",
+    "description": "Create interactive 3D scatter plots using plotly",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "scatter", "3D", "interactive", "plotly", "Python"],
+    "inputs": [
+      {
+        "name": "data_file",
+        "type": "file",
+        "label": "Input Data",
+        "description": "CSV file with 3D coordinates",
+        "required": true,
+        "formats": ["csv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "plot",
+        "type": "file",
+        "label": "Interactive Plot",
+        "description": "HTML file with interactive 3D plot",
+        "format": "html"
+      }
+    ],
+    "parameters": {
+      "x_col": {
+        "type": "string",
+        "label": "X Column",
+        "description": "Column for X-axis",
+        "default": "PC1",
+        "required": true
+      },
+      "y_col": {
+        "type": "string",
+        "label": "Y Column",
+        "description": "Column for Y-axis",
+        "default": "PC2",
+        "required": true
+      },
+      "z_col": {
+        "type": "string",
+        "label": "Z Column",
+        "description": "Column for Z-axis",
+        "default": "PC3",
+        "required": true
+      },
+      "color_col": {
+        "type": "string",
+        "label": "Color Column",
+        "description": "Column for point colors",
+        "default": "cluster"
+      },
+      "size_col": {
+        "type": "string",
+        "label": "Size Column",
+        "description": "Column for point sizes (optional)",
+        "default": ""
+      },
+      "title": {
+        "type": "string",
+        "label": "Title",
+        "description": "Plot title",
+        "default": "3D PCA Plot"
+      }
+    },
+    "script": "import pandas as pd\nimport plotly.express as px\n\n# Read data\ndf = pd.read_csv('{{data_file}}')\n\n# Create 3D scatter plot\nfig = px.scatter_3d(df, x='{{x_col}}', y='{{y_col}}', z='{{z_col}}',\n                    color='{{color_col}}'{{#if size_col}}, size='{{size_col}}'{{/if}},\n                    title='{{title}}')\n\n# Save as HTML\nfig.write_html('{{output_plot}}')"
+  },
+  {
+    "tool_id": "ggplot2_boxplot",
+    "name": "ggplot2 Box Plot",
+    "category": "visualization",
+    "runtime": "r",
+    "language": "R",
+    "description": "Create box plots using ggplot2",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "boxplot", "ggplot2", "R"],
+    "inputs": [
+      {
+        "name": "data_file",
+        "type": "file",
+        "label": "Input Data",
+        "description": "CSV or TSV file",
+        "required": true,
+        "formats": ["csv", "tsv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "plot",
+        "type": "file",
+        "label": "Box Plot",
+        "format": "pdf"
+      }
+    ],
+    "parameters": {
+      "x_column": {
+        "type": "string",
+        "label": "X-axis Column (Groups)",
+        "required": true
+      },
+      "y_column": {
+        "type": "string",
+        "label": "Y-axis Column (Values)",
+        "required": true
+      },
+      "fill_column": {
+        "type": "string",
+        "label": "Fill Column",
+        "description": "Column for box colors",
+        "default": ""
+      },
+      "theme": {
+        "type": "select",
+        "label": "Theme",
+        "default": "bw",
+        "options": ["bw", "classic", "minimal", "light"]
+      },
+      "title": {
+        "type": "string",
+        "label": "Title",
+        "default": "Box Plot"
+      },
+      "width": {
+        "type": "number",
+        "label": "Width (inches)",
+        "default": 10
+      },
+      "height": {
+        "type": "number",
+        "label": "Height (inches)",
+        "default": 8
+      }
+    },
+    "script": "library(ggplot2)\nlibrary(readr)\n\ndata <- read_csv('{{data_file}}')\n\np <- ggplot(data, aes(x={{x_column}}, y={{y_column}}{{#if fill_column}}, fill={{fill_column}}{{/if}})) +\n  geom_boxplot() +\n  theme_{{theme}}() +\n  labs(title='{{title}}')\n\nggsave('{{output_plot}}', p, width={{width}}, height={{height}})"
+  },
+  {
+    "tool_id": "pheatmap",
+    "name": "pheatmap",
+    "category": "visualization",
+    "runtime": "r",
+    "language": "R",
+    "description": "Create annotated heatmaps using pheatmap package",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "heatmap", "pheatmap", "R"],
+    "inputs": [
+      {
+        "name": "matrix_file",
+        "type": "file",
+        "label": "Input Matrix",
+        "required": true,
+        "formats": ["csv", "tsv", "txt"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "heatmap",
+        "type": "file",
+        "label": "Heatmap",
+        "format": "pdf"
+      }
+    ],
+    "parameters": {
+      "cluster_rows": {
+        "type": "boolean",
+        "label": "Cluster Rows",
+        "default": true
+      },
+      "cluster_cols": {
+        "type": "boolean",
+        "label": "Cluster Columns",
+        "default": true
+      },
+      "show_rownames": {
+        "type": "boolean",
+        "label": "Show Row Names",
+        "default": true
+      },
+      "show_colnames": {
+        "type": "boolean",
+        "label": "Show Column Names",
+        "default": true
+      },
+      "color_scheme": {
+        "type": "select",
+        "label": "Color Scheme",
+        "default": "RdBu",
+        "options": ["RdBu", "RdYlBu", "Blues", "Reds", "Greens"]
+      },
+      "title": {
+        "type": "string",
+        "label": "Title",
+        "default": "Heatmap"
+      },
+      "width": {
+        "type": "number",
+        "label": "Width (inches)",
+        "default": 10
+      },
+      "height": {
+        "type": "number",
+        "label": "Height (inches)",
+        "default": 10
+      }
+    },
+    "script": "library(pheatmap)\n\nmat <- read.table('{{matrix_file}}', header=TRUE, row.names=1)\n\npdf('{{output_heatmap}}', width={{width}}, height={{height}})\npheatmap(mat, cluster_rows={{cluster_rows}}, cluster_cols={{cluster_cols}},\n         show_rownames={{show_rownames}}, show_colnames={{show_colnames}},\n         color=colorRampPalette(rev(RColorBrewer::brewer.pal(n=7, name='{{color_scheme}}')))(100),\n         main='{{title}}')\ndev.off()"
+  },
+  {
+    "tool_id": "seaborn_violin",
+    "name": "seaborn Violin Plot",
+    "category": "visualization",
+    "runtime": "python",
+    "language": "Python",
+    "description": "Create violin plots using seaborn",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "violin", "seaborn", "Python"],
+    "inputs": [
+      {
+        "name": "data_file",
+        "type": "file",
+        "label": "Input Data",
+        "required": true,
+        "formats": ["csv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "plot",
+        "type": "file",
+        "label": "Violin Plot",
+        "format": "png"
+      }
+    ],
+    "parameters": {
+      "x_column": {
+        "type": "string",
+        "label": "X Column (Groups)",
+        "required": true
+      },
+      "y_column": {
+        "type": "string",
+        "label": "Y Column (Values)",
+        "required": true
+      },
+      "hue_column": {
+        "type": "string",
+        "label": "Hue Column",
+        "description": "Column for color grouping",
+        "default": ""
+      },
+      "split": {
+        "type": "boolean",
+        "label": "Split Violins",
+        "description": "Split violins by hue",
+        "default": false
+      },
+      "title": {
+        "type": "string",
+        "label": "Title",
+        "default": "Violin Plot"
+      },
+      "width": {
+        "type": "number",
+        "label": "Width (inches)",
+        "default": 10
+      },
+      "height": {
+        "type": "number",
+        "label": "Height (inches)",
+        "default": 8
+      },
+      "dpi": {
+        "type": "number",
+        "label": "DPI",
+        "default": 300
+      }
+    },
+    "script": "import pandas as pd\nimport seaborn as sns\nimport matplotlib.pyplot as plt\n\ndf = pd.read_csv('{{data_file}}')\n\nplt.figure(figsize=({{width}}, {{height}}))\nsns.violinplot(data=df, x='{{x_column}}', y='{{y_column}}'{{#if hue_column}}, hue='{{hue_column}}'{{/if}}, split={{split}})\nplt.title('{{title}}')\nplt.savefig('{{output_plot}}', dpi={{dpi}}, bbox_inches='tight')\nplt.close()"
+  },
+  {
+    "tool_id": "plotly_interactive_heatmap",
+    "name": "Plotly Interactive Heatmap",
+    "category": "visualization",
+    "runtime": "python",
+    "language": "Python",
+    "description": "Create interactive heatmaps using plotly",
+    "version": "1.0.0",
+    "author": "Built-in",
+    "tags": ["visualization", "heatmap", "interactive", "plotly", "Python"],
+    "inputs": [
+      {
+        "name": "matrix_file",
+        "type": "file",
+        "label": "Input Matrix",
+        "required": true,
+        "formats": ["csv"]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "heatmap",
+        "type": "file",
+        "label": "Interactive Heatmap",
+        "format": "html"
+      }
+    ],
+    "parameters": {
+      "colorscale": {
+        "type": "select",
+        "label": "Color Scale",
+        "default": "RdBu",
+        "options": ["RdBu", "Viridis", "Blues", "Reds", "YlOrRd"]
+      },
+      "title": {
+        "type": "string",
+        "label": "Title",
+        "default": "Interactive Heatmap"
+      },
+      "show_values": {
+        "type": "boolean",
+        "label": "Show Values",
+        "description": "Display values in cells",
+        "default": false
+      }
+    },
+    "script": "import pandas as pd\nimport plotly.graph_objects as go\n\ndf = pd.read_csv('{{matrix_file}}', index_col=0)\n\nfig = go.Figure(data=go.Heatmap(\n    z=df.values,\n    x=df.columns,\n    y=df.index,\n    colorscale='{{colorscale}}',\n    text=df.values if {{show_values}} else None,\n    texttemplate='%{text:.2f}' if {{show_values}} else None\n))\n\nfig.update_layout(title='{{title}}')\nfig.write_html('{{output_heatmap}}')"
+  }
+]

@@ -120,10 +120,10 @@ const SettingsPage = () => {
                   border: '1px solid #ced4da',
                   fontSize: '1rem',
                   backgroundColor: '#e9ecef',
-                  color: '#6c757d',
+                  color: '#495057',
                 }}
               />
-              <small style={{ color: '#6c757d' }}>Email cannot be changed</small>
+              <small style={{ color: '#495057' }}>Email cannot be changed</small>
             </div>
 
             <button

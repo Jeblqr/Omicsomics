@@ -166,7 +166,7 @@ export function ScatterPlot({
 
     // Draw tick marks and labels
     ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#666';
+    ctx.fillStyle = '#374151';
     
     // X-axis ticks
     for (let i = 0; i <= 5; i++) {

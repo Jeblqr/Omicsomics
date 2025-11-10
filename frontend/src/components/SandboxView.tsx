@@ -159,7 +159,7 @@ export const SandboxView: React.FC = () => {
               {files.map((file) => (
                 <tr key={file.id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '0.5rem' }}>{file.filename}</td>
-                  <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                  <td style={{ padding: '0.5rem', fontSize: '0.85rem', color: '#4b5563' }}>
                     {file.object_key}
                   </td>
                   <td style={{ padding: '0.5rem' }}>

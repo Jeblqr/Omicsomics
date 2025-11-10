@@ -33,6 +33,16 @@
 - ✅ **高级搜索** - 多作用域搜索与过滤
 - ✅ **数据导出** - CSV、TSV、Excel、JSON 格式
 
+### 🆕 最新功能 (2025-11)
+
+- ✨ **Dataset Manager** - 完整的数据集管理系统，支持分类、标签、搜索
+- ✨ **Data Export** - 批量导出，支持 7 种格式，异步处理
+- ✨ **Data Editing** - 在线数据编辑，15+ 操作类型，预览与撤销
+- ✨ **Custom Scripts** - 自定义 Python/R/Bash 脚本集成
+- ✨ **Visualization Workspace** - 多面板可视化仪表板构建器
+- ✨ **Pipeline Integration** - 数据集与流程的无缝集成
+- ✨ **Bioconverter Integration** - 生物信息学格式转换工具集成 ([PyPI](https://pypi.org/project/bioconverter/))
+
 ### 🏗️ 技术架构
 
 - **后端**: FastAPI + SQLAlchemy 2.0 (异步)
@@ -89,13 +99,34 @@ cp .env.example .env
 
 ## 📚 文档导航
 
+### 核心文档
+
 | 文档 | 描述 |
 |------|------|
+| [QUICKSTART.md](QUICKSTART.md) | 快速开始 - 5 分钟上手指南 |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | 部署指南 - Docker、本地开发、生产环境配置 |
-| [USER_GUIDE.md](docs/USER_GUIDE.md) | 用户手册 - 功能使用与操作指南 |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | 架构文档 - 系统设计与技术细节 |
 | [API.md](docs/api/README.md) | API 文档 - 端点说明与示例 |
-| [IMPLEMENTATION_COMPLETE.md](IMPLEMENTATION_COMPLETE.md) | 实施报告 - 功能实现完成情况 |
+
+### 功能文档
+
+| 文档 | 描述 |
+|------|------|
+| [DATA_EXPORT.md](docs/DATA_EXPORT.md) | 数据导出功能 - 批量导出与格式转换 |
+| [DATA_EDITING.md](docs/DATA_EDITING.md) | 数据编辑功能 - 在线数据转换与操作 |
+| [CUSTOM_SCRIPT_TOOLS.md](docs/CUSTOM_SCRIPT_TOOLS.md) | 自定义脚本工具 - 集成 Python/R/Bash 脚本 |
+| [VISUALIZATION_WORKSPACE.md](docs/VISUALIZATION_WORKSPACE.md) | 可视化工作区 - 多面板仪表板构建 |
+| [DATASET_MANAGER.md](docs/DATASET_MANAGER.md) | 数据集管理器 - 数据集组织与管理 |
+| [BIOCONVERTER_USAGE.md](docs/BIOCONVERTER_USAGE.md) | Bioconverter 使用指南 - Python/R 格式转换 |
+| [BIOCONVERTER_INTEGRATION.md](docs/BIOCONVERTER_INTEGRATION.md) | Bioconverter 集成说明 - 与 Omicsomics 集成 |
+
+### 开发文档
+
+| 文档 | 描述 |
+|------|------|
+| [IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md) | 实施总结 - 完整的项目实施报告 |
+| [TESTING.md](docs/TESTING.md) | 测试指南 - 测试策略与用例 |
+| [PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) | 项目结构 - 代码组织与架构 |
 
 ---
 

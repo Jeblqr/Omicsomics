@@ -191,7 +191,7 @@ const PipelineEditor = ({
             Clear
           </button>
 
-          <div style={{ marginLeft: 'auto', fontSize: '0.9rem', color: '#666' }}>
+          <div style={{ marginLeft: 'auto', fontSize: '0.9rem', color: '#4b5563' }}>
             Nodes: {nodes.length} | Edges: {edges.length}
           </div>
         </div>

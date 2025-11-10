@@ -6,8 +6,11 @@ const Sidebar = () => {
     { to: '/projects', label: 'Projects' },
     { to: '/runs', label: 'Runs' },
     { to: '/data', label: 'Data' },
+    { to: '/data-browser', label: '📁 Data Browser' },
+    { to: '/visualization-tools', label: '🎨 Visualization Tools' },
     { to: '/pipelines', label: 'Pipelines' },
     { to: '/custom-pipelines', label: 'Custom Pipelines' },
+    { to: '/tools', label: 'Tool Manager' },
     { to: '/settings', label: 'Settings' },
   ];
 

@@ -1,0 +1,642 @@
+{
+  "functions": [
+    {
+      "function_id": "quality_control",
+      "display_name": "Quality Control",
+      "category": "preprocessing",
+      "description": "Assess data quality and filter low-quality samples/features",
+      "data_types": ["rna_seq", "single_cell", "proteomics", "genomics"],
+      "variants": [
+        {
+          "tool_id": "seurat_qc",
+          "tool_name": "Seurat QC",
+          "runtime": "r",
+          "language": "R",
+          "method": "Feature/Cell filtering",
+          "strengths": "Integrated workflow, rich visualization, widely used",
+          "use_case": "Single-cell RNA-seq standard analysis",
+          "popularity_score": 95,
+          "data_types": ["single_cell"],
+          "inputs": [{"name": "count_matrix", "format": "csv"}],
+          "outputs": [{"name": "filtered_matrix", "format": "rds"}, {"name": "qc_report", "format": "pdf"}],
+          "parameters": {
+            "min_features": {"type": "number", "default": 200},
+            "max_features": {"type": "number", "default": 5000},
+            "mt_percent_threshold": {"type": "number", "default": 10}
+          }
+        },
+        {
+          "tool_id": "scanpy_qc",
+          "tool_name": "scanpy QC",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Statistical filtering",
+          "strengths": "Fast, memory-efficient, scalable to large datasets",
+          "use_case": "Large-scale single-cell analysis (>100k cells)",
+          "popularity_score": 88,
+          "data_types": ["single_cell"],
+          "inputs": [{"name": "count_matrix", "format": "csv"}],
+          "outputs": [{"name": "filtered_h5ad", "format": "h5ad"}, {"name": "qc_plots", "format": "png"}],
+          "parameters": {
+            "min_genes": {"type": "number", "default": 200},
+            "max_genes": {"type": "number", "default": 5000},
+            "pct_counts_mt": {"type": "number", "default": 10}
+          }
+        },
+        {
+          "tool_id": "fastqc",
+          "tool_name": "FastQC",
+          "runtime": "binary",
+          "language": "Java",
+          "method": "Raw sequencing QC",
+          "strengths": "Industry standard, detailed HTML reports, handles all NGS data",
+          "use_case": "Raw FASTQ quality assessment",
+          "popularity_score": 98,
+          "data_types": ["rna_seq", "genomics", "epigenomics"],
+          "inputs": [{"name": "fastq_file", "format": "fastq"}],
+          "outputs": [{"name": "html_report", "format": "html"}, {"name": "zip_results", "format": "zip"}],
+          "parameters": {
+            "threads": {"type": "number", "default": 4}
+          }
+        },
+        {
+          "tool_id": "multiqc",
+          "tool_name": "MultiQC",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Aggregate multiple QC reports",
+          "strengths": "Combines multiple QC tools, beautiful reports",
+          "use_case": "Batch sample QC summarization",
+          "popularity_score": 85,
+          "data_types": ["rna_seq", "genomics", "proteomics"],
+          "inputs": [{"name": "qc_directory", "format": "directory"}],
+          "outputs": [{"name": "multiqc_report", "format": "html"}],
+          "parameters": {}
+        }
+      ]
+    },
+    {
+      "function_id": "normalization",
+      "display_name": "Normalization",
+      "category": "preprocessing",
+      "description": "Normalize expression values to remove technical variation",
+      "data_types": ["rna_seq", "single_cell", "proteomics"],
+      "variants": [
+        {
+          "tool_id": "seurat_normalize",
+          "tool_name": "Seurat Normalize",
+          "runtime": "r",
+          "language": "R",
+          "method": "Log-normalization, SCTransform",
+          "strengths": "Standard single-cell normalization, handles sparsity",
+          "use_case": "Single-cell RNA-seq normalization",
+          "popularity_score": 93,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "scanpy_normalize",
+          "tool_name": "scanpy Normalize",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Log-normalization, Pearson residuals",
+          "strengths": "Fast, flexible, multiple methods",
+          "use_case": "Large-scale single-cell normalization",
+          "popularity_score": 87,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "deseq2_normalize",
+          "tool_name": "DESeq2 Normalize",
+          "runtime": "r",
+          "language": "R",
+          "method": "Median-of-ratios",
+          "strengths": "Gold standard for bulk RNA-seq",
+          "use_case": "Bulk RNA-seq differential expression",
+          "popularity_score": 96,
+          "data_types": ["rna_seq"]
+        },
+        {
+          "tool_id": "edger_normalize",
+          "tool_name": "edgeR Normalize",
+          "runtime": "r",
+          "language": "R",
+          "method": "TMM normalization",
+          "strengths": "Robust for differential expression",
+          "use_case": "Bulk RNA-seq TMM normalization",
+          "popularity_score": 90,
+          "data_types": ["rna_seq"]
+        }
+      ]
+    },
+    {
+      "function_id": "dimensionality_reduction",
+      "display_name": "Dimensionality Reduction",
+      "category": "visualization",
+      "description": "Reduce high-dimensional data to 2D/3D for visualization",
+      "data_types": ["single_cell", "rna_seq", "proteomics"],
+      "variants": [
+        {
+          "tool_id": "seurat_pca",
+          "tool_name": "Seurat PCA",
+          "runtime": "r",
+          "language": "R",
+          "method": "Principal Component Analysis",
+          "strengths": "Linear, interpretable, fast",
+          "use_case": "Initial dimensionality reduction",
+          "popularity_score": 92,
+          "data_types": ["single_cell", "rna_seq"]
+        },
+        {
+          "tool_id": "umap_r",
+          "tool_name": "UMAP (R)",
+          "runtime": "r",
+          "language": "R",
+          "method": "Uniform Manifold Approximation",
+          "strengths": "Preserves global structure, fast",
+          "use_case": "Non-linear visualization",
+          "popularity_score": 95,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "umap_python",
+          "tool_name": "UMAP (Python)",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Uniform Manifold Approximation",
+          "strengths": "Original implementation, highly optimized",
+          "use_case": "Large-scale UMAP",
+          "popularity_score": 93,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "tsne_r",
+          "tool_name": "t-SNE (R)",
+          "runtime": "r",
+          "language": "R",
+          "method": "t-distributed Stochastic Neighbor Embedding",
+          "strengths": "Preserves local structure",
+          "use_case": "Cluster visualization",
+          "popularity_score": 85,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "phate",
+          "tool_name": "PHATE",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Potential of Heat diffusion for Affinity-based Trajectory Embedding",
+          "strengths": "Preserves trajectory structure",
+          "use_case": "Developmental trajectories",
+          "popularity_score": 78,
+          "data_types": ["single_cell"]
+        }
+      ]
+    },
+    {
+      "function_id": "clustering",
+      "display_name": "Clustering",
+      "category": "analysis",
+      "description": "Group cells/samples into clusters",
+      "data_types": ["single_cell", "rna_seq", "proteomics"],
+      "variants": [
+        {
+          "tool_id": "seurat_clustering",
+          "tool_name": "Seurat Clustering",
+          "runtime": "r",
+          "language": "R",
+          "method": "Louvain/Leiden community detection",
+          "strengths": "Graph-based, resolution tunable",
+          "use_case": "Standard single-cell clustering",
+          "popularity_score": 94,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "scanpy_clustering",
+          "tool_name": "scanpy Clustering",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Louvain/Leiden",
+          "strengths": "Fast, scalable",
+          "use_case": "Large-scale clustering",
+          "popularity_score": 89,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "sc3",
+          "tool_name": "SC3",
+          "runtime": "r",
+          "language": "R",
+          "method": "Consensus clustering",
+          "strengths": "Robust, automatic cluster number selection",
+          "use_case": "Robust clustering with uncertainty",
+          "popularity_score": 75,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "dbscan",
+          "tool_name": "DBSCAN",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Density-based clustering",
+          "strengths": "Identifies noise, no cluster number needed",
+          "use_case": "Density-based clustering",
+          "popularity_score": 70,
+          "data_types": ["single_cell", "proteomics"]
+        }
+      ]
+    },
+    {
+      "function_id": "differential_expression",
+      "display_name": "Differential Expression Analysis",
+      "category": "analysis",
+      "description": "Identify differentially expressed genes/proteins",
+      "data_types": ["rna_seq", "single_cell", "proteomics"],
+      "variants": [
+        {
+          "tool_id": "deseq2",
+          "tool_name": "DESeq2",
+          "runtime": "r",
+          "language": "R",
+          "method": "Negative binomial model",
+          "strengths": "Gold standard, handles biological replicates",
+          "use_case": "Bulk RNA-seq differential expression",
+          "popularity_score": 98,
+          "data_types": ["rna_seq"]
+        },
+        {
+          "tool_id": "edger",
+          "tool_name": "edgeR",
+          "runtime": "r",
+          "language": "R",
+          "method": "Negative binomial GLM",
+          "strengths": "Flexible, multiple experimental designs",
+          "use_case": "Complex experimental designs",
+          "popularity_score": 92,
+          "data_types": ["rna_seq"]
+        },
+        {
+          "tool_id": "limma",
+          "tool_name": "limma",
+          "runtime": "r",
+          "language": "R",
+          "method": "Linear modeling with empirical Bayes",
+          "strengths": "Versatile, works for microarray and RNA-seq",
+          "use_case": "Versatile differential expression",
+          "popularity_score": 94,
+          "data_types": ["rna_seq", "proteomics"]
+        },
+        {
+          "tool_id": "seurat_findmarkers",
+          "tool_name": "Seurat FindMarkers",
+          "runtime": "r",
+          "language": "R",
+          "method": "Wilcoxon rank sum test",
+          "strengths": "Fast, non-parametric",
+          "use_case": "Single-cell marker discovery",
+          "popularity_score": 91,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "mast",
+          "tool_name": "MAST",
+          "runtime": "r",
+          "language": "R",
+          "method": "Hurdle model for zero-inflated data",
+          "strengths": "Handles zero-inflation in single-cell",
+          "use_case": "Single-cell DE with covariates",
+          "popularity_score": 80,
+          "data_types": ["single_cell"]
+        }
+      ]
+    },
+    {
+      "function_id": "enrichment_analysis",
+      "display_name": "Enrichment Analysis",
+      "category": "analysis",
+      "description": "Identify enriched pathways and gene sets",
+      "data_types": ["rna_seq", "single_cell", "proteomics"],
+      "variants": [
+        {
+          "tool_id": "clusterprofiler",
+          "tool_name": "clusterProfiler",
+          "runtime": "r",
+          "language": "R",
+          "method": "ORA, GSEA",
+          "strengths": "Comprehensive, excellent visualization",
+          "use_case": "Pathway and GO enrichment",
+          "popularity_score": 96,
+          "data_types": ["rna_seq", "single_cell", "proteomics"]
+        },
+        {
+          "tool_id": "gsea",
+          "tool_name": "GSEA",
+          "runtime": "binary",
+          "language": "Java",
+          "method": "Gene Set Enrichment Analysis",
+          "strengths": "Classic method, widely cited",
+          "use_case": "Ranked gene list enrichment",
+          "popularity_score": 95,
+          "data_types": ["rna_seq", "proteomics"]
+        },
+        {
+          "tool_id": "enrichr",
+          "tool_name": "enrichR",
+          "runtime": "r",
+          "language": "R",
+          "method": "Multiple enrichment databases",
+          "strengths": "Many databases, easy to use",
+          "use_case": "Quick enrichment check",
+          "popularity_score": 85,
+          "data_types": ["rna_seq", "single_cell"]
+        },
+        {
+          "tool_id": "gseapy",
+          "tool_name": "gseapy",
+          "runtime": "python",
+          "language": "Python",
+          "method": "GSEA in Python",
+          "strengths": "Python ecosystem integration",
+          "use_case": "GSEA in Python workflows",
+          "popularity_score": 82,
+          "data_types": ["rna_seq"]
+        }
+      ]
+    },
+    {
+      "function_id": "trajectory_inference",
+      "display_name": "Trajectory Inference",
+      "category": "advanced_analysis",
+      "description": "Infer developmental or temporal trajectories",
+      "data_types": ["single_cell"],
+      "variants": [
+        {
+          "tool_id": "monocle3",
+          "tool_name": "Monocle 3",
+          "runtime": "r",
+          "language": "R",
+          "method": "Principal graph learning",
+          "strengths": "Complex branching trajectories",
+          "use_case": "Differentiation trajectories",
+          "popularity_score": 90,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "slingshot",
+          "tool_name": "Slingshot",
+          "runtime": "r",
+          "language": "R",
+          "method": "Cluster-based trajectories",
+          "strengths": "Simple, intuitive",
+          "use_case": "Simple lineage trajectories",
+          "popularity_score": 85,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "paga",
+          "tool_name": "PAGA",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Graph abstraction",
+          "strengths": "Global topology understanding",
+          "use_case": "Complex trajectory structures",
+          "popularity_score": 83,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "velocyto",
+          "tool_name": "Velocyto",
+          "runtime": "python",
+          "language": "Python",
+          "method": "RNA velocity",
+          "strengths": "Direction inference from splicing",
+          "use_case": "Dynamic process directionality",
+          "popularity_score": 88,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "scvelo",
+          "tool_name": "scVelo",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Dynamical RNA velocity",
+          "strengths": "Improved velocity model",
+          "use_case": "Advanced velocity analysis",
+          "popularity_score": 86,
+          "data_types": ["single_cell"]
+        }
+      ]
+    },
+    {
+      "function_id": "cell_type_annotation",
+      "display_name": "Cell Type Annotation",
+      "category": "analysis",
+      "description": "Annotate cell types based on expression profiles",
+      "data_types": ["single_cell"],
+      "variants": [
+        {
+          "tool_id": "singler",
+          "tool_name": "SingleR",
+          "runtime": "r",
+          "language": "R",
+          "method": "Reference-based annotation",
+          "strengths": "Automated, accurate",
+          "use_case": "Automatic cell type annotation",
+          "popularity_score": 89,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "celltypist",
+          "tool_name": "CellTypist",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Machine learning classifier",
+          "strengths": "Large reference atlas",
+          "use_case": "ML-based annotation",
+          "popularity_score": 85,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "azimuth",
+          "tool_name": "Azimuth",
+          "runtime": "r",
+          "language": "R",
+          "method": "Reference mapping (Seurat)",
+          "strengths": "Human cell atlas integration",
+          "use_case": "Human tissue annotation",
+          "popularity_score": 87,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "scina",
+          "tool_name": "SCINA",
+          "runtime": "r",
+          "language": "R",
+          "method": "Marker gene-based",
+          "strengths": "User-defined markers",
+          "use_case": "Custom marker-based annotation",
+          "popularity_score": 75,
+          "data_types": ["single_cell"]
+        }
+      ]
+    },
+    {
+      "function_id": "batch_correction",
+      "display_name": "Batch Effect Correction",
+      "category": "preprocessing",
+      "description": "Remove batch effects while preserving biological variation",
+      "data_types": ["rna_seq", "single_cell", "proteomics"],
+      "variants": [
+        {
+          "tool_id": "harmony",
+          "tool_name": "Harmony",
+          "runtime": "r",
+          "language": "R",
+          "method": "Iterative clustering",
+          "strengths": "Fast, preserves biology",
+          "use_case": "Single-cell batch integration",
+          "popularity_score": 92,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "combat",
+          "tool_name": "Combat",
+          "runtime": "r",
+          "language": "R",
+          "method": "Empirical Bayes",
+          "strengths": "Classic method for bulk data",
+          "use_case": "Bulk RNA-seq batch correction",
+          "popularity_score": 90,
+          "data_types": ["rna_seq", "proteomics"]
+        },
+        {
+          "tool_id": "scvi",
+          "tool_name": "scVI",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Deep learning VAE",
+          "strengths": "Non-linear correction",
+          "use_case": "Complex batch effects",
+          "popularity_score": 88,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "seurat_integration",
+          "tool_name": "Seurat Integration",
+          "runtime": "r",
+          "language": "R",
+          "method": "Anchors-based integration",
+          "strengths": "Multi-dataset integration",
+          "use_case": "Integrating multiple studies",
+          "popularity_score": 91,
+          "data_types": ["single_cell"]
+        },
+        {
+          "tool_id": "bbknn",
+          "tool_name": "BBKNN",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Batch-balanced k-NN",
+          "strengths": "Graph-based, fast",
+          "use_case": "Single-cell graph correction",
+          "popularity_score": 82,
+          "data_types": ["single_cell"]
+        }
+      ]
+    },
+    {
+      "function_id": "variant_calling",
+      "display_name": "Variant Calling",
+      "category": "genomics",
+      "description": "Detect genetic variants from sequencing data",
+      "data_types": ["genomics"],
+      "variants": [
+        {
+          "tool_id": "gatk",
+          "tool_name": "GATK HaplotypeCaller",
+          "runtime": "binary",
+          "language": "Java",
+          "method": "Local de novo assembly",
+          "strengths": "Gold standard, highly accurate",
+          "use_case": "Germline variant calling",
+          "popularity_score": 98,
+          "data_types": ["genomics"]
+        },
+        {
+          "tool_id": "freebayes",
+          "tool_name": "FreeBayes",
+          "runtime": "binary",
+          "language": "C++",
+          "method": "Bayesian variant detection",
+          "strengths": "Fast, flexible",
+          "use_case": "Population-scale variant calling",
+          "popularity_score": 85,
+          "data_types": ["genomics"]
+        },
+        {
+          "tool_id": "bcftools",
+          "tool_name": "BCFtools",
+          "runtime": "binary",
+          "language": "C",
+          "method": "Pileup-based calling",
+          "strengths": "Lightweight, fast",
+          "use_case": "Quick variant calling",
+          "popularity_score": 88,
+          "data_types": ["genomics"]
+        },
+        {
+          "tool_id": "deepvariant",
+          "tool_name": "DeepVariant",
+          "runtime": "binary",
+          "language": "Python",
+          "method": "Deep learning CNN",
+          "strengths": "AI-driven, high accuracy",
+          "use_case": "High-accuracy variant calling",
+          "popularity_score": 90,
+          "data_types": ["genomics"]
+        }
+      ]
+    },
+    {
+      "function_id": "peak_calling",
+      "display_name": "Peak Calling",
+      "category": "epigenomics",
+      "description": "Identify enriched regions in ChIP-seq/ATAC-seq data",
+      "data_types": ["epigenomics"],
+      "variants": [
+        {
+          "tool_id": "macs2",
+          "tool_name": "MACS2",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Model-based analysis",
+          "strengths": "Industry standard, versatile",
+          "use_case": "ChIP-seq/ATAC-seq peak calling",
+          "popularity_score": 97,
+          "data_types": ["epigenomics"]
+        },
+        {
+          "tool_id": "homer",
+          "tool_name": "HOMER",
+          "runtime": "binary",
+          "language": "Perl",
+          "method": "Local tag density",
+          "strengths": "Motif analysis integration",
+          "use_case": "ChIP-seq with motif discovery",
+          "popularity_score": 85,
+          "data_types": ["epigenomics"]
+        },
+        {
+          "tool_id": "sicer",
+          "tool_name": "SICER",
+          "runtime": "python",
+          "language": "Python",
+          "method": "Spatial clustering",
+          "strengths": "Broad peak detection",
+          "use_case": "Histone modification ChIP-seq",
+          "popularity_score": 78,
+          "data_types": ["epigenomics"]
+        }
+      ]
+    }
+  ]
+}

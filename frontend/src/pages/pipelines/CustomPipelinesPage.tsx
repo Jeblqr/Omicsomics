@@ -410,39 +410,25 @@ const CustomPipelinesPage = () => {
           <h1 style={{ color: '#f3f4f6' }}>Custom Pipelines</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button
-            onClick={handleMergePipelines}
-            disabled={selectedPipelines.length < 2}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: selectedPipelines.length >= 2 ? '#ff9800' : '#ccc',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: selectedPipelines.length >= 2 ? 'pointer' : 'not-allowed',
-              fontWeight: 500,
-            }}
-          >
-            Merge Selected ({selectedPipelines.length})
-          </button>
-          <button
             onClick={handleNewPipeline}
             style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#4caf50',
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#3b82f6',
               color: 'white',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '6px',
               cursor: 'pointer',
-              fontWeight: 500,
+              fontWeight: 600,
+              fontSize: '0.875rem',
             }}
           >
-            + Create New Pipeline
+            ➕ Create New Pipeline
           </button>
         </div>
       </div>
 
       {pipelines.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#4b5563' }}>
           <p>No custom pipelines yet. Create your first pipeline!</p>
         </div>
       ) : (
@@ -454,59 +440,50 @@ const CustomPipelinesPage = () => {
                 border: '1px solid #ddd',
                 borderRadius: '8px',
                 padding: '1.5rem',
-                backgroundColor: selectedPipelines.includes(pipeline.id) ? '#e3f2fd' : 'white',
-                cursor: 'pointer',
+                backgroundColor: 'white',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem' }}>
-                <input
-                  type="checkbox"
-                  checked={selectedPipelines.includes(pipeline.id)}
-                  onChange={() => togglePipelineSelection(pipeline.id)}
-                  style={{ marginTop: '0.25rem', width: '20px', height: '20px' }}
-                />
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ marginBottom: '0.5rem' }}>{pipeline.name}</h3>
-                  {pipeline.description && (
-                    <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                      {pipeline.description}
-                    </p>
-                  )}
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.85rem' }}>
-                    {pipeline.category && (
-                      <span
-                        style={{
-                          backgroundColor: '#e0e0e0',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        {pipeline.category}
-                      </span>
-                    )}
-                    {pipeline.is_public && (
-                      <span
-                        style={{
-                          backgroundColor: '#4caf50',
-                          color: 'white',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        Public
-                      </span>
-                    )}
+              <div style={{ marginBottom: '1rem' }}>
+                <h3 style={{ marginBottom: '0.5rem', color: '#1f2937' }}>{pipeline.name}</h3>
+                {pipeline.description && (
+                  <p style={{ color: '#4b5563', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                    {pipeline.description}
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.85rem' }}>
+                  {pipeline.category && (
                     <span
                       style={{
-                        backgroundColor: '#2196f3',
+                        backgroundColor: '#e0e0e0',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      {pipeline.category}
+                    </span>
+                  )}
+                  {pipeline.is_public && (
+                    <span
+                      style={{
+                        backgroundColor: '#4caf50',
                         color: 'white',
                         padding: '0.25rem 0.5rem',
                         borderRadius: '4px',
                       }}
                     >
-                      {pipeline.definition.nodes.length} nodes
+                      Public
                     </span>
-                  </div>
+                  )}
+                  <span
+                    style={{
+                      backgroundColor: '#2196f3',
+                      color: 'white',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {pipeline.definition.nodes.length} nodes
+                  </span>
                 </div>
               </div>
 

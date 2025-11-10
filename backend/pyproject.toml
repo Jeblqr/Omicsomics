@@ -36,7 +36,17 @@ dependencies = [
   "celery[redis]>=5.3.0",
   "redis>=5.0.0",
   "pyteomics>=4.6.0",
-  "openpyxl>=3.1.0"
+  "openpyxl>=3.1.0",
+  # Bioinformatics format converters (Phase 1 Week 1)
+  "biopython>=1.81",
+  "pybedtools>=0.9.0",
+  "pyBigWig>=0.3.18",
+  # Bioinformatics format converters (Phase 1 Week 2)
+  "pysam>=0.21.0",
+  # Bioinformatics format converters (Phase 1 Week 3)
+  "scipy>=1.11.0",
+  "h5py>=3.9.0",
+  "rpy2>=3.5.0"
 ]
 
 [project.optional-dependencies]
