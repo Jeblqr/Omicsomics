@@ -17,8 +17,9 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 
 import PipelineNode, { PipelineNodeData } from './PipelineNode';
-import Toolbox, { ToolDefinition } from './Toolbox';
-import ConfigPanel from './ConfigPanel';
+import ToolboxV2 from './ToolboxV2';
+import { ToolDefinition } from './ToolDefinitions';
+import ConfigPanelV2 from './ConfigPanelV2';
 
 interface EnhancedPipelineEditorProps {
   initialNodes?: Node<PipelineNodeData>[];
@@ -147,8 +148,8 @@ const EnhancedPipelineEditor = ({
           label: tool.name,
           tool: tool.tool,
           version: tool.version,
-          parameters: tool.parameters || {},
-          nodeType: tool.type,
+          parameters: tool.defaultParameters || {},
+          nodeType: tool.type === 'visualization' ? 'output' : tool.type,
           onConfigure: handleConfigureNode,
           onDelete: handleDeleteNode,
         },
@@ -273,7 +274,7 @@ const EnhancedPipelineEditor = ({
       {/* Main Editor Area */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* Toolbox */}
-        {!readOnly && <Toolbox onDragStart={() => {}} />}
+        {!readOnly && <ToolboxV2 onDragStart={() => {}} />}
 
         {/* Canvas */}
         <div ref={reactFlowWrapper} style={{ flex: 1, backgroundColor: '#0f172a' }} onDrop={onDrop} onDragOver={onDragOver}>
@@ -318,7 +319,7 @@ const EnhancedPipelineEditor = ({
 
         {/* Config Panel */}
         {!readOnly && showConfigPanel && (
-          <ConfigPanel
+          <ConfigPanelV2
             selectedNode={selectedNode}
             onUpdate={handleUpdateNode}
             onClose={() => setShowConfigPanel(false)}
