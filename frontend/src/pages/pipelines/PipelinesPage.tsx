@@ -33,8 +33,12 @@ const PipelinesPage = () => {
       setTemplates(response.data);
     } catch (err) {
       console.error('Failed to fetch pipeline templates:', err);
-      const error = err as { response?: { data?: { detail?: string } }; message?: string };
-      setError(error.response?.data?.detail || 'Failed to load pipeline templates');
+      const error = err as { response?: { data?: { detail?: string }; status?: number }; message?: string };
+      if (error.response?.status === 401) {
+        setError('⚠️ Please log in to view pipeline templates');
+      } else {
+        setError(error.response?.data?.detail || 'Failed to load pipeline templates');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +80,7 @@ const PipelinesPage = () => {
         <p style={{ color: '#6c757d' }}>Pre-configured analysis pipelines available to all users.</p>
 
         <div style={{ marginBottom: '1.5rem' }}>
-          <label htmlFor="category-filter" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+          <label htmlFor="category-filter" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#212529' }}>
             Filter by Category:
           </label>
           <select
@@ -100,8 +104,8 @@ const PipelinesPage = () => {
         </div>
 
         {error && (
-          <div style={{ color: '#dc3545', padding: '1rem', backgroundColor: '#f8d7da', borderRadius: '4px', marginBottom: '1rem' }}>
-            {error}
+          <div style={{ color: '#856404', padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', marginBottom: '1rem' }}>
+            <strong style={{ color: '#856404' }}>{error}</strong>
           </div>
         )}
 
