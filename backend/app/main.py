@@ -7,9 +7,12 @@ from app.api.routers import api_router
 app = FastAPI(
     title="Omicsomics API",
     version="0.1.0",
-    # Increase file upload size limit to 5GB
+    # Increase file upload size limit to 10GB
     # Note: Also need to configure nginx/reverse proxy if using one
 )
+
+# Configure maximum upload size (10GB)
+app.state.max_upload_size = 10 * 1024 * 1024 * 1024  # 10GB in bytes
 
 # Define allowed origins for local development
 allowed_origins = [
