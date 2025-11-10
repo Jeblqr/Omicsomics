@@ -49,6 +49,8 @@ Omicsomics 项目管理工具
   clean         清理所有容器和数据卷 (⚠️ 危险操作)
   init          初始化数据库和MinIO
   test          运行测试
+  db:migrate    运行数据库迁移
+  db:status     查看数据库迁移状态
   help          显示此帮助信息
 
 示例:
@@ -171,6 +173,20 @@ run_tests() {
     docker compose run --rm backend pytest tests/ -v
 }
 
+# 运行数据库迁移
+db_migrate() {
+    print_info "运行数据库迁移..."
+    cd "$PROJECT_ROOT/infrastructure"
+    docker compose run --rm backend alembic upgrade head
+}
+
+# 查看数据库迁移状态
+db_status() {
+    print_info "查看数据库迁移状态..."
+    cd "$PROJECT_ROOT/infrastructure"
+    docker compose run --rm backend alembic current
+}
+
 # 主函数
 main() {
     check_docker
@@ -205,6 +221,12 @@ main() {
             ;;
         test)
             run_tests
+            ;;
+        db:migrate)
+            db_migrate
+            ;;
+        db:status)
+            db_status
             ;;
         help|--help|-h)
             show_help
