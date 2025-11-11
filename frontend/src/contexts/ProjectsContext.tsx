@@ -126,3 +126,15 @@ export const useProjectsContext = () => {
   }
   return context;
 };
+
+// Backwards-compatible alias used across the codebase: `useProjects` returns
+// the same context but exposes `selectedProject` as an alias for
+// `currentProject` to match historical naming in some pages/components.
+export const useProjects = () => {
+  const ctx = useProjectsContext();
+  return {
+    ...ctx,
+    // provide legacy alias
+    selectedProject: ctx.currentProject,
+  } as typeof ctx & { selectedProject: typeof ctx.currentProject };
+};
